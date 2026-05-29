@@ -37,7 +37,7 @@ export const POST = withCors(async (request: NextRequest) => {
 
         // Run the process in the background, detached, so Next.js doesn't wait for it
         const child = spawn(pythonExecutable, args, {
-            cwd: path.join(workspaceRoot, 'Facerecognition'),
+            cwd: path.join(/*turbopackIgnore: true*/ workspaceRoot, 'Facerecognition'),
             detached: true,
             stdio: 'ignore'
         });
