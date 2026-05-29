@@ -6,4 +6,6 @@ trainer/trainer.yml
 venv/
 .venv/
 *.pyc
-
+live_snapshots.json
+live_ledger.json
+randomizer.log
