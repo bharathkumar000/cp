@@ -17,12 +17,12 @@ const studentNameMap = {
 
 // Map student IDs to Branch and Section
 const studentBranchSectionMap = {
-    '00000000-0000-0000-0000-000000000001': { branch: 'CSE', section: 'A' },
-    '00000000-0000-0000-0000-000000000002': { branch: 'ISE', section: 'B' },
-    '00000000-0000-0000-0000-000000000003': { branch: 'CSE', section: 'B' },
+    '00000000-0000-0000-0000-000000000001': { branch: 'ECE', section: 'A' },
+    '00000000-0000-0000-0000-000000000002': { branch: 'ECE', section: 'A' },
+    '00000000-0000-0000-0000-000000000003': { branch: 'ECE', section: 'A' },
     '00000000-0000-0000-0000-000000000007': { branch: 'ECE', section: 'A' },
-    '00000000-0000-0000-0000-000000000008': { branch: 'ECE', section: 'B' },
-    '00000000-0000-0000-0000-000000000009': { branch: 'CSE', section: 'A' },
+    '00000000-0000-0000-0000-000000000008': { branch: 'ECE', section: 'A' },
+    '00000000-0000-0000-0000-000000000009': { branch: 'ECE', section: 'A' },
 };
 
 // Premium Custom Month Picker Component
@@ -445,18 +445,20 @@ const Attendance = () => {
         }
     };
 
-    // Helper: Fetch completed checks count
+    // Helper: Fetch completed checks count from the list API
     const fetchCompletedChecks = async () => {
         if (!validationSlotId) return;
-        const sessionDate = new Date().toISOString().split('T')[0];
         try {
-            const { data, error } = await supabase
-                .from('attendance_snapshots')
-                .select('check_number')
-                .eq('slot_id', validationSlotId)
-                .gte('captured_at', `${sessionDate}T00:00:00.000Z`);
-            if (!error && data) {
-                setCompletedChecks(data.length);
+            const res = await fetch(`/api/attendance/list?slot_id=${validationSlotId}`);
+            if (res.ok) {
+                const roster = await res.json();
+                if (Array.isArray(roster) && roster.length > 0) {
+                    // The max detected_count across all students approximates checks completed
+                    const maxDetected = Math.max(...roster.map(s => s.detected_count || 0));
+                    // Also check if any student has detections — if so, at least 1 check was done
+                    const totalDetectedStudents = roster.filter(s => s.detected_count > 0).length;
+                    setCompletedChecks(maxDetected);
+                }
             }
         } catch (err) {
             console.error("Error fetching completed checks:", err);
@@ -618,12 +620,11 @@ const Attendance = () => {
         try {
             const sessionDate = new Date().toISOString().split('T')[0];
             
-            // 1. Purge snapshots & ledgers for a clean run
+            // 1. Purge previous session data for a clean run
             try {
-                await supabase.from('attendance_snapshots').delete().eq('slot_id', validationSlotId);
-                await supabase.from('attendance_session_ledger').delete().eq('slot_id', validationSlotId).eq('session_date', sessionDate);
+                await fetch('/api/attendance/purge', { method: 'POST' });
             } catch (e) {
-                console.log("Supabase delete failed, ignoring since we are running in mock mode:", e);
+                console.log("Purge failed, continuing:", e);
             }
             
             setCompletedChecks(0);
@@ -726,12 +727,11 @@ const Attendance = () => {
         try {
             const sessionDate = new Date().toISOString().split('T')[0];
             
-            // 1. Purge snapshots & ledgers for a clean run
+            // 1. Purge previous session data for a clean run
             try {
-                await supabase.from('attendance_snapshots').delete().eq('slot_id', slotId);
-                await supabase.from('attendance_session_ledger').delete().eq('slot_id', slotId).eq('session_date', sessionDate);
+                await fetch('/api/attendance/purge', { method: 'POST' });
             } catch (e) {
-                console.log("Supabase delete failed, ignoring:", e);
+                console.log("Purge failed, continuing:", e);
             }
             
             setCompletedChecks(0);
@@ -876,8 +876,20 @@ const Attendance = () => {
             .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_session_ledger' }, handleChanges)
             .subscribe();
 
+        // Polling fallback: poll the API every 3 seconds to catch local-file updates
+        // (Supabase Realtime won't fire for local file writes)
+        const pollInterval = setInterval(() => {
+            if (user?.role === 'teacher' || user?.role === 'admin') {
+                fetchValidationRoster();
+                fetchCompletedChecks();
+            } else if (user?.role === 'student') {
+                fetchStudentLedger();
+            }
+        }, 3000);
+
         return () => {
             supabase.removeChannel(channel);
+            clearInterval(pollInterval);
         };
     }, [user, activeTab, validationSlotId]);
 
@@ -1668,10 +1680,201 @@ const Attendance = () => {
                         <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>98.2% Safe</div>
                         <span style={auditSubStyle}>0.4% warning threshold</span>
                     </div>
+<<<<<<< HEAD
                     <div style={auditCardStyle}>
                         <h4 style={auditLabelStyle}>Double-Tap Mismatches</h4>
                         <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444' }}>
                             {auditAlerts.filter(a => a.status === 'unresolved').length} Alerts
+=======
+
+                    {/* === ATTENDANCE RESULT SUMMARY (shown after all 5 checks) === */}
+                    {completedChecks >= 5 && (
+                        <div className="attendance-result-summary">
+                            <h3 className="result-summary-title">
+                                📋 Attendance Result — Session Complete
+                            </h3>
+                            <div className="result-summary-grid">
+                                {/* Present Students */}
+                                <div className="result-column present-column">
+                                    <div className="result-column-header present">
+                                        <span className="result-icon">✅</span>
+                                        <span className="result-label">Present</span>
+                                        <span className="result-count">
+                                            {filteredValidationRoster.filter(s => s.final_status === 'PRESENT' || s.final_status === 'LATE').length}
+                                        </span>
+                                    </div>
+                                    <div className="result-student-list">
+                                        {filteredValidationRoster
+                                            .filter(s => s.final_status === 'PRESENT' || s.final_status === 'LATE')
+                                            .map(student => (
+                                                <div key={student.student_id} className="result-student-item present">
+                                                    <div className="result-student-avatar present">
+                                                        {student.full_name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="result-student-info">
+                                                        <div className="result-student-name">{student.full_name}</div>
+                                                        <div className="result-student-meta">
+                                                            Detected {student.detected_count}/{student.total_checks} checks
+                                                        </div>
+                                                    </div>
+                                                    <span className={`result-status-badge ${student.final_status.toLowerCase()}`}>
+                                                        {student.final_status}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        }
+                                        {filteredValidationRoster.filter(s => s.final_status === 'PRESENT' || s.final_status === 'LATE').length === 0 && (
+                                            <div className="result-empty">No students detected as present.</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Absent Students */}
+                                <div className="result-column absent-column">
+                                    <div className="result-column-header absent">
+                                        <span className="result-icon">❌</span>
+                                        <span className="result-label">Absent</span>
+                                        <span className="result-count">
+                                            {filteredValidationRoster.filter(s => s.final_status === 'ABSENT').length}
+                                        </span>
+                                    </div>
+                                    <div className="result-student-list">
+                                        {filteredValidationRoster
+                                            .filter(s => s.final_status === 'ABSENT')
+                                            .map(student => (
+                                                <div key={student.student_id} className="result-student-item absent">
+                                                    <div className="result-student-avatar absent">
+                                                        {student.full_name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="result-student-info">
+                                                        <div className="result-student-name">{student.full_name}</div>
+                                                        <div className="result-student-meta">
+                                                            Not detected in any check
+                                                        </div>
+                                                    </div>
+                                                    <span className="result-status-badge absent">ABSENT</span>
+                                                </div>
+                                            ))
+                                        }
+                                        {filteredValidationRoster.filter(s => s.final_status === 'ABSENT').length === 0 && (
+                                            <div className="result-empty">All students are present! 🎉</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="validation-grid">
+                        {/* Column 1: Roster Panel */}
+                        <div className="roster-panel">
+                            <h3 className="panel-title">Active Session Ledger</h3>
+                            <p className="panel-hint">Click student row to toggle compliance status manually (while active/unfinalised)</p>
+                            
+                            <div className="roster-list">
+                                {filteredValidationRoster.length > 0 ? (
+                                    filteredValidationRoster.map(student => {
+                                        const statusClass = student.final_status.toLowerCase();
+                                        const isUnderLimit = student.cumulative_percentage < 75;
+                                        
+                                        return (
+                                            <div key={student.student_id} className="roster-item-wrapper">
+                                                <div 
+                                                    className={`roster-item ${statusClass}`}
+                                                    onClick={() => toggleRosterStatus(student.student_id)}
+                                                >
+                                                    <div className="student-details">
+                                                        <div className={`status-led ${statusClass}`}></div>
+                                                        <div>
+                                                            <div className={`student-name ${isUnderLimit ? 'warn' : ''}`}>
+                                                                {student.full_name}
+                                                            </div>
+                                                            <div className={`student-usn ${isUnderLimit ? 'warn' : ''}`}>
+                                                                USN: {student.student_id.substring(0, 8).toUpperCase()}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="status-meta">
+                                                        <span className="checks-count">
+                                                            Detected: {student.detected_count} / {student.total_checks}
+                                                        </span>
+                                                        <span className="checks-count" style={{ color: isUnderLimit ? '#f87171' : '#64748b' }}>
+                                                            Compliance: {student.cumulative_percentage}%
+                                                        </span>
+                                                        <span className={`status-tag ${statusClass}`}>
+                                                            {student.final_status}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Excuse attachments for teacher review */}
+                                                {student.absence_reason && (
+                                                    <div className="excuse-attachment">
+                                                        <p className="excuse-text">
+                                                            <strong>Excuse Statement:</strong> "{student.absence_reason}"
+                                                        </p>
+                                                        <div className="excuse-actions">
+                                                            <div>
+                                                                Status: <span className={`excuse-status-tag ${student.reason_status?.toLowerCase() || 'pending'}`}>
+                                                                    {student.reason_status || 'PENDING'}
+                                                                </span>
+                                                            </div>
+                                                            {student.reason_status === 'PENDING' && (
+                                                                <div className="action-buttons">
+                                                                    <button 
+                                                                        onClick={(e) => { e.stopPropagation(); handleUpdateExcuseStatus(student.student_id, 'APPROVED'); }} 
+                                                                        className="approve-excuse-btn"
+                                                                    >
+                                                                        Approve
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={(e) => { e.stopPropagation(); handleUpdateExcuseStatus(student.student_id, 'REJECTED'); }} 
+                                                                        className="reject-excuse-btn"
+                                                                    >
+                                                                        Reject
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <div className="empty-roster">No students loaded. Select a slot to view roster.</div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Column 2: Breach Panel */}
+                        <div className="breach-panel">
+                            <h3 className="panel-title warn">Attendance Risk Board</h3>
+                            <p className="panel-desc">Students with cumulative attendance under the 75% threshold who will trigger Twilio alerts on absence.</p>
+                            
+                            <div className="breach-list">
+                                {breachRoster.length > 0 ? (
+                                    breachRoster.map(student => (
+                                        <div key={student.student_id} className="breach-card">
+                                            <div className="student-details">
+                                                <div className="status-led absent"></div>
+                                                <div>
+                                                    <div className="student-name warn">{student.full_name}</div>
+                                                    <div className="student-usn warn">USN: {student.student_id.substring(0, 8).toUpperCase()}</div>
+                                                </div>
+                                            </div>
+                                            <div className="breach-stats">
+                                                <span className="percentage-red">{student.cumulative_percentage}%</span>
+                                                <span className="risk-label">At Risk</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="empty-breach">No critical compliance breaches.</div>
+                                )}
+                            </div>
+>>>>>>> 4f4e530 (attandance)
                         </div>
                         <span style={auditSubStyle}>Requires admin dispatch</span>
                     </div>
