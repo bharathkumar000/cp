@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '../../../../utils/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { withCors } from '../../../../utils/cors';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,125 @@ const usnToUuid: Record<string, string> = {
     '4VV25EC003': '00000000-0000-0000-0000-000000000009',
 };
 
+// All known student IDs for ledger computation
+const ALL_STUDENT_IDS = [
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000002',
+    '00000000-0000-0000-0000-000000000003',
+    '00000000-0000-0000-0000-000000000007',
+    '00000000-0000-0000-0000-000000000008',
+    '00000000-0000-0000-0000-000000000009',
+];
+
+const studentNames: Record<string, string> = {
+    '00000000-0000-0000-0000-000000000001': 'Bharath Kumar A (bk@vvce)',
+    '00000000-0000-0000-0000-000000000002': 'Ananya Yk (ananya@vvce)',
+    '00000000-0000-0000-0000-000000000003': 'Riddhi (riddhi@vvce)',
+    '00000000-0000-0000-0000-000000000007': 'Rishith (rishith@vvce)',
+    '00000000-0000-0000-0000-000000000008': 'Bharath P (bp@vvce)',
+    '00000000-0000-0000-0000-000000000009': 'Anagha (anagha@vvce)'
+};
+
+// Local file path for storing snapshot data (used when Supabase is unavailable)
+const LOCAL_DATA_DIR = path.join(process.cwd(), 'Facerecognition');
+const SNAPSHOTS_FILE = path.join(LOCAL_DATA_DIR, 'live_snapshots.json');
+const LEDGER_FILE = path.join(LOCAL_DATA_DIR, 'live_ledger.json');
+
+interface Snapshot {
+    slot_id: string;
+    check_number: number;
+    detected_students: string[];
+    captured_at: string;
+}
+
+interface LedgerEntry {
+    student_id: string;
+    slot_id: string;
+    session_date: string;
+    detected_count: number;
+    total_checks: number;
+    final_status: string;
+    updated_at: string;
+}
+
+function readSnapshots(): Snapshot[] {
+    try {
+        if (fs.existsSync(SNAPSHOTS_FILE)) {
+            return JSON.parse(fs.readFileSync(SNAPSHOTS_FILE, 'utf-8'));
+        }
+    } catch (e) {
+        console.error('Error reading snapshots file:', e);
+    }
+    return [];
+}
+
+function writeSnapshots(snapshots: Snapshot[]) {
+    try {
+        fs.writeFileSync(SNAPSHOTS_FILE, JSON.stringify(snapshots, null, 2));
+    } catch (e) {
+        console.error('Error writing snapshots file:', e);
+    }
+}
+
+function readLedger(): LedgerEntry[] {
+    try {
+        if (fs.existsSync(LEDGER_FILE)) {
+            return JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf-8'));
+        }
+    } catch (e) {
+        console.error('Error reading ledger file:', e);
+    }
+    return [];
+}
+
+function writeLedger(ledger: LedgerEntry[]) {
+    try {
+        fs.writeFileSync(LEDGER_FILE, JSON.stringify(ledger, null, 2));
+    } catch (e) {
+        console.error('Error writing ledger file:', e);
+    }
+}
+
+async function trySupabaseWrite(slot_id: string, check_number: number, detectedIds: string[], teacher_id?: string): Promise<boolean> {
+    try {
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        if (!supabaseKey || !process.env.NEXT_PUBLIC_SUPABASE_URL) return false;
+
+        const supabase = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            supabaseKey,
+            { auth: { persistSession: false, autoRefreshToken: false } }
+        );
+
+        // Test if Supabase is accessible and tables exist
+        const { error: testError } = await supabase
+            .from('attendance_snapshots')
+            .select('snapshot_id')
+            .limit(1);
+        
+        if (testError) {
+            console.log('[Snapshot API] Supabase table check failed, using local storage:', testError.message);
+            return false;
+        }
+
+        // Insert snapshot
+        const { error: snapshotError } = await supabase
+            .from('attendance_snapshots')
+            .insert({ slot_id, check_number, detected_students: detectedIds });
+
+        if (snapshotError) {
+            console.log('[Snapshot API] Supabase insert failed:', snapshotError.message);
+            return false;
+        }
+
+        console.log('[Snapshot API] ✅ Supabase write succeeded');
+        return true;
+    } catch (err) {
+        console.log('[Snapshot API] Supabase unavailable, using local storage');
+        return false;
+    }
+}
+
 export const POST = withCors(async (request: NextRequest) => {
     try {
         const body = await request.json();
@@ -28,171 +149,86 @@ export const POST = withCors(async (request: NextRequest) => {
             return NextResponse.json({ message: 'Missing required parameters' }, { status: 400 });
         }
 
-        const supabase = await createClient();
-
         // 1. Resolve student USNs to UUIDs
         const detectedIds = present_usns
-            .map(usn => usnToUuid[usn] || usn)
+            .map((usn: string) => usnToUuid[usn] || usn)
             .filter(Boolean);
 
-        // 2. Log the snapshot record
-        const { error: snapshotError } = await supabase
-            .from('attendance_snapshots')
-            .insert({
-                slot_id,
-                check_number,
-                detected_students: detectedIds
-            });
+        console.log(`[Snapshot API] Check #${check_number} - Detected students: ${detectedIds.join(', ')}`);
 
-        if (snapshotError) {
-            console.error('Error inserting snapshot:', snapshotError);
-            return NextResponse.json({ message: snapshotError.message }, { status: 500 });
-        }
+        // 2. Try Supabase first, fall back to local file storage
+        const supabaseOk = await trySupabaseWrite(slot_id, check_number, detectedIds, teacher_id);
 
-        // 3. Fetch all active student profiles to build the ledger roster
-        const { data: students, error: studentError } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('role', 'student');
-
-        if (studentError || !students) {
-            console.error('Error fetching students:', studentError);
-            return NextResponse.json({ message: 'Failed to fetch student list' }, { status: 500 });
-        }
-
+        // 3. ALWAYS write to local file (serves as primary data source for the frontend)
         const sessionDate = new Date().toISOString().split('T')[0];
+        
+        // Write snapshot
+        const snapshots = readSnapshots();
+        snapshots.push({
+            slot_id,
+            check_number,
+            detected_students: detectedIds,
+            captured_at: new Date().toISOString()
+        });
+        writeSnapshots(snapshots);
 
-        // 4. Fetch all snapshots for this slot today to calculate precise final status
-        const { data: daySnapshots, error: daySnapshotsError } = await supabase
-            .from('attendance_snapshots')
-            .select('check_number, detected_students')
-            .eq('slot_id', slot_id)
-            .gte('captured_at', `${sessionDate}T00:00:00.000Z`);
+        // 4. Recompute ledger from ALL snapshots for this slot today
+        const todaySnapshots = snapshots.filter(s => 
+            s.slot_id === slot_id && s.captured_at.startsWith(sessionDate)
+        );
 
-        const snapshotsList = daySnapshots || [];
-
-        // Build a map of studentId -> set of check numbers they were detected in
+        // Build detection map: student_id -> set of check_numbers
         const studentDetections: Record<string, Set<number>> = {};
-        for (const student of students) {
-            studentDetections[student.id] = new Set<number>();
+        for (const sid of ALL_STUDENT_IDS) {
+            studentDetections[sid] = new Set();
         }
-
-        for (const snap of snapshotsList) {
-            const checkNum = snap.check_number;
-            const detectedArr = snap.detected_students || [];
-            for (const sId of detectedArr) {
-                if (studentDetections[sId]) {
-                    studentDetections[sId].add(checkNum);
+        for (const snap of todaySnapshots) {
+            for (const sid of snap.detected_students) {
+                if (studentDetections[sid]) {
+                    studentDetections[sid].add(snap.check_number);
                 }
             }
         }
 
-        // 5. Update the ledger for each student
-        for (const student of students) {
-            const detections = studentDetections[student.id];
-            const newDetectedCount = detections.size;
-            const hasInitialCheck = detections.has(1) || detections.has(2);
-
-            // Calculate status based on user rules:
-            // - if the person gets four screens out of five (4 or 5 checks), he should be marked as present.
-            // - if he didn't get even one of the initial two (checks 1 and 2), he should get as late.
-            // - if it is not checked in any of the five captures (0 checks), it should come as absent.
+        // Compute ledger
+        const ledger: LedgerEntry[] = ALL_STUDENT_IDS.map(studentId => {
+            const detected = studentDetections[studentId];
+            const detectedCount = detected.size;
             let finalStatus = 'ABSENT';
-            if (newDetectedCount >= 4) {
-                // Note: mathematically, if you missed both initial checks (1 and 2), your count is at most 3.
-                // So if newDetectedCount is >= 4, the student is guaranteed to have at least one initial check.
+            if (detectedCount >= 4) {
                 finalStatus = 'PRESENT';
-            } else if (newDetectedCount >= 1) {
+            } else if (detectedCount >= 1) {
                 finalStatus = 'LATE';
             }
+            return {
+                student_id: studentId,
+                slot_id,
+                session_date: sessionDate,
+                detected_count: detectedCount,
+                total_checks: 5,
+                final_status: finalStatus,
+                updated_at: new Date().toISOString()
+            };
+        });
 
-            // Fetch existing ledger row
-            const { data: existingLedger } = await supabase
-                .from('attendance_session_ledger')
-                .select('*')
-                .eq('student_id', student.id)
-                .eq('slot_id', slot_id)
-                .eq('session_date', sessionDate)
-                .single();
-
-            let ledgerId = existingLedger?.ledger_id;
-
-            if (existingLedger) {
-                // Update
-                const { error: updateError } = await supabase
-                    .from('attendance_session_ledger')
-                    .update({
-                        detected_count: newDetectedCount,
-                        final_status: finalStatus,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('ledger_id', ledgerId);
-
-                if (updateError) {
-                    console.error(`Error updating ledger for student ${student.id}:`, updateError);
-                }
-            } else {
-                // Insert new row
-                const { error: insertError } = await supabase
-                    .from('attendance_session_ledger')
-                    .insert({
-                        student_id: student.id,
-                        slot_id,
-                        session_date: sessionDate,
-                        detected_count: newDetectedCount,
-                        total_checks: 5,
-                        final_status: finalStatus
-                    });
-
-                if (insertError) {
-                    console.error(`Error inserting ledger for student ${student.id}:`, insertError);
-                }
-            }
-        }
-
-        // 6. Send detection alerts to notifications table
-        const teacherUidsToNotify = new Set<string>();
-        if (teacher_id) {
-            teacherUidsToNotify.add(teacher_id);
-        }
+        writeLedger(ledger);
         
-        // Also find all teachers in profiles table to notify them as fallback
-        const { data: teachers } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('role', 'teacher');
-        if (teachers) {
-            for (const t of teachers) {
-                teacherUidsToNotify.add(t.id);
+        console.log(`[Snapshot API] ✅ Local snapshot & ledger written. Supabase: ${supabaseOk ? 'synced' : 'offline'}`);
+        
+        // 5. Log detection summary
+        for (const entry of ledger) {
+            if (entry.detected_count > 0) {
+                const name = studentNames[entry.student_id] || entry.student_id;
+                console.log(`  ${name}: ${entry.detected_count}/5 → ${entry.final_status}`);
             }
         }
 
-        const studentNames: Record<string, string> = {
-            '00000000-0000-0000-0000-000000000001': 'Bharath Kumar A (bk@vvce)',
-            '00000000-0000-0000-0000-000000000002': 'Ananya Yk (ananya@vvce)',
-            '00000000-0000-0000-0000-000000000003': 'Riddhi (riddhi@vvce)',
-            '00000000-0000-0000-0000-000000000007': 'Rishith (rishith@vvce)',
-            '00000000-0000-0000-0000-000000000008': 'Bharath P (bp@vvce)',
-            '00000000-0000-0000-0000-000000000009': 'Anagha (anagha@vvce)'
-        };
-
-        if (detectedIds.length > 0) {
-            const detectedNamesList = detectedIds.map(id => studentNames[id] || `Student (${id.substring(0, 8)})`);
-            const alertMessage = `Checkpoint #${check_number}: Student(s) present: ${detectedNamesList.join(', ')}.`;
-            
-            for (const tId of teacherUidsToNotify) {
-                await supabase
-                    .from('notifications')
-                    .insert({
-                        user_id: tId,
-                        title: 'Face Detected 📸',
-                        message: alertMessage,
-                        type: 'attendance'
-                    });
-            }
-        }
-
-        return NextResponse.json({ message: 'Snapshot telemetry logged successfully' }, { status: 200 });
+        return NextResponse.json({ 
+            message: 'Snapshot telemetry logged successfully',
+            source: supabaseOk ? 'supabase' : 'local',
+            check_number,
+            detected_count: detectedIds.length
+        }, { status: 200 });
 
     } catch (err: any) {
         console.error('Snapshot API execution failed:', err);
