@@ -8,13 +8,14 @@ import argparse
 import requests
 import cv2
 import face_recognition
+from datetime import datetime, timezone
 
 # ---------------------------------------------------------
 # CONFIGURATION & PARAMETERS
 # ---------------------------------------------------------
 
 API_GATEWAY_URL = "http://localhost:3000/api/attendance/snapshot"
-DEFAULT_SLOT_ID = "00000000-0000-0000-0000-000000000002" # Mock Slot ID (corresponds to bp@vvce timetable slot)
+DEFAULT_SLOT_ID = "00000000-0000-0000-0000-000000000002"  # Mock Slot ID
 
 # Mapping database student names to USNs
 NAME_TO_USN = {
@@ -31,15 +32,16 @@ NAME_TO_USN = {
     "rishi": "089"
 }
 
+
 def generate_random_check_timestamps(duration, count=5):
     """Generates distinct, sorted random timestamps within the duration (excluding final 10% buffer)"""
-    end_limit = int(duration * 0.9) # Exclude final 10% buffer
+    end_limit = int(duration * 0.9)  # Exclude final 10% buffer
     if end_limit <= count:
-        # Fallback if duration is too short to select unique samples
         return sorted([random.randint(1, max(1, duration - 1)) for _ in range(count)])
     random_times = random.sample(range(1, end_limit), count)
     random_times.sort()
     return random_times
+
 
 def run_face_recognition(encodings_path, duration_seconds=5):
     """Opens webcam briefly, detects faces, matches against trained pickle encodings, and returns USNs"""
@@ -47,7 +49,7 @@ def run_face_recognition(encodings_path, duration_seconds=5):
     
     if not os.path.exists(encodings_path):
         print(f"[Warning] Encodings file '{encodings_path}' not found. Running in simulated fallback mode.")
-        return ["4VV25EC032"] # Fallback mock
+        return ["032"]  # Fallback mock
 
     # Load reference encodings
     try:
@@ -55,6 +57,7 @@ def run_face_recognition(encodings_path, duration_seconds=5):
             data = pickle.load(f)
         known_face_encodings = data["encodings"]
         known_face_names = data["names"]
+        print(f"[INFO] Loaded {len(known_face_encodings)} face encodings.")
     except Exception as e:
         print(f"[Error] Failed to load encodings: {e}")
         return []
@@ -62,7 +65,7 @@ def run_face_recognition(encodings_path, duration_seconds=5):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         print("[Error] Cannot open webcam. Running in simulated fallback mode.")
-        return ["4VV25EC012"]
+        return ["012"]
 
     detected_names = set()
     start_time = time.time()
@@ -134,7 +137,6 @@ def run_face_recognition(encodings_path, duration_seconds=5):
     # Map matched names to USNs
     present_usns = []
     for name in detected_names:
-        # Robust match: exact key match, key is a substring of name, or name is a substring of key
         usn = None
         for key, val in NAME_TO_USN.items():
             if key == name or key in name or name in key:
@@ -149,15 +151,18 @@ def run_face_recognition(encodings_path, duration_seconds=5):
 
     return present_usns
 
+
 def scheduler_loop(slot_id, duration_seconds, is_demo, encodings_path, api_url, teacher_id):
     print("=" * 60)
     print("   CONNECT & PREP - RANDOMIZED TELEMETRY VERIFICATION ENGINE")
     print("=" * 60)
-    print(f"Mode: {'DEMO (60 Seconds Session)' if is_demo else 'PRODUCTION (60 Minutes Session)'}")
-    print(f"Total Session Duration: {duration_seconds} seconds")
-    print(f"Target API Endpoint: {api_url}")
+    print(f"Mode: {'DEMO' if is_demo else 'PRODUCTION'} ({duration_seconds}s)")
+    print(f"Target API: {api_url}")
     print(f"Slot ID: {slot_id}")
-    print(f"Teacher ID: {teacher_id}")
+    print(f"Teacher ID: {teacher_id or '(none)'}")
+    
+    session_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    print(f"Session Date: {session_date}")
     
     check_targets = generate_random_check_timestamps(duration_seconds, count=5)
     print(f"Random Check Times Scheduled at (Seconds): {check_targets}")
@@ -169,7 +174,6 @@ def scheduler_loop(slot_id, duration_seconds, is_demo, encodings_path, api_url, 
     while current_check_index < 5:
         elapsed = time.time() - start_time
         
-        # Draw dynamic CLI countdown
         time_left = int(check_targets[current_check_index] - elapsed)
         if time_left > 0:
             sys.stdout.write(f"\r[STATUS] Next check (#{current_check_index + 1}) in {time_left}s...  ")
@@ -177,12 +181,12 @@ def scheduler_loop(slot_id, duration_seconds, is_demo, encodings_path, api_url, 
         else:
             print(f"\n\n[TRIGGER] Executing Validation Check #{current_check_index + 1}!")
             
-            # 1. Run actual camera validation (shorter camera time if total duration is small)
+            # 1. Run actual camera validation
             cam_duration = 3 if duration_seconds <= 20 else 4
             detected_usns = run_face_recognition(encodings_path, duration_seconds=cam_duration)
-            print(f"[telemetry] Present students: {detected_usns}")
+            print(f"[CAPTURE] Detected in frame: {detected_usns} -> USNs: {detected_usns}")
             
-            # 2. POST telemetry payload to Next.js API
+            # 2. POST telemetry payload to Next.js API (which writes to local files)
             payload = {
                 "slot_id": slot_id,
                 "check_number": current_check_index + 1,
@@ -191,20 +195,26 @@ def scheduler_loop(slot_id, duration_seconds, is_demo, encodings_path, api_url, 
             }
             
             try:
-                res = requests.post(api_url, json=payload, timeout=5)
+                res = requests.post(api_url, json=payload, timeout=10)
                 if res.status_code == 200:
-                    print(f"[SUCCESS] Telemetry snapshot #{current_check_index + 1} synced to backend!")
+                    response_data = res.json()
+                    source = response_data.get('source', 'unknown')
+                    detected_count = response_data.get('detected_count', 0)
+                    print(f"[SUCCESS] ✅ Snapshot #{current_check_index + 1} logged! (Source: {source}, Detected: {detected_count})")
                 else:
-                    print(f"[FAILED] API returned status {res.status_code}: {res.text}")
+                    print(f"[FAILED] ❌ API returned status {res.status_code}: {res.text}")
             except Exception as e:
-                print(f"[OFFLINE] Caching snapshot locally. API failed: {e}")
+                print(f"[OFFLINE] ❌ API connection failed: {e}")
                 
             current_check_index += 1
             print("-" * 60)
             
         time.sleep(1)
 
-    print("\n[COMPLETE] All 5 randomized checks finished successfully!")
+    print(f"\n{'=' * 60}")
+    print("[COMPLETE] ✅ All 5 randomized checks finished successfully!")
+    print(f"{'=' * 60}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Connect & Prep Attendance Randomizer")
@@ -216,7 +226,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # 60 seconds for demo (1 minute), 3600 seconds for production (1 hour), or custom duration
     if args.duration > 0:
         duration = args.duration
     else:
