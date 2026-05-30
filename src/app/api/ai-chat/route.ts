@@ -12,11 +12,85 @@ export async function POST(req: Request) {
         }
 
         // System prompt to enforce academic study-only focus
-        const systemPrompt = `You are an expert AI tutor for the Connect & Prep college platform.
+        const systemPrompt = `You are an expert AI academic tutor for the Connect & Prep college platform.
 Strict Policy:
-- Answer ONLY study-related, academic, exam preparation, or educational questions.
-- If the user asks non-academic, casual, off-topic, or personal questions (e.g. movies, sports, jokes, gaming, general chit-chat), you must politely decline to answer, stating: "I can only help with academic and study-related topics."`;
+- You must ONLY answer questions related to academics, studies, exams, course concepts, engineering, mathematics, computer science, and study-related topics.
+- Under NO circumstances are you allowed to answer off-topic, casual, personal, social, or general questions (e.g. movies, entertainment, sports, jokes, creative writing, general programming questions unrelated to study, chat-bot identities, personal details, or general chit-chat).
+- If a query is not strictly academic, study-related, or educational, you MUST decline to answer. You must reply exactly: "I can only help with academic and study-related topics." and nothing else. Do not explain your policy or add conversational fluff; keep the rejection short, professional, and direct.`;
 
+        const apiKey = process.env.GEMINI_API_KEY;
+
+        if (apiKey) {
+            try {
+                console.log('[AI Chat] Utilizing Gemini API for request...');
+                
+                // Format history for Gemini chat API
+                const formattedContents = [
+                    ...history.map((m: any) => ({
+                        role: m.sender === 'user' ? 'user' : 'model',
+                        parts: [{ text: m.text }]
+                    })),
+                    {
+                        role: 'user',
+                        parts: [{ text: message }]
+                    }
+                ];
+
+                // Append base64 image if present
+                if (image) {
+                    const mimeType = image.split(';')[0].split(':')[1] || 'image/jpeg';
+                    const base64Data = image.split(',')[1] || image;
+                    
+                    const lastUserContent = formattedContents[formattedContents.length - 1];
+                    lastUserContent.parts.push({
+                        inlineData: {
+                            mimeType,
+                            data: base64Data
+                        }
+                    } as any);
+                }
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: formattedContents,
+                        systemInstruction: {
+                            parts: [
+                                { text: systemPrompt }
+                            ]
+                        },
+                        generationConfig: {
+                            temperature: 0.15, // Low temperature for high instruction compliance
+                            maxOutputTokens: 2048
+                        }
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`Gemini API responded with status ${response.status}: ${errText}`);
+                }
+
+                const data = await response.json();
+                const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.';
+                
+                return NextResponse.json({ text: reply }, { status: 200 });
+
+            } catch (geminiErr: any) {
+                console.error('[AI Chat] Gemini API failed, falling back to local fallback rules...', geminiErr);
+            }
+        }
+
+        // Fallback: local Ollama Server or simulated demo engine
         // Format history for Ollama chat API
         const ollamaMessages = [
             { role: 'system', content: systemPrompt },
@@ -34,7 +108,7 @@ Strict Policy:
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 180000); // 180-second timeout (3 minutes) for local loading
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout for local Ollama
 
             const response = await fetch('http://127.0.0.1:11434/api/chat', {
                 method: 'POST',
@@ -44,7 +118,7 @@ Strict Policy:
                     messages: ollamaMessages,
                     stream: false,
                     options: {
-                        temperature: 0.7
+                        temperature: 0.2
                     }
                 }),
                 signal: controller.signal
@@ -63,7 +137,7 @@ Strict Policy:
             return NextResponse.json({ text: reply }, { status: 200 });
 
         } catch (ollamaErr: any) {
-            console.error('Ollama connection error:', ollamaErr);
+            console.log('[AI Chat] Ollama offline, utilizing static academic verification rules...', ollamaErr.message);
             
             const academicKeywords = [
                 'voltage', 'diode', 'circuit', 'pcb', 'transistor', 'capacitor', 'resistor', 'network',
@@ -72,40 +146,26 @@ Strict Policy:
                 'electrical', 'microcontroller', 'embedded', 'sensor', 'programming', 'code', 'algorithm',
                 'op-amp', 'amplifier', 'altium', 'kicad', 'schematic', 'soldering', 'induction', 'transformer',
                 'motor', 'maxwell', 'electromagnetic', 'wave', 'antenna', 'laser', 'fiber', '5g', 'lte', 'study',
-                'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition'
+                'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition', 'homework', 'assignment'
             ];
             
             const cleanText = message.toLowerCase();
-            const isAcademic = academicKeywords.some(keyword => cleanText.includes(keyword)) || message.length > 30;
+            const isAcademic = academicKeywords.some(keyword => cleanText.includes(keyword)) || message.length > 35;
 
             let fallbackMessage = '';
             
             if (isAcademic) {
-                fallbackMessage = `⚠️ **[Local Ollama Server Offline - Demo Tutor Mode]**
+                fallbackMessage = `⚠️ **[Prepcare Tutor - Offline Study Mode]**
+                
+Your query relates to core engineering studies. To enable dynamic responses, please configure your \`GEMINI_API_KEY\` in your \`.env\` file.
 
-Could not connect to your local Ollama service at **http://127.0.0.1:11434**. To enable fully private dynamic AI, start Ollama and run \`ollama pull gemma4:latest\`.
+Here is a study outline:
+- **Concept**: Ohm's Law ($V = I \\times R$) and circuit layout guidelines.
+- **Formulas**: $f_c = \\frac{1}{2\\pi RC}$ for lowpass cutoff frequencies.
 
-Here is a study assistant response for your query *"${message}"*:
-
-- **Topic Overview**: Your query relates to core engineering study areas (Electronics, Electrical, PCB, or Communication Networks).
-- **Core Concept**: 
-  1. For circuits/hardware, ensure proper ground plane separation and trace impedance matching.
-  2. For networks, follow layered models (OSI/TCP-IP) to guarantee reliable routing and message framing.
-- **Formulas & Rules**: 
-  - V = I * R (Ohm's Law)
-  - f_c = 1 / (2 * pi * R * C) (Cutoff frequency for active filters)
-
-*Ask another study question or start your local Ollama server to unlock full generative AI responses.*`;
+*Provide a valid Gemini API key in your configuration for complete answers.*`;
             } else {
-                fallbackMessage = `⚠️ **[Local Ollama Server Offline - Non-Academic Query Blocked]**
-
-Could not connect to your local Ollama service at **http://127.0.0.1:11434**.
-
-**Prepcare Tutor Policy:**
-I received your query: *"${message}"*.
-I can only help with academic and study-related topics (like Electronics, Electricals, PCB Designing, or Communication Networks).
-
-Please make sure to query me only with academic problems. Once Ollama is running with \`gemma4:latest\`, we will utilize your local GPU/CPU for fully private, locally-processed answers!`;
+                fallbackMessage = `I can only help with academic and study-related topics.`;
             }
             
             return NextResponse.json({ text: fallbackMessage, offline: true }, { status: 200 });
