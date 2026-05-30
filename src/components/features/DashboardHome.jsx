@@ -14,12 +14,8 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
 } from 'recharts';
 import './DashboardHome.css';
-
 const DashboardHome = () => {
     const { user } = useAuth();
-    const router = useRouter();
-    const role = user?.role;
-
     // =========================================================================
     // ADMIN DASHBOARD STATES & HANDLERS
     // =========================================================================
@@ -36,7 +32,6 @@ const DashboardHome = () => {
     const [toastMessage, setToastMessage] = useState('');
     const [activeModalTeacher, setActiveModalTeacher] = useState(null);
     const [reminderText, setReminderText] = useState('');
-
     // Defaulters List state (to allow dynamic "Send Warning" status updates)
     const [defaulters, setDefaulters] = useState([
         { usn: '4VV25EC002', name: 'Bharath P', branch: 'ECE', sem: '2 - Semester', section: 'A', attendance: 63.89, status: 'Active' },
@@ -45,7 +40,6 @@ const DashboardHome = () => {
         { usn: '4VV25ME008', name: 'Varun K', branch: 'ME', sem: '2 - Semester', section: 'B', attendance: 66.12, status: 'Active' },
         { usn: '4VV25EC003', name: 'Anagha', branch: 'ECE', sem: '1 - Semester', section: 'A', attendance: 60.00, status: 'Active' },
     ]);
-
     // Teacher Syllabus data state (allows active HOD actions)
     const [teachers, setTeachers] = useState([
         { id: 1, name: 'Dr. Bhavana', subject: 'Applied Mathematics II', syllabus: 85, resources: 14, grading: '2 Days', status: 'Good' },
@@ -53,7 +47,6 @@ const DashboardHome = () => {
         { id: 3, name: 'Prof. Alan', subject: 'C Programming Lab', syllabus: 65, resources: 6, grading: '5 Days', status: 'Delayed' },
         { id: 4, name: 'Prof. Jones', subject: 'Communication Skills - 2', syllabus: 80, resources: 12, grading: '3 Days', status: 'Good' },
     ]);
-
     // Teacher Leaderboard Rep state
     const [teacherXP, setTeacherXP] = useState([
         { id: 1, name: 'Dr. White', xp: 2450, rank: 1 },
@@ -61,20 +54,17 @@ const DashboardHome = () => {
         { id: 3, name: 'Prof. Jones', xp: 1850, rank: 3 },
         { id: 4, name: 'Prof. Alan', xp: 1200, rank: 4 }
     ]);
-
     // AI Academic Risk predictor state
     const [atRiskStudents, setAtRiskStudents] = useState([
         { id: 'rk1', name: 'Rohan Gowda (ECE)', risk: 87, reason: 'Low lab engagement & attendance drop', counselor: false },
         { id: 'rk2', name: 'Bharath P (ECE)', risk: 78, reason: 'Consecutive missed morning classes', counselor: false },
         { id: 'rk3', name: 'Varun K (ME)', risk: 72, reason: 'Missed 3 calculus assignments', counselor: false }
     ]);
-
     // Room scheduler optimization state
     const [roomConflicts, setRoomConflicts] = useState([
         { id: 'rc1', room: 'Room L-301', time: '10:15 AM Monday', classes: 'Math II & Electronics', status: 'Conflict' },
         { id: 'rc2', room: 'CS-Lab 2', time: '02:00 PM Wednesday', classes: 'C-Lab & Database Lab', status: 'Conflict' }
     ]);
-
     // Simulated tap generator
     const simulateRfidTap = () => {
         if (!rfidActive) {
@@ -94,43 +84,35 @@ const DashboardHome = () => {
         ]);
         triggerToast(`Simulated RFID Tap received: ${randomName}`);
     };
-
     const triggerToast = (msg) => {
         setToastMessage(msg);
         setTimeout(() => setToastMessage(''), 4500);
     };
-
     const handleSendWarning = (usn, studentName) => {
         setDefaulters(prev => prev.map(d => d.usn === usn ? { ...d, status: 'Warning Sent' } : d));
         triggerToast(`WhatsApp notification & official alert sent to ${studentName}'s parents!`);
     };
-
     const handleTeacherBonusXP = (id, name) => {
         setTeacherXP(prev => prev.map(t => t.id === id ? { ...t, xp: t.xp + 100 } : t).sort((a, b) => b.xp - a.xp));
         triggerToast(`Rewarded 100 bonus reputation XP to ${name} for stellar teaching contributions!`);
     };
-
     const handleAssignCounselor = (id, name) => {
         setAtRiskStudents(prev => prev.map(s => s.id === id ? { ...s, counselor: true } : s));
         triggerToast(`Assigned official student counselor to investigate and assist ${name}!`);
     };
-
     const handleResolveConflict = (id, room) => {
         setRoomConflicts(prev => prev.filter(rc => rc.id !== id));
         triggerToast(`AI Auto-Scheduler resolved ${room} conflict! Relocated backup class to Seminar Hall 2.`);
     };
-
     const handleOpenReminder = (teacher) => {
         setActiveModalTeacher(teacher);
         setReminderText(`Dear ${teacher.name}, our academic diagnostic scanner reports that syllabus completion for ${teacher.subject} is at ${teacher.syllabus}%. Please verify and speed up note upload sessions if necessary.`);
     };
-
     const handleSendReminder = () => {
         if (!activeModalTeacher) return;
         triggerToast(`Syllabus acceleration audit warning sent to ${activeModalTeacher.name}!`);
         setActiveModalTeacher(null);
     };
-
     // Filter Defaulters List
     const filteredDefaulters = defaulters.filter(d => {
         const matchesBranch = selectedBranch === 'All' || d.branch === selectedBranch;
@@ -139,7 +121,6 @@ const DashboardHome = () => {
         const matchesQuery = d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.usn.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesBranch && matchesSem && matchesSection && matchesQuery;
     });
-
     // =========================================================================
     // STUDENT & TEACHER MOCK DATA
     // =========================================================================
@@ -147,12 +128,10 @@ const DashboardHome = () => {
         { name: 'Present', value: 85, color: '#4caf50' },
         { name: 'Absent', value: 15, color: '#f44336' }
     ];
-
     const taskData = [
         { name: 'Completed', value: 12, color: '#ff9800' },
         { name: 'Pending', value: 5, color: '#000000' }
     ];
-
     const studyHoursData = [
         { day: 'Mon', hours: 3 },
         { day: 'Tue', hours: 5 },
@@ -162,11 +141,10 @@ const DashboardHome = () => {
         { day: 'Sat', hours: 3 },
         { day: 'Sun', hours: 1 },
     ];
-
     // Render logic by User Role
-    const isAdmin = user?.role === 'admin';
-    const isTeacher = user?.role === 'teacher';
-
+    const role = user?.role || 'student';
+    const isAdmin = role === 'admin';
+    const isTeacher = role === 'teacher';
     if (isAdmin) {
         return (
             <div className="dashboard-home-container admin-theme animate-enter">
@@ -177,7 +155,6 @@ const DashboardHome = () => {
                         <span>{toastMessage}</span>
                     </div>
                 )}
-
                 {/* Banner */}
                 <div className="welcome-banner">
                     <div>
@@ -189,7 +166,6 @@ const DashboardHome = () => {
                         <span>{new Date().toLocaleDateString('en-GB')}</span>
                     </div>
                 </div>
-
                 {/* KPI stats section */}
                 <div className="stats-grid">
                     <div className="stat-card streak-card" style={{ borderLeft: '4px solid #10b981' }}>
@@ -206,7 +182,6 @@ const DashboardHome = () => {
                             </button>
                         </div>
                     </div>
-
                     <div className="stat-card pending-card" style={{ borderLeft: '4px solid #ef4444' }}>
                         <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(239, 68, 68, 0.15)' }}>
                             <ShieldAlert size={24} color="#ef4444" />
@@ -219,7 +194,6 @@ const DashboardHome = () => {
                             <p className="stat-subtitle">Auto-Calculated by AI</p>
                         </div>
                     </div>
-
                     <div className="stat-card event-card" style={{ borderLeft: '4px solid #fbbf24' }}>
                         <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(251, 191, 36, 0.15)' }}>
                             <Clock size={24} color="#fbbf24" />
@@ -230,7 +204,6 @@ const DashboardHome = () => {
                             <p className="stat-subtitle">CSE / ECE / ME streams</p>
                         </div>
                     </div>
-
                     <div className="stat-card xp-card" style={{ borderLeft: '4px solid #818cf8' }}>
                         <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(129, 140, 248, 0.15)' }}>
                             <Trophy size={24} color="#818cf8" />
@@ -244,7 +217,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 {/* Grid Section 1: Defaulters & Teacher Audits */}
                 <div className="admin-dashboard-two-col-grid">
                     
@@ -259,7 +231,6 @@ const DashboardHome = () => {
                                 {defaulters.length} Defaulters flagged
                             </div>
                         </div>
-
                         {/* Defaulter Filters */}
                         <div className="admin-defaulter-filters">
                             <select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value)}>
@@ -268,19 +239,16 @@ const DashboardHome = () => {
                                 <option value="ECE">Electronics</option>
                                 <option value="ME">Mechanical</option>
                             </select>
-
                             <select value={selectedSem} onChange={(e) => setSelectedSem(e.target.value)}>
                                 <option value="All">All Semesters</option>
                                 <option value="1 - Semester">1st Sem</option>
                                 <option value="2 - Semester">2nd Sem</option>
                             </select>
-
                             <select value={selectedSection} onChange={(e) => setSelectedSection(e.target.value)}>
                                 <option value="All">All Sections</option>
                                 <option value="A">Section A</option>
                                 <option value="B">Section B</option>
                             </select>
-
                             <input 
                                 type="text" 
                                 placeholder="Search by name or USN..." 
@@ -288,7 +256,6 @@ const DashboardHome = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-
                         {/* Defaulters Table */}
                         <div className="admin-table-container">
                             <table className="admin-table">
@@ -329,7 +296,6 @@ const DashboardHome = () => {
                             </table>
                         </div>
                     </div>
-
                     {/* Teacher Work Completion Audit */}
                     <div className="admin-section-card">
                         <div className="admin-section-header">
@@ -338,7 +304,6 @@ const DashboardHome = () => {
                                 <h3>Teacher Syllabus & Grading Audit Report</h3>
                             </div>
                         </div>
-
                         <div className="admin-table-container">
                             <table className="admin-table">
                                 <thead>
@@ -382,7 +347,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 {/* Grid Section 2: Outliers Diagnostic & RFID Simulator */}
                 <div className="admin-dashboard-two-col-grid" style={{ marginTop: '2rem' }}>
                     
@@ -394,7 +358,6 @@ const DashboardHome = () => {
                                 <h3>Classroom & Course Diagnostic Warnings</h3>
                             </div>
                         </div>
-
                         <div className="admin-alert-list">
                             <div className="admin-diagnostic-alert-card danger">
                                 <div className="alert-badge">SEVERE SECTOR ANOMALY</div>
@@ -406,7 +369,6 @@ const DashboardHome = () => {
                                     Investigate & Remap Slot
                                 </button>
                             </div>
-
                             <div className="admin-diagnostic-alert-card warning">
                                 <div className="alert-badge">SYLLABUS GAP WARNING</div>
                                 <div className="alert-content">
@@ -419,7 +381,6 @@ const DashboardHome = () => {
                             </div>
                         </div>
                     </div>
-
                     {/* Hardware RFID Simulator Panel */}
                     <div className="admin-section-card">
                         <div className="admin-section-header">
@@ -431,7 +392,6 @@ const DashboardHome = () => {
                                 Simulate Tap
                             </button>
                         </div>
-
                         <div className="admin-simulator-console">
                             <div className="console-header">
                                 <div className="console-dot green" />
@@ -455,7 +415,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 {/* Grid Section 3: AI risk predictor, Teacher XP, Room Optimizer */}
                 <div className="admin-dashboard-three-col-grid" style={{ marginTop: '2rem' }}>
                     
@@ -491,7 +450,6 @@ const DashboardHome = () => {
                             ))}
                         </div>
                     </div>
-
                     {/* Teacher Reputation Pool */}
                     <div className="admin-section-card">
                         <div className="admin-section-header">
@@ -517,7 +475,6 @@ const DashboardHome = () => {
                             ))}
                         </div>
                     </div>
-
                     {/* Room Conflict Optimizer */}
                     <div className="admin-section-card">
                         <div className="admin-section-header">
@@ -549,7 +506,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 {/* Audit Warning Modal Dialog */}
                 {activeModalTeacher && (
                     <div className="admin-modal-backdrop">
@@ -576,7 +532,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 )}
-
                 <style>{`
                     .admin-theme {
                         padding: 0;
@@ -1215,11 +1170,155 @@ const DashboardHome = () => {
                         background: #4f46e5;
                         box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
                     }
+                    /* ==================== LIGHT THEME OVERRIDES ==================== */
+                    html[data-theme="light"] .admin-theme,
+                    :root[data-theme="light"] .admin-theme {
+                        background-color: #f9fafb !important;
+                    }
+                    html[data-theme="light"] .admin-section-card,
+                    :root[data-theme="light"] .admin-section-card {
+                        background: #ffffff !important;
+                        border-color: #e5e7eb !important;
+                        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+                    }
+                    html[data-theme="light"] .admin-section-card:hover,
+                    :root[data-theme="light"] .admin-section-card:hover {
+                        border-color: #d1d5db !important;
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
+                    }
+                    html[data-theme="light"] .admin-table th,
+                    :root[data-theme="light"] .admin-table th {
+                        color: #4b5563 !important;
+                        border-bottom-color: #e5e7eb !important;
+                    }
+                    html[data-theme="light"] .admin-table td,
+                    :root[data-theme="light"] .admin-table td {
+                        color: #111827 !important;
+                        border-bottom-color: #f3f4f6 !important;
+                    }
+                    html[data-theme="light"] .admin-table tbody tr:hover,
+                    :root[data-theme="light"] .admin-table tbody tr:hover {
+                        background-color: #f9fafb !important;
+                    }
+                    html[data-theme="light"] .admin-section-header,
+                    :root[data-theme="light"] .admin-section-header {
+                        border-bottom-color: #e5e7eb !important;
+                    }
+                    html[data-theme="light"] .admin-defaulter-filters select,
+                    html[data-theme="light"] .admin-defaulter-filters input,
+                    :root[data-theme="light"] .admin-defaulter-filters select,
+                    :root[data-theme="light"] .admin-defaulter-filters input {
+                        background: #ffffff !important;
+                        border-color: #cbd5e1 !important;
+                        color: #111827 !important;
+                    }
+                    html[data-theme="light"] .admin-progress-bar-bg,
+                    :root[data-theme="light"] .admin-progress-bar-bg {
+                        background: #e5e7eb !important;
+                    }
+                    html[data-theme="light"] .admin-diagnostic-alert-card,
+                    :root[data-theme="light"] .admin-diagnostic-alert-card {
+                        border-color: #e5e7eb !important;
+                    }
+                    html[data-theme="light"] .admin-diagnostic-alert-card.danger,
+                    :root[data-theme="light"] .admin-diagnostic-alert-card.danger {
+                        background: #fef2f2 !important;
+                    }
+                    html[data-theme="light"] .admin-diagnostic-alert-card.warning,
+                    :root[data-theme="light"] .admin-diagnostic-alert-card.warning {
+                        background: #fffbeb !important;
+                    }
+                    html[data-theme="light"] .admin-simulator-console,
+                    :root[data-theme="light"] .admin-simulator-console {
+                        background: #f3f4f6 !important;
+                        border-color: #cbd5e1 !important;
+                    }
+                    html[data-theme="light"] .console-header,
+                    :root[data-theme="light"] .console-header {
+                        border-bottom-color: #cbd5e1 !important;
+                        color: #4b5563 !important;
+                    }
+                    html[data-theme="light"] .console-body,
+                    :root[data-theme="light"] .console-body {
+                        color: #16a34a !important;
+                    }
+                    html[data-theme="light"] .c-text,
+                    :root[data-theme="light"] .c-text {
+                        color: #1f2937 !important;
+                    }
+                    html[data-theme="light"] .admin-risk-student-card,
+                    :root[data-theme="light"] .admin-risk-student-card {
+                        background: #f9fafb !important;
+                        border-color: #e5e7eb !important;
+                    }
+                    html[data-theme="light"] .admin-risk-student-card:hover,
+                    :root[data-theme="light"] .admin-risk-student-card:hover {
+                        background: #f3f4f6 !important;
+                        border-color: #cbd5e1 !important;
+                    }
+                    html[data-theme="light"] .admin-teacher-rep-row,
+                    :root[data-theme="light"] .admin-teacher-rep-row {
+                        background: #f9fafb !important;
+                        border-color: #e5e7eb !important;
+                    }
+                    html[data-theme="light"] .admin-teacher-rep-row:hover,
+                    :root[data-theme="light"] .admin-teacher-rep-row:hover {
+                        background: #f3f4f6 !important;
+                    }
+                    html[data-theme="light"] .admin-conflict-card,
+                    :root[data-theme="light"] .admin-conflict-card {
+                        background: #fef2f2 !important;
+                        border-color: #fca5a5 !important;
+                    }
+                    html[data-theme="light"] .admin-all-clear-card,
+                    :root[data-theme="light"] .admin-all-clear-card {
+                        background: #f9fafb !important;
+                        border-color: #e5e7eb !important;
+                    }
+                    html[data-theme="light"] .admin-modal-dialog,
+                    :root[data-theme="light"] .admin-modal-dialog {
+                        background: #ffffff !important;
+                        border-color: #e5e7eb !important;
+                        box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1) !important;
+                    }
+                    html[data-theme="light"] .admin-modal-header,
+                    :root[data-theme="light"] .admin-modal-header {
+                        background: #f3f4f6 !important;
+                        border-bottom-color: #e5e7eb !important;
+                        color: #111827 !important;
+                    }
+                    html[data-theme="light"] .admin-modal-textarea,
+                    :root[data-theme="light"] .admin-modal-textarea {
+                        background: #ffffff !important;
+                        border-color: #cbd5e1 !important;
+                        color: #111827 !important;
+                    }
+                    html[data-theme="light"] .admin-modal-btn.cancel,
+                    :root[data-theme="light"] .admin-modal-btn.cancel {
+                        background: #e5e7eb !important;
+                        color: #4b5563 !important;
+                        border-color: #cbd5e1 !important;
+                    }
+                    html[data-theme="light"] .admin-modal-btn.cancel:hover,
+                    :root[data-theme="light"] .admin-modal-btn.cancel:hover {
+                        background: #d1d5db !important;
+                        color: #111827 !important;
+                    }
+                    html[data-theme="light"] .admin-quick-toggle-btn,
+                    :root[data-theme="light"] .admin-quick-toggle-btn {
+                        background: #f3f4f6 !important;
+                        border-color: #cbd5e1 !important;
+                        color: #4b5563 !important;
+                    }
+                    html[data-theme="light"] .admin-quick-toggle-btn:hover,
+                    :root[data-theme="light"] .admin-quick-toggle-btn:hover {
+                        background: #e5e7eb !important;
+                        color: #111827 !important;
+                    }
                 `}</style>
             </div>
         );
     }
-
     if (isTeacher) {
         return (
             <div className="dashboard-home-container animate-enter">
@@ -1233,7 +1332,6 @@ const DashboardHome = () => {
                         <span>{new Date().toLocaleDateString('en-GB')}</span>
                     </div>
                 </div>
-
                 <div className="stats-grid">
                     <div className="stat-card streak-card" style={{ borderLeft: '4px solid #818cf8' }}>
                         <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(129, 140, 248, 0.15)' }}>
@@ -1245,7 +1343,6 @@ const DashboardHome = () => {
                             <p className="stat-subtitle">Applied Mathematics II</p>
                         </div>
                     </div>
-
                     <div className="stat-card pending-card" style={{ borderLeft: '4px solid #ff9800' }}>
                         <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(255, 152, 0, 0.15)' }}>
                             <Clock size={24} color="#ff9800" />
@@ -1256,7 +1353,6 @@ const DashboardHome = () => {
                             <p className="stat-subtitle">Calculations assignment</p>
                         </div>
                     </div>
-
                     <div className="stat-card event-card" style={{ borderLeft: '4px solid #10b981' }}>
                         <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}>
                             <Calendar size={24} color="#10b981" />
@@ -1267,7 +1363,6 @@ const DashboardHome = () => {
                             <p className="stat-subtitle">Today, 10:15 AM (Room L-301)</p>
                         </div>
                     </div>
-
                     <div className="stat-card xp-card" style={{ borderLeft: '4px solid #f472b6' }}>
                         <div className="stat-icon-wrapper" style={{ backgroundColor: 'rgba(244, 114, 182, 0.15)' }}>
                             <Trophy size={24} color="#f472b6" />
@@ -1279,7 +1374,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 <div className="roadmap-teaser animate-enter">
                     <div className="teaser-content">
                         <div className="icon-box" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)' }}>
@@ -1291,7 +1385,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 {/* Simulated charts to ensure full aesthetic completeness */}
                 <div className="charts-grid" style={{ marginTop: '2rem' }}>
                     <div className="chart-card">
@@ -1323,7 +1416,6 @@ const DashboardHome = () => {
                             </div>
                         </div>
                     </div>
-
                     <div className="chart-card wide-chart">
                         <div className="chart-header">
                             <h3>Weekly Workload Hours</h3>
@@ -1343,22 +1435,60 @@ const DashboardHome = () => {
             </div>
         );
     }
-
     // Default Student view
     return (
         <div className="dashboard-home-container animate-enter">
             <div className="welcome-banner">
                 <div>
-                    <h2>Welcome back, {role === 'teacher' ? `Professor ${user?.name || 'Teacher'}` : (user?.name || 'Student')}!</h2>
-                    <p>{role === 'teacher' ? 'Your centralized portal for class management and resource sharing.' : 'Your centralized hub for academic excellence.'}</p>
+                    <h2>Welcome back, {isTeacher ? `Professor ${user?.name || 'Teacher'}` : (user?.name || 'Student')}!</h2>
+                    <p>{isTeacher ? 'Your centralized portal for class management and resource sharing.' : 'Your centralized hub for academic excellence.'}</p>
                 </div>
                 <div className="date-badge">
                     <Calendar size={16} />
                     <span>{new Date().toLocaleDateString('en-GB')}</span>
                 </div>
             </div>
-
             <div className="stats-grid">
+                <div className="stat-card streak-card">
+                    <div className="stat-icon-wrapper">
+                        <TrendingUp size={24} />
+                    </div>
+                    <div className="stat-content">
+                        <h3>Study Streak</h3>
+                        <div className="stat-value">12 Days <span className="fire-emoji">🔥</span></div>
+                        <p className="stat-subtitle">Keep it up!</p>
+                    </div>
+                </div>
+                <div className="stat-card pending-card">
+                    <div className="stat-icon-wrapper">
+                        <AlertCircle size={24} />
+                    </div>
+                    <div className="stat-content">
+                        <h3>Tasks Pending</h3>
+                        <div className="stat-value">5</div>
+                        <p className="stat-subtitle">High Priority</p>
+                    </div>
+                </div>
+                <div className="stat-card event-card">
+                    <div className="stat-icon-wrapper">
+                        <Clock size={24} />
+                    </div>
+                    <div className="stat-content">
+                        <h3>Next Event</h3>
+                        <div className="stat-value event-name">Math Marathon</div>
+                        <p className="stat-subtitle">Today, 2:00 PM</p>
+                    </div>
+                </div>
+                <div className="stat-card xp-card">
+                    <div className="stat-icon-wrapper">
+                        <TrendingUp size={24} color="var(--accent-action)" />
+                    </div>
+                    <div className="stat-content">
+                        <h3>Current XP</h3>
+                        <div className="stat-value">4,500 <span className="rank-badge">#2</span></div>
+                        <p className="stat-subtitle">Scholar Rank</p>
+                    </div>
+                </div>
                 {role === 'teacher' ? (
                     <>
                         <div className="stat-card streak-card">
@@ -1453,7 +1583,6 @@ const DashboardHome = () => {
                     </>
                 )}
             </div>
-
             <div className="roadmap-teaser animate-enter">
                 <div className="teaser-content">
                     <div className="icon-box">
@@ -1474,42 +1603,6 @@ const DashboardHome = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Live Faculty Locator Widget */}
-            <div className="home-locator-widget animate-enter">
-                <div className="home-locator-header">
-                    <h3>
-                        <Radio size={16} className="pulse-anim" color="#10b981" style={{ marginRight: '6px' }} />
-                        Live Faculty Tracker
-                    </h3>
-                    <button 
-                        className="home-locator-btn"
-                        onClick={() => router.push('/dashboard/teacher-locator')}
-                    >
-                        View Radar Map
-                    </button>
-                </div>
-                <div className="home-locator-list">
-                    {(mockBackend.teacherLocations || []).slice(0, 4).map(t => (
-                        <div key={t.id} className="home-locator-item">
-                            <div className="home-locator-item-left">
-                                <div className="home-locator-item-avatar" style={{ background: t.id === 1 ? '#7c3aed' : t.id === 2 ? '#2563eb' : t.id === 3 ? '#16a34a' : '#ea580c' }}>
-                                    {t.name.split(' ').pop().charAt(0).toUpperCase()}
-                                </div>
-                                <div className="home-locator-item-info">
-                                    <h4>{t.name}</h4>
-                                    <p>{t.subject}</p>
-                                </div>
-                            </div>
-                            <div className="home-locator-item-right">
-                                <span className="home-locator-item-room">{t.room}</span>
-                                <span className="home-locator-item-time">{t.lastSpotted}</span>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-
             <div className="charts-grid">
                 <div className="chart-card">
                     <div className="chart-header">
@@ -1542,7 +1635,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 <div className="chart-card">
                     <div className="chart-header">
                         <h3>{role === 'teacher' ? 'Assignment Submission Rate' : 'Task Progress'}</h3>
@@ -1574,7 +1666,6 @@ const DashboardHome = () => {
                         </div>
                     </div>
                 </div>
-
                 <div className="chart-card wide-chart">
                     <div className="chart-header">
                         <h3>{role === 'teacher' ? 'Teaching & Consultation Hours' : 'Study Hours This Week'}</h3>
@@ -1602,5 +1693,4 @@ const DashboardHome = () => {
         </div>
     );
 };
-
 export default DashboardHome;
