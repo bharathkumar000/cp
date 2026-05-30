@@ -1619,151 +1619,144 @@ const Attendance = () => {
         }
     };
 
-    if (user?.role === 'admin') {
-        const dispatchWarning = (id, name) => {
-            setAuditAlerts(prev => prev.map(alert => alert.id === id ? { ...alert, status: 'warned' } : alert));
-            setScanMessage(`Dispatched high-impact proxy violation alert to parents of student: ${name}`);
-            setTimeout(() => setScanMessage(''), 4000);
-        };
+    const renderValidationStudio = () => {
+        // A. If user is teacher or admin
+        if (user?.role === 'teacher' || user?.role === 'admin') {
+            const sessionDate = new Date().toISOString().split('T')[0];
+            
+            // Filter validation roster by branch and section
+            const filteredValidationRoster = validationRoster.filter(student => {
+                const studentInfo = studentBranchSectionMap[student.student_id] || { branch: 'CSE', section: 'A' };
+                const branchMatch = selectedBranch === 'All' || studentInfo.branch === selectedBranch;
+                const sectionMatch = selectedSection === 'All' || studentInfo.section === selectedSection;
+                return branchMatch && sectionMatch;
+            });
 
-        const clearAlert = (id) => {
-            setAuditAlerts(prev => prev.filter(alert => alert.id !== id));
-        };
+            // Filter roster for breaches (<75%)
+            const breachRoster = filteredValidationRoster.filter(student => student.cumulative_percentage < 75);
 
-        const triggerProxyAuditSweep = () => {
-            setIsGateScanRunning(true);
-            setScanMessage('Scanning global gateway entries for proxy tap signals...');
-            setTimeout(() => {
-                setIsGateScanRunning(false);
-                const randomId = String(Date.now());
-                const names = ['Kiran M', 'Tejas R', 'Neha S'];
-                const usns = ['4VV25CS048', '4VV25EC112', '4VV25ME029'];
-                const gates = ['CSE Block Gate B', 'IS Block Gate 1', 'Admin Entrance'];
-                const randIndex = Math.floor(Math.random() * names.length);
-                
-                setAuditAlerts(prev => [
-                    ...prev,
-                    {
-                        id: randomId,
-                        name: names[randIndex],
-                        usn: usns[randIndex],
-                        gateway: gates[randIndex],
-                        conflictGate: 'Central Library Gate 2',
-                        timeGap: Math.floor(Math.random() * 12) + 2,
-                        status: 'unresolved'
-                    }
-                ]);
-                setScanMessage('Audit sweep complete. Discovered 1 new proxy tap mismatch signature.');
-                setTimeout(() => setScanMessage(''), 5000);
-            }, 1800);
-        };
-
-        return (
-            <div className="lms-attendance-page animate-enter" style={{ backgroundColor: '#030712', color: 'var(--text-primary)', padding: '1.5rem 0.5rem' }}>
-                {/* Header */}
-                <div className="lms-title-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <span>AI Footfall & Proxy-Risk Audit</span>
-                    <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500, color: 'var(--accent-primary)' }}>
-                        Institutional RFID entries & double-tap audit alerts
-                    </span>
-                </div>
-
-                {/* Macro metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
-                    <div style={auditCardStyle}>
-                        <h4 style={auditLabelStyle}>Total RFID Footfall</h4>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#60a5fa' }}>2,842 swipes</div>
-                        <span style={auditSubStyle}>Active entries today</span>
-                    </div>
-                    <div style={auditCardStyle}>
-                        <h4 style={auditLabelStyle}>System Security Score</h4>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>98.2% Safe</div>
-                        <span style={auditSubStyle}>0.4% warning threshold</span>
-                    </div>
-<<<<<<< HEAD
-                    <div style={auditCardStyle}>
-                        <h4 style={auditLabelStyle}>Double-Tap Mismatches</h4>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444' }}>
-                            {auditAlerts.filter(a => a.status === 'unresolved').length} Alerts
-=======
-
-                    {/* === ATTENDANCE RESULT SUMMARY (shown after all 5 checks) === */}
-                    {completedChecks >= 5 && (
-                        <div className="attendance-result-summary">
-                            <h3 className="result-summary-title">
-                                📋 Attendance Result — Session Complete
-                            </h3>
-                            <div className="result-summary-grid">
-                                {/* Present Students */}
-                                <div className="result-column present-column">
-                                    <div className="result-column-header present">
-                                        <span className="result-icon">✅</span>
-                                        <span className="result-label">Present</span>
-                                        <span className="result-count">
-                                            {filteredValidationRoster.filter(s => s.final_status === 'PRESENT' || s.final_status === 'LATE').length}
-                                        </span>
-                                    </div>
-                                    <div className="result-student-list">
-                                        {filteredValidationRoster
-                                            .filter(s => s.final_status === 'PRESENT' || s.final_status === 'LATE')
-                                            .map(student => (
-                                                <div key={student.student_id} className="result-student-item present">
-                                                    <div className="result-student-avatar present">
-                                                        {student.full_name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="result-student-info">
-                                                        <div className="result-student-name">{student.full_name}</div>
-                                                        <div className="result-student-meta">
-                                                            Detected {student.detected_count}/{student.total_checks} checks
-                                                        </div>
-                                                    </div>
-                                                    <span className={`result-status-badge ${student.final_status.toLowerCase()}`}>
-                                                        {student.final_status}
-                                                    </span>
-                                                </div>
-                                            ))
-                                        }
-                                        {filteredValidationRoster.filter(s => s.final_status === 'PRESENT' || s.final_status === 'LATE').length === 0 && (
-                                            <div className="result-empty">No students detected as present.</div>
-                                        )}
-                                    </div>
+            return (
+                <div className="validation-studio-container">
+                    <div className="validation-header">
+                        <div className="validation-header-title-block">
+                            <h2 className="section-title">Randomized Face Validation Studio</h2>
+                            <p className="subtitle">Live session telemetry, verification checkpoints, and parent breach dispatch board</p>
+                        </div>
+                        <div className="validation-header-controls">
+                            <div className="validation-filters-group">
+                                <div className="validation-filter-item">
+                                    <label className="validation-filter-label">Class Slot</label>
+                                    <select
+                                        value={validationSlotId}
+                                        onChange={(e) => setValidationSlotId(e.target.value)}
+                                        className="lms-input-select"
+                                        style={{ width: 'auto', minWidth: '220px', height: '38px', margin: 0 }}
+                                    >
+                                        {timetableSlots.map(slot => (
+                                            <option key={slot.id} value={slot.id}>
+                                                {slot.subject} ({slot.day} - {slot.time})
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
-                                {/* Absent Students */}
-                                <div className="result-column absent-column">
-                                    <div className="result-column-header absent">
-                                        <span className="result-icon">❌</span>
-                                        <span className="result-label">Absent</span>
-                                        <span className="result-count">
-                                            {filteredValidationRoster.filter(s => s.final_status === 'ABSENT').length}
-                                        </span>
-                                    </div>
-                                    <div className="result-student-list">
-                                        {filteredValidationRoster
-                                            .filter(s => s.final_status === 'ABSENT')
-                                            .map(student => (
-                                                <div key={student.student_id} className="result-student-item absent">
-                                                    <div className="result-student-avatar absent">
-                                                        {student.full_name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="result-student-info">
-                                                        <div className="result-student-name">{student.full_name}</div>
-                                                        <div className="result-student-meta">
-                                                            Not detected in any check
-                                                        </div>
-                                                    </div>
-                                                    <span className="result-status-badge absent">ABSENT</span>
-                                                </div>
-                                            ))
-                                        }
-                                        {filteredValidationRoster.filter(s => s.final_status === 'ABSENT').length === 0 && (
-                                            <div className="result-empty">All students are present! 🎉</div>
-                                        )}
-                                    </div>
+                                <div className="validation-filter-item">
+                                    <label className="validation-filter-label">Branch</label>
+                                    <select
+                                        value={selectedBranch}
+                                        onChange={(e) => setSelectedBranch(e.target.value)}
+                                        className="lms-input-select"
+                                        style={{ width: 'auto', minWidth: '90px', height: '38px', margin: 0 }}
+                                    >
+                                        {branches.map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="validation-filter-item">
+                                    <label className="validation-filter-label">Section</label>
+                                    <select
+                                        value={selectedSection}
+                                        onChange={(e) => setSelectedSection(e.target.value)}
+                                        className="lms-input-select"
+                                        style={{ width: 'auto', minWidth: '80px', height: '38px', margin: 0 }}
+                                    >
+                                        {sections.map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
+                            
+                            <div className="validation-actions-group">
+                                <button
+                                    onClick={handleRunWebcamRandomizer}
+                                    className="webcam-btn"
+                                    disabled={isWebcamRunning || !validationSlotId}
+                                    style={{ margin: 0 }}
+                                >
+                                    ⚡ Trigger Webcam Attendance (20s)
+                                </button>
+
+                                <button
+                                    onClick={handleFinaliseValidation}
+                                    className={`finalise-btn ${validationRoster[0]?.is_finalised ? 'finalised' : ''}`}
+                                    disabled={completedChecks < 5 || isFinalisingRoster || validationRoster[0]?.is_finalised}
+                                    style={{ margin: 0 }}
+                                >
+                                    {validationRoster[0]?.is_finalised ? '✓ Finalised & Dispatched' : (isFinalisingRoster ? 'Finalising...' : 'Lock & Finalise Session')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {isWebcamRunning && (
+                        <div style={{
+                            padding: '12px 18px',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            border: '1px solid rgba(5, 150, 105, 0.3)',
+                            borderRadius: '8px',
+                            color: '#34d399',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            animation: 'pulse 2s infinite'
+                        }}>
+                            ⏳ Webcam Validation Engine Active (20s)... Check status in checkpoints and ledger below.
                         </div>
                     )}
+
+                    {teacherMessage && (
+                        <div style={{
+                            padding: '12px 18px',
+                            borderRadius: '8px',
+                            backgroundColor: teacherMessage.startsWith('Error') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                            border: teacherMessage.startsWith('Error') ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(99, 102, 241, 0.3)',
+                            color: teacherMessage.startsWith('Error') ? '#f87171' : '#a5b4fc',
+                            fontSize: '0.88rem',
+                            fontWeight: '500'
+                        }}>
+                            {teacherMessage}
+                        </div>
+                    )}
+
+                    <div className="checks-progress-card">
+                        <div className="progress-info">
+                            <span>Random Check Telemetry Feed Status</span>
+                            <span className="checks-badge">{completedChecks} / 5 Completed</span>
+                        </div>
+                        <div className="checks-visual-bar">
+                            {[1, 2, 3, 4, 5].map(checkNum => {
+                                const isActive = completedChecks >= checkNum;
+                                return (
+                                    <div key={checkNum} className={`check-dot ${isActive ? 'active' : ''}`}>
+                                        <div className="dot-icon">{checkNum}</div>
+                                        <span className="dot-label">Check {checkNum}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
 
                     <div className="validation-grid">
                         {/* Column 1: Roster Panel */}
@@ -1874,7 +1867,175 @@ const Attendance = () => {
                                     <div className="empty-breach">No critical compliance breaches.</div>
                                 )}
                             </div>
->>>>>>> 4f4e530 (attandance)
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // B. If user is student
+        if (user?.role === 'student') {
+            const flaggedEntries = studentLedger.filter(entry => entry.final_status === 'ABSENT' || entry.final_status === 'LATE');
+            
+            return (
+                <div className="student-validation-console">
+                    <h2 className="section-title" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>My Compliance Control Tower</h2>
+                    
+                    <div className="student-alerts-list">
+                        {flaggedEntries.length > 0 ? (
+                            flaggedEntries.map(entry => {
+                                const statusClass = entry.final_status.toLowerCase();
+                                const subject = entry.timetables?.subject || 'Class Session';
+                                const time = entry.timetables?.time || '';
+                                const room = entry.timetables?.room || 'L-301';
+                                
+                                return (
+                                    <div key={entry.ledger_id} className={`student-status-card ${statusClass}`}>
+                                        <div className="card-top">
+                                            <div>
+                                                <span className={`status-badge ${statusClass}`}>{entry.final_status}</span>
+                                                <h3 className="subject-title">{subject}</h3>
+                                                <div className="session-date-time">{entry.session_date} | {time}</div>
+                                            </div>
+                                            <div className="card-top-right">
+                                                Room: {room}
+                                            </div>
+                                        </div>
+
+                                        <div className="check-results-info" style={{ marginBottom: '12px' }}>
+                                            {entry.final_status === 'ABSENT' ? (
+                                                <>
+                                                    🚨 Our automated system ran 5 verification checks during this class session and did not detect your face. 
+                                                    Please submit a valid excuse statement below to appeal your absence.
+                                                </>
+                                            ) : (
+                                                <>
+                                                    ⚠️ Our automated system detected your face in <strong>{entry.detected_count} / {entry.total_checks}</strong> checks, 
+                                                    but missed the initial checkpoints. Your attendance has been marked as <strong>LATE</strong>.
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {entry.absence_reason ? (
+                                            <div className="filed-excuse-banner">
+                                                Excuse Filed: "{entry.absence_reason}" (Status: {entry.reason_status || 'PENDING'})
+                                            </div>
+                                        ) : (
+                                            <form 
+                                                onSubmit={(e) => {
+                                                    e.preventDefault();
+                                                    handleFileExcuse(entry.ledger_id, excuseTextMap[entry.ledger_id]);
+                                                }}
+                                                className="excuse-filing-form"
+                                            >
+                                                <label className="input-label">File Official Excuse Justification:</label>
+                                                <div className="input-row">
+                                                    <input 
+                                                        type="text" 
+                                                        value={excuseTextMap[entry.ledger_id] || ''} 
+                                                        onChange={(e) => setExcuseTextMap(prev => ({ ...prev, [entry.ledger_id]: e.target.value }))}
+                                                        placeholder="Provide brief excuse (medical, personal, technical)..."
+                                                        className="excuse-text-input"
+                                                        required
+                                                    />
+                                                    <button type="submit" className="submit-excuse-btn">
+                                                        Submit Excuse
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        )}
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div style={{
+                                textAlign: 'center',
+                                padding: '3rem',
+                                background: 'rgba(16, 185, 129, 0.05)',
+                                border: '1px dashed rgba(16, 185, 129, 0.2)',
+                                borderRadius: '12px',
+                                color: '#34d399'
+                            }}>
+                                <Check size={48} style={{ margin: '0 auto 1rem', display: 'block', color: '#10b981' }} />
+                                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '4px' }}>All Clear!</h3>
+                                <p style={{ fontSize: '0.88rem', color: '#64748b' }}>
+                                    Congratulations! You have no active compliance alerts or flagged absences. Keep it up!
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
+    };
+
+    if (user?.role === 'admin') {
+        const dispatchWarning = (id, name) => {
+            setAuditAlerts(prev => prev.map(alert => alert.id === id ? { ...alert, status: 'warned' } : alert));
+            setScanMessage(`Dispatched high-impact proxy violation alert to parents of student: ${name}`);
+            setTimeout(() => setScanMessage(''), 4000);
+        };
+
+        const clearAlert = (id) => {
+            setAuditAlerts(prev => prev.filter(alert => alert.id !== id));
+        };
+
+        const triggerProxyAuditSweep = () => {
+            setIsGateScanRunning(true);
+            setScanMessage('Scanning global gateway entries for proxy tap signals...');
+            setTimeout(() => {
+                setIsGateScanRunning(false);
+                const randomId = String(Date.now());
+                const names = ['Kiran M', 'Tejas R', 'Neha S'];
+                const usns = ['4VV25CS048', '4VV25EC112', '4VV25ME029'];
+                const gates = ['CSE Block Gate B', 'IS Block Gate 1', 'Admin Entrance'];
+                const randIndex = Math.floor(Math.random() * names.length);
+                
+                setAuditAlerts(prev => [
+                    ...prev,
+                    {
+                        id: randomId,
+                        name: names[randIndex],
+                        usn: usns[randIndex],
+                        gateway: gates[randIndex],
+                        conflictGate: 'Central Library Gate 2',
+                        timeGap: Math.floor(Math.random() * 12) + 2,
+                        status: 'unresolved'
+                    }
+                ]);
+                setScanMessage('Audit sweep complete. Discovered 1 new proxy tap mismatch signature.');
+                setTimeout(() => setScanMessage(''), 5000);
+            }, 1800);
+        };
+
+        return (
+            <div className="lms-attendance-page animate-enter" style={{ backgroundColor: '#030712', color: 'var(--text-primary)', padding: '1.5rem 0.5rem' }}>
+                {/* Header */}
+                <div className="lms-title-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                    <span>AI Footfall & Proxy-Risk Audit</span>
+                    <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500, color: 'var(--accent-primary)' }}>
+                        Institutional RFID entries & double-tap audit alerts
+                    </span>
+                </div>
+
+                {/* Macro metrics */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+                    <div style={auditCardStyle}>
+                        <h4 style={auditLabelStyle}>Total RFID Footfall</h4>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#60a5fa' }}>2,842 swipes</div>
+                        <span style={auditSubStyle}>Active entries today</span>
+                    </div>
+                    <div style={auditCardStyle}>
+                        <h4 style={auditLabelStyle}>System Security Score</h4>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>98.2% Safe</div>
+                        <span style={auditSubStyle}>0.4% warning threshold</span>
+                    </div>
+                    <div style={auditCardStyle}>
+                        <h4 style={auditLabelStyle}>Double-Tap Mismatches</h4>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444' }}>
+                            {auditAlerts.filter(a => a.status === 'unresolved').length} Alerts
                         </div>
                         <span style={auditSubStyle}>Requires admin dispatch</span>
                     </div>
