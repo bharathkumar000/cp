@@ -17,7 +17,7 @@ const MOCK_PROJECTS = [
             { usn: '4VV25EC045', name: 'Rahul Sharma', role: 'Member' },
             { usn: '4VV25EC018', name: 'Ananya Rao', role: 'Member' },
         ],
-        mentor: { name: 'Dr. Ramesh Babu', department: 'ECE' },
+        mentor: { name: 'Dr. Bhavana', department: 'Mathematics' },
         milestones: [
             { title: 'Synopsis Submission', status: 'completed', date: '2026-02-15' },
             { title: 'Hardware Prototype', status: 'completed', date: '2026-03-20' },
@@ -25,7 +25,7 @@ const MOCK_PROJECTS = [
             { title: 'Final Demo & Viva', status: 'pending', date: '2026-05-30' },
         ],
         reviews: [
-            { by: 'Dr. Ramesh Babu', date: '2026-03-22', text: 'Good progress on the hardware prototype. Ensure proper power management for LoRa modules.' },
+            { by: 'Dr. Bhavana', date: '2026-03-22', text: 'Good progress on the hardware prototype. Ensure proper power management for LoRa modules.' },
         ],
         createdAt: '2026-01-10',
     },
@@ -50,6 +50,7 @@ const MOCK_PROJECTS = [
 ];
 
 const AVAILABLE_TEACHERS = [
+    { name: 'Dr. Bhavana', department: 'Mathematics' },
     { name: 'Dr. Ramesh Babu', department: 'ECE' },
     { name: 'Prof. Lakshmi Devi', department: 'CSE' },
     { name: 'Dr. Suresh Kumar', department: 'ME' },
@@ -140,6 +141,11 @@ const iprBadgeStyle = (status) => {
 const ProjectHub = () => {
     const { user } = useAuth();
     const [projects, setProjects] = useState(MOCK_PROJECTS);
+    
+    // Filter projects for teachers: only show projects they mentor
+    const displayedProjects = user?.role === 'teacher'
+        ? projects.filter(p => p.mentor?.name?.toLowerCase().includes('bhavana'))
+        : projects;
     
     // Admin specific Tech & Innovation Registry states
     const [rndProjects, setRndProjects] = useState([
@@ -404,17 +410,17 @@ const ProjectHub = () => {
             {/* Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                 {[
-                    { label: 'Total Projects', value: projects.length, color: '#a78bfa' },
-                    { label: 'Team Projects', value: projects.filter(p => p.type === 'team').length, color: '#60a5fa' },
-                    { label: 'Personal', value: projects.filter(p => p.type === 'personal').length, color: '#34d399' },
-                    { label: 'Completed', value: projects.filter(p => p.status === 'completed').length, color: '#fbbf24' },
+                    { label: 'Total Projects', value: displayedProjects.length, color: '#a78bfa' },
+                    { label: 'Team Projects', value: displayedProjects.filter(p => p.type === 'team').length, color: '#60a5fa' },
+                    { label: 'Personal', value: displayedProjects.filter(p => p.type === 'personal').length, color: '#34d399' },
+                    { label: 'Completed', value: displayedProjects.filter(p => p.status === 'completed').length, color: '#fbbf24' },
                 ].map((s, i) => (
                     <div key={i} style={statCard}><span style={{ fontSize: '2rem', fontWeight: 900, color: s.color }}>{s.value}</span><span style={{ color: '#888', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase' }}>{s.label}</span></div>
                 ))}
             </div>
 
             {/* Project List */}
-            {projects.map(proj => (
+            {displayedProjects.map(proj => (
                 <div key={proj.id} style={{ ...cardBase, marginBottom: '1rem' }}>
                     {/* Card Header */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', cursor: 'pointer' }}
@@ -524,11 +530,11 @@ const ProjectHub = () => {
                 </div>
             ))}
 
-            {projects.length === 0 && (
+            {displayedProjects.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '4rem', color: '#555' }}>
                     <GitBranch size={64} style={{ opacity: 0.2, marginBottom: '1rem' }} />
                     <h2>No Projects Yet</h2>
-                    <p>Create your first project to get started!</p>
+                    <p>There are no projects assigned to you as a mentor currently.</p>
                 </div>
             )}
 
