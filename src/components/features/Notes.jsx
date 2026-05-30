@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import { mockBackend } from '../../services/mockBackend';
-import { FileText, Download, Folder, ChevronRight, Home, ArrowLeft, Star, FileQuestion } from 'lucide-react';
+import { FileText, Download, Folder, ChevronRight, Home, ArrowLeft, Star, FileQuestion, Mic, Volume2 } from 'lucide-react';
 import './FeatureStyles.css';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,6 +16,80 @@ const Notes = () => {
     const [uploadTitle, setUploadTitle] = useState('');
     const [uploadModule, setUploadModule] = useState(1);
     const [showUploadModal, setShowUploadModal] = useState(false);
+
+    // Classroom Recording Terminal States (Bhavana)
+    const [targetBranch, setTargetBranch] = useState('CSE');
+    const [targetSection, setTargetSection] = useState('A');
+    const [recordingState, setRecordingState] = useState('idle'); // 'idle', 'recording', 'processing', 'generated'
+    const [recordingTime, setRecordingTime] = useState(0);
+    const [timerId, setTimerId] = useState(null);
+    const [summaryText, setSummaryText] = useState('');
+    const [isEditingSummary, setIsEditingSummary] = useState(false);
+    const [publishModule, setPublishModule] = useState(1);
+    const [successMessage, setSuccessMessage] = useState('');
+
+    const startRecording = () => {
+        setRecordingTime(0);
+        setRecordingState('recording');
+        setSuccessMessage('');
+        const id = setInterval(() => {
+            setRecordingTime(prev => prev + 1);
+        }, 1000);
+        setTimerId(id);
+    };
+
+    const stopRecording = () => {
+        if (timerId) {
+            clearInterval(timerId);
+            setTimerId(null);
+        }
+        setRecordingState('processing');
+        
+        setTimeout(() => {
+            const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+            setSummaryText(`LECTURE SUMMARY & REPORT - MATHEMATICS (${currentDate})
+Course: 1BCS201 - Introduction to Computer Science
+Branch & Section: ${targetBranch} - Section ${targetSection}
+Date: ${currentDate}
+
+TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
+- Discussed BST properties: left child less than root, right child greater.
+- Covered traversal algorithms: In-order, Pre-order, and Post-order tree walking.
+- Analyzed time complexity: O(log n) for balanced tree operations vs O(n) worst-case.
+- Solved previous year question on BST reconstruction from pre-order sequence.
+- Practical assignment: Implement a recursive insert function in C.`);
+            setRecordingState('generated');
+        }, 2000);
+    };
+
+    const handleApproveAndPublish = () => {
+        const dateStr = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+        const newNote = {
+            id: mockBackend.studyMaterials.length + 1,
+            title: `${dateStr} - Lecture Notes (Class: ${targetBranch} - ${targetSection})`,
+            type: 'PDF',
+            author: 'Dr. Bhavana',
+            category: 'Teacher Note',
+            verifiedBy: 'Self',
+            subject: 'Mathematics',
+            module: Number(publishModule)
+        };
+
+        const newPyq = {
+            id: mockBackend.pyqs.length + 1,
+            question: `${dateStr}: Solve the BST traversal and time complexity analysis problem from the CSE lecture report.`,
+            subject: 'Mathematics',
+            yearsAsked: [2026]
+        };
+
+        mockBackend.studyMaterials.push(newNote);
+        mockBackend.pyqs.push(newPyq);
+        setLocalNotes([...mockBackend.studyMaterials]);
+
+        setRecordingState('idle');
+        setSuccessMessage(`Lecture notes successfully approved and published as PDF notes under Module ${publishModule} and in the PYQ collection.`);
+        setTimeout(() => setSuccessMessage(''), 8000);
+    };
 
     // Derived Data - include Mathematics in default subjects list
     const defaultSubjects = [...new Set([...studyMaterials.map(m => m.subject), ...pyqs.map(q => q.subject), 'Mathematics'])];
@@ -109,7 +183,365 @@ const Notes = () => {
 
         if (viewType === 'modules') {
             return (
-                <div className="folder-structure-view">
+                <div className="folder-structure-view" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    
+                    {/* CSS Animations & Custom Styles for Voice/Audio terminal */}
+                    <style>{`
+                        .class-rec-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            gap: 16px;
+                            width: 100%;
+                        }
+                        .class-select-card {
+                            background: #18181b;
+                            border: 2px solid #27272a;
+                            border-radius: 10px;
+                            padding: 16px;
+                            cursor: pointer;
+                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            display: flex;
+                            flex-direction: column;
+                            gap: 8px;
+                            position: relative;
+                            overflow: hidden;
+                            text-align: left;
+                        }
+                        .class-select-card:hover {
+                            border-color: #fbbf24;
+                            transform: translateY(-2px);
+                            background: rgba(251, 191, 36, 0.03);
+                        }
+                        .class-select-card.active {
+                            border-color: #fbbf24;
+                            background: rgba(251, 191, 36, 0.05);
+                            box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
+                        }
+                        .pulse-dot-online {
+                            width: 8px;
+                            height: 8px;
+                            background-color: #10b981;
+                            border-radius: 50%;
+                            display: inline-block;
+                            box-shadow: 0 0 8px #10b981;
+                            animation: pulse-online 1.8s infinite;
+                            margin-right: 6px;
+                        }
+                        @keyframes pulse-online {
+                            0% { transform: scale(0.9); opacity: 0.6; }
+                            50% { transform: scale(1.3); opacity: 1; }
+                            100% { transform: scale(0.9); opacity: 0.6; }
+                        }
+                        .sound-wave-container {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            gap: 4px;
+                            height: 40px;
+                            margin: 10px 0;
+                        }
+                        .sound-bar {
+                            width: 4px;
+                            background-color: #fbbf24;
+                            border-radius: 2px;
+                            height: 10px;
+                            animation: bounce-bar 1s ease-in-out infinite alternate;
+                        }
+                        .sound-bar:nth-child(2) { animation-delay: 0.15s; background-color: #f59e0b; }
+                        .sound-bar:nth-child(3) { animation-delay: 0.3s; background-color: #a78bfa; height: 15px; }
+                        .sound-bar:nth-child(4) { animation-delay: 0.45s; background-color: #f59e0b; }
+                        .sound-bar:nth-child(5) { animation-delay: 0.6s; background-color: #fbbf24; }
+                        @keyframes bounce-bar {
+                            0% { height: 8px; }
+                            100% { height: 35px; }
+                        }
+                        .rec-badge-red {
+                            background: rgba(239, 68, 68, 0.2);
+                            border: 1px solid #ef4444;
+                            color: #f87171;
+                            padding: 4px 10px;
+                            border-radius: 6px;
+                            font-size: 0.75rem;
+                            font-weight: 800;
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                            animation: flash-red 1.5s infinite;
+                        }
+                        @keyframes flash-red {
+                            0%, 100% { opacity: 1; }
+                            50% { opacity: 0.5; }
+                        }
+                        .success-toast-banner {
+                            background: rgba(16, 185, 129, 0.1);
+                            border: 1px solid rgba(16, 185, 129, 0.3);
+                            color: #34d399;
+                            padding: 16px;
+                            border-radius: 8px;
+                            font-weight: 600;
+                            font-size: 0.88rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            animation: enter-toast 0.3s ease-out;
+                            text-align: left;
+                        }
+                        @keyframes enter-toast {
+                            from { transform: translateY(-10px); opacity: 0; }
+                            to { transform: translateY(0); opacity: 1; }
+                        }
+                    `}</style>
+
+                    {/* Notification feedback */}
+                    {successMessage && (
+                        <div className="success-toast-banner">
+                            <span className="pulse-dot-online"></span>
+                            {successMessage}
+                        </div>
+                    )}
+
+                    {/* Classroom Recorder Terminal */}
+                    {user?.role === 'teacher' && selectedSubject === 'Mathematics' && (
+                        <div className="classroom-recorder-card" style={{
+                            background: '#09090b',
+                            border: '2px solid #27272a',
+                            borderRadius: '12px',
+                            padding: '24px',
+                            boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '20px',
+                            textAlign: 'left'
+                        }}>
+                            {/* Terminal Header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ background: 'rgba(251, 191, 36, 0.1)', padding: '10px', borderRadius: '8px', color: '#fbbf24' }}>
+                                        <Mic size={22} />
+                                    </div>
+                                    <div>
+                                        <h3 style={{ margin: 0, fontWeight: 800, fontSize: '1.05rem', color: '#fff', letterSpacing: '0.5px' }}>Classroom Audio Intelligence Terminal</h3>
+                                        <p style={{ margin: '2px 0 0 0', fontSize: '0.75rem', color: '#888' }}>Mic & Acoustic Speaker integration system active in classrooms</p>
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span className="pulse-dot-online"></span>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: '700', color: '#10b981', textTransform: 'uppercase' }}>Gateway Link: Online</span>
+                                </div>
+                            </div>
+
+                            {/* Section selector cards */}
+                            {recordingState === 'idle' && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#aaa', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Select Target Class & Syllabus Section:</label>
+                                    <div className="class-rec-grid">
+                                        {[
+                                            { branch: 'CSE', section: 'A', label: 'Computer Science (CSE - A)', students: '42 Registered' },
+                                            { branch: 'CSE', section: 'B', label: 'Computer Science (CSE - B)', students: '38 Registered' },
+                                            { branch: 'ECE', section: 'A', label: 'Electronics (ECE - A)', students: '40 Registered' }
+                                        ].map(cls => {
+                                            const isActive = targetBranch === cls.branch && targetSection === cls.section;
+                                            return (
+                                                <div 
+                                                    key={cls.label} 
+                                                    className={`class-select-card ${isActive ? 'active' : ''}`}
+                                                    onClick={() => {
+                                                        setTargetBranch(cls.branch);
+                                                        setTargetSection(cls.section);
+                                                    }}
+                                                >
+                                                    <span style={{ fontSize: '0.88rem', fontWeight: 800, color: isActive ? '#fbbf24' : '#fff' }}>{cls.label}</span>
+                                                    <span style={{ fontSize: '0.72rem', color: '#888' }}>{cls.students}</span>
+                                                    <span style={{ fontSize: '0.68rem', color: '#6366f1', fontWeight: 'bold' }}>1BCS201 Syllabus</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Console controls */}
+                            <div style={{ 
+                                background: '#18181b', 
+                                border: '1px solid #27272a', 
+                                borderRadius: '10px', 
+                                padding: '20px', 
+                                display: 'flex', 
+                                flexDirection: 'column', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                gap: '15px',
+                                minHeight: '140px'
+                            }}>
+                                {recordingState === 'idle' && (
+                                    <>
+                                        <p style={{ margin: 0, fontSize: '0.82rem', color: '#ccc', textAlign: 'center' }}>Ready to capture lecture for class <strong style={{ color: '#fbbf24' }}>{targetBranch} - Section {targetSection}</strong></p>
+                                        <button 
+                                            onClick={startRecording}
+                                            className="add-task-btn"
+                                            style={{ margin: 0, padding: '12px 24px', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '8px', background: '#fbbf24', color: '#000', fontWeight: '800' }}
+                                        >
+                                            🎙️ Start Classroom Lecture Recording
+                                        </button>
+                                    </>
+                                )}
+
+                                {recordingState === 'recording' && (
+                                    <>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
+                                            <span className="rec-badge-red">
+                                                <span style={{ width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%' }}></span>
+                                                REC
+                                            </span>
+                                            <span style={{ fontSize: '1.25rem', fontFamily: 'monospace', fontWeight: 800, color: '#fff' }}>
+                                                {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}
+                                            </span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <Volume2 size={16} color="#6366f1" />
+                                                <span style={{ fontSize: '0.72rem', color: '#888', textTransform: 'uppercase', fontWeight: 'bold' }}>Speaker feedback loop online</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="sound-wave-container">
+                                            <div className="sound-bar"></div>
+                                            <div className="sound-bar"></div>
+                                            <div className="sound-bar"></div>
+                                            <div className="sound-bar"></div>
+                                            <div className="sound-bar"></div>
+                                        </div>
+
+                                        <p style={{ margin: 0, fontSize: '0.78rem', color: '#888', textAlign: 'center' }}>Microphone is recording classroom audio. Acoustic speakers are transmitting system feedback.</p>
+                                        
+                                        <button 
+                                            onClick={stopRecording}
+                                            className="add-task-btn"
+                                            style={{ margin: 0, padding: '12px 24px', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '8px', background: '#ef4444', color: '#fff', fontWeight: '800', border: 'none' }}
+                                        >
+                                            🛑 Stop & Generate Lecture PDF Summary
+                                        </button>
+                                    </>
+                                )}
+
+                                {recordingState === 'processing' && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                                        <div style={{ width: '32px', height: '32px', border: '3px solid rgba(251, 191, 36, 0.1)', borderTopColor: '#fbbf24', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#ccc', fontWeight: '600' }}>Uploading audio stream & running AI transcription...</p>
+                                        <p style={{ margin: 0, fontSize: '0.72rem', color: '#888' }}>Extracting structured notes, theorems, and definitions for final PDF...</p>
+                                        
+                                        <style>{`
+                                            @keyframes spin {
+                                                to { transform: rotate(360deg); }
+                                            }
+                                        `}</style>
+                                    </div>
+                                )}
+
+                                {recordingState === 'generated' && (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%', alignItems: 'stretch', textAlign: 'left' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✓ AI Lecture Summary Draft Generated</span>
+                                            <button 
+                                                onClick={() => setRecordingState('idle')}
+                                                style={{ background: 'transparent', border: 'none', color: '#888', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+                                            >
+                                                Discard Draft
+                                            </button>
+                                        </div>
+
+                                        {isEditingSummary ? (
+                                            <textarea 
+                                                style={{
+                                                    width: '100%',
+                                                    minHeight: '160px',
+                                                    background: '#09090b',
+                                                    border: '2px solid #fbbf24',
+                                                    borderRadius: '8px',
+                                                    color: '#fff',
+                                                    padding: '12px',
+                                                    fontFamily: 'monospace',
+                                                    fontSize: '0.85rem',
+                                                    lineHeight: '1.4',
+                                                    outline: 'none',
+                                                    resize: 'vertical'
+                                                }}
+                                                value={summaryText}
+                                                onChange={(e) => setSummaryText(e.target.value)}
+                                            />
+                                        ) : (
+                                            <div style={{
+                                                width: '100%',
+                                                minHeight: '160px',
+                                                background: '#09090b',
+                                                border: '1px solid #27272a',
+                                                borderRadius: '8px',
+                                                padding: '12px',
+                                                fontSize: '0.85rem',
+                                                lineHeight: '1.4',
+                                                color: '#ddd',
+                                                whiteSpace: 'pre-wrap',
+                                                overflowY: 'auto',
+                                                maxHeight: '260px',
+                                                textAlign: 'left'
+                                            }}>
+                                                {summaryText}
+                                            </div>
+                                        )}
+
+                                        {/* Publish Settings */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap', background: '#09090b', padding: '12px', borderRadius: '8px', border: '1px solid #27272a' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <label style={{ fontSize: '0.78rem', fontWeight: '700', color: '#aaa' }}>Target Notes Folder:</label>
+                                                <select 
+                                                    value={publishModule}
+                                                    onChange={e => setPublishModule(Number(e.target.value))}
+                                                    style={{ background: '#18181b', border: '1px solid #3f3f46', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '0.78rem', outline: 'none' }}
+                                                >
+                                                    <option value={1}>Module 1 Folder</option>
+                                                    <option value={2}>Module 2 Folder</option>
+                                                    <option value={3}>Module 3 Folder</option>
+                                                    <option value={4}>Module 4 Folder</option>
+                                                    <option value={5}>Module 5 Folder</option>
+                                                </select>
+                                            </div>
+                                            <div style={{ fontSize: '0.72rem', color: '#888' }}>
+                                                * File name will be registered with the current date: <strong>{new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}</strong>
+                                            </div>
+                                        </div>
+
+                                        {/* Action buttons */}
+                                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                            {isEditingSummary ? (
+                                                <button 
+                                                    onClick={() => setIsEditingSummary(false)}
+                                                    className="add-task-btn"
+                                                    style={{ margin: 0, padding: '8px 16px', fontSize: '0.8rem', background: '#3f3f46', border: 'none', color: '#fff', fontWeight: 'bold' }}
+                                                >
+                                                    Save Changes
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => setIsEditingSummary(true)}
+                                                    className="add-task-btn"
+                                                    style={{ margin: 0, padding: '8px 16px', fontSize: '0.8rem', background: '#27272a', border: '1px solid #3f3f46', color: '#fff', fontWeight: 'bold' }}
+                                                >
+                                                    ✏️ Edit Summary
+                                                </button>
+                                            )}
+                                            
+                                            <button 
+                                                onClick={handleApproveAndPublish}
+                                                className="add-task-btn"
+                                                style={{ margin: 0, padding: '8px 20px', fontSize: '0.8rem', background: '#fbbf24', border: 'none', color: '#000', fontWeight: '800' }}
+                                            >
+                                                ✓ Approve & Publish to Students
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="folder-grid">
                         {/* Special folder for PYQS of this subject */}
                         <div className="folder-card pyq-folder" onClick={() => setViewType('pyqs')}>
