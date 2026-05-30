@@ -68,17 +68,6 @@ const createMockClient = () => {
             event_frequency: 6
         },
         {
-            id: '33333333-3333-3333-3333-333333333333',
-            name: 'Zenith Cultural Crew',
-            logo: 'Music',
-            batch_year: '2025-2026',
-            department: 'Creative & Performing Arts Synchronization',
-            type: 'cultural',
-            description: 'Integrating cultural rhythm and theatrical expression across regional, national, and international stages.',
-            avg_attendance_rate: 97,
-            event_frequency: 4
-        },
-        {
             id: '44444444-4444-4444-4444-444444444444',
             name: 'Strikers Football Club',
             logo: 'Trophy',
