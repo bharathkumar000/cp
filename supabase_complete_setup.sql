@@ -881,3 +881,64 @@ EXCEPTION
 END $$;
 
 
+-- =========================================================================
+-- CONNECT & PREP - REALTIME CLASSROOM & LAB BOOKINGS SCHEMA
+-- =========================================================================
+
+-- 1. Create the classroom_bookings table
+CREATE TABLE IF NOT EXISTS public.classroom_bookings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_id TEXT NOT NULL,
+    date TEXT NOT NULL, -- format YYYY-MM-DD
+    time_slot TEXT NOT NULL,
+    teacher_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    teacher_name TEXT NOT NULL,
+    course TEXT NOT NULL,
+    branch TEXT NOT NULL,
+    sem TEXT NOT NULL,
+    section TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE (room_id, date, time_slot)
+);
+
+-- 2. Enable Row Level Security (RLS)
+ALTER TABLE public.classroom_bookings ENABLE ROW LEVEL SECURITY;
+
+-- 3. Define Access Control Rules (RLS Policies)
+DROP POLICY IF EXISTS select_classroom_bookings ON public.classroom_bookings;
+CREATE POLICY select_classroom_bookings ON public.classroom_bookings
+    FOR SELECT
+    TO authenticated
+    USING (true);
+
+DROP POLICY IF EXISTS insert_classroom_bookings ON public.classroom_bookings;
+CREATE POLICY insert_classroom_bookings ON public.classroom_bookings
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        public.is_teacher() 
+        OR public.is_admin()
+    );
+
+DROP POLICY IF EXISTS delete_classroom_bookings ON public.classroom_bookings;
+CREATE POLICY delete_classroom_bookings ON public.classroom_bookings
+    FOR DELETE
+    TO authenticated
+    USING (
+        auth.uid() = teacher_id 
+        OR public.is_admin()
+    );
+
+-- 4. Enable Realtime Replication for the classroom_bookings table
+DO $$
+BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.classroom_bookings;
+EXCEPTION
+    WHEN duplicate_object THEN
+        NULL;
+    WHEN OTHERS THEN
+        NULL;
+END $$;
+
+
+
