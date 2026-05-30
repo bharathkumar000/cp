@@ -35,6 +35,8 @@ export const mockBackend = {
         { id: 1, question: "Explain OSI Model & TCP/IP Layering", subject: "Network", yearsAsked: [2018, 2021, 2023] },
         { id: 2, question: "Derive Maxwell's Electromagnetic Equations", subject: "Electricals", yearsAsked: [2019, 2022] },
         { id: 3, question: "Analyze PN Junction Diode Characteristics", subject: "Electronics", yearsAsked: [2020, 2023, 2024] },
+        { id: 4, question: "Evaluate the double integral of (x^2 + y^2) over the region y = x^2 and y^2 = x", subject: "Mathematics", yearsAsked: [2021, 2024, 2025] },
+        { id: 5, question: "Change the order of integration and evaluate the double integral", subject: "Mathematics", yearsAsked: [2022, 2024] },
     ],
 
     // Study Materials (Notes)
@@ -45,6 +47,8 @@ export const mockBackend = {
         { id: 4, title: 'Optical Fiber Communication & 5G Systems', type: 'PDF', author: 'Student Club', category: 'Best Student Note', verifiedBy: 'Prof. Alan', subject: 'Communications', module: 3 },
         { id: 5, title: 'Digital Electronics Fundamentals', type: 'PDF', author: 'Prof. David', category: 'Teacher Note', verifiedBy: 'HOD', subject: 'Electronics', module: 2 },
         { id: 6, title: 'Transformer & Induction Motors Guide', type: 'PDF', author: 'Dr. Ray', category: 'Teacher Note', verifiedBy: 'HOD', subject: 'Electricals', module: 3 },
+        { id: 7, title: 'Partial Derivatives & Jacobian Transformations Notes', type: 'PDF', author: 'Dr. Bhavana', category: 'Teacher Note', verifiedBy: 'Self', subject: 'Mathematics', module: 1 },
+        { id: 8, title: 'Multiple Integrals & Area Calculation Sheet', type: 'PDF', author: 'Dr. Bhavana', category: 'Teacher Note', verifiedBy: 'Self', subject: 'Mathematics', module: 2 },
     ],
 
     // Group Study
@@ -448,5 +452,12 @@ export const mockBackend = {
         { id: 3, teacher: 'Dr. White', subject: 'Digital Electronics', date: 'May 18, 2026', remark: 'Participated very well in the peer tutoring session. Shows great leadership skills.', type: 'Positive', read: false },
         { id: 4, teacher: 'Admin Office', subject: 'General', date: 'May 15, 2026', remark: 'The schedule for the IEEE technical workshop has been released.', type: 'Info', read: true },
         { id: 5, teacher: 'Dr. Bhavana', subject: 'Computer Science', date: 'May 10, 2026', remark: 'Missed submitting the homework for Laplace Transforms. Please check.', type: 'Alert', read: false },
+    ],
+
+    teacherLocations: [
+        { id: 1, name: 'Dr. Bhavana', subject: 'Applied Mathematics II', dept: 'Mathematics', room: 'M Block 402', lastSpotted: '30 mins ago', status: 'On Track', coords: { x: 35, y: 40 } },
+        { id: 2, name: 'Dr. White', subject: 'Applied Physics', dept: 'Physics', room: 'Physics Lab A', lastSpotted: '15 mins ago', status: 'On Track', coords: { x: 75, y: 25 } },
+        { id: 3, name: 'Prof. Alan', subject: 'C Programming Lab', dept: 'Computer Science', room: 'CS Lab 1', lastSpotted: '5 mins ago', status: 'On Track', coords: { x: 55, y: 70 } },
+        { id: 4, name: 'Prof. Jones', subject: 'Communication Skills - 2', dept: 'Humanities', room: 'Seminar Hall 1', lastSpotted: '2 hours ago', status: 'Unscheduled Spot', coords: { x: 15, y: 80 } }
     ]
 };
