@@ -197,45 +197,45 @@ export const mockBackend = {
         schedule: [
             {
                 day: 'Monday', slots: [
-                    { period: 1, span: 2, subject: 'CSE', type: 'Lecture' },
-                    { period: 3, span: 2, subject: 'ECE', type: 'Lab' },
-                    { period: 5, span: 2, subject: 'AIML', type: 'Lecture' },
+                    { period: 1, span: 2, subject: 'CSE-H', type: 'Lecture' },
+                    { period: 3, span: 2, subject: 'ECE-A', type: 'Lab' },
+                    { period: 5, span: 2, subject: 'AIML-C', type: 'Lecture' },
                 ]
             },
             {
                 day: 'Tuesday', slots: [
-                    { period: 1, span: 1, subject: 'EEE', type: 'Lecture' },
-                    { period: 2, span: 1, subject: 'ME', type: 'Lecture' },
-                    { period: 3, span: 1, subject: 'CV', type: 'Lecture' },
-                    { period: 5, span: 2, subject: 'CSE', type: 'Lab' },
+                    { period: 1, span: 1, subject: 'EEE-B', type: 'Lecture' },
+                    { period: 2, span: 1, subject: 'ME-D', type: 'Lecture' },
+                    { period: 3, span: 1, subject: 'CV-A', type: 'Lecture' },
+                    { period: 5, span: 2, subject: 'CSE-H', type: 'Lab' },
                 ]
             },
             {
                 day: 'Wednesday', slots: [
-                    { period: 2, span: 1, subject: 'ECE', type: 'Lecture' },
-                    { period: 5, span: 2, subject: 'AIML', type: 'Lab' },
+                    { period: 2, span: 1, subject: 'ECE-A', type: 'Lecture' },
+                    { period: 5, span: 2, subject: 'AIML-C', type: 'Lab' },
                 ]
             },
             {
                 day: 'Thursday', slots: [
-                    { period: 1, span: 2, subject: 'EEE', type: 'Tutorial' },
-                    { period: 4, span: 1, subject: 'ME', type: 'Lecture' },
-                    { period: 5, span: 1, subject: 'CV', type: 'Lecture' },
-                    { period: 6, span: 1, subject: 'CSE', type: 'Lecture' },
+                    { period: 1, span: 2, subject: 'EEE-B', type: 'Tutorial' },
+                    { period: 4, span: 1, subject: 'ME-D', type: 'Lecture' },
+                    { period: 5, span: 1, subject: 'CV-A', type: 'Lecture' },
+                    { period: 6, span: 1, subject: 'CSE-H', type: 'Lecture' },
                 ]
             },
             {
                 day: 'Friday', slots: [
-                    { period: 1, span: 1, subject: 'ECE', type: 'Lecture' },
-                    { period: 2, span: 1, subject: 'AIML', type: 'Lecture' },
-                    { period: 3, span: 2, subject: 'EEE', type: 'Tutorial' },
-                    { period: 6, span: 1, subject: 'ME', type: 'Lecture' },
+                    { period: 1, span: 1, subject: 'ECE-A', type: 'Lecture' },
+                    { period: 2, span: 1, subject: 'AIML-C', type: 'Lecture' },
+                    { period: 3, span: 2, subject: 'EEE-B', type: 'Tutorial' },
+                    { period: 6, span: 1, subject: 'ME-D', type: 'Lecture' },
                 ]
             },
         ],
         exams: [
-            { date: '15/03/2026', subject: 'CSE', type: 'Internal 2' },
-            { date: '18/03/2026', subject: 'ECE', type: 'Internal 2' },
+            { date: '15/03/2026', subject: 'CSE-H', type: 'Internal 2' },
+            { date: '18/03/2026', subject: 'ECE-A', type: 'Internal 2' },
             { date: '20/04/2026', subject: 'All Subjects', type: 'Semester End Exam' },
         ]
     },
@@ -246,42 +246,42 @@ export const mockBackend = {
         schedule: [
             {
                 day: 'Monday', slots: [
-                    { period: 1, span: 1, subject: 'CSE', type: 'Lecture' },
-                    { period: 2, span: 1, subject: 'ECE', type: 'Lecture' },
-                    { period: 5, span: 2, subject: 'AIML', type: 'Lab' },
+                    { period: 1, span: 1, subject: 'CSE-H', type: 'Lecture' },
+                    { period: 2, span: 1, subject: 'ECE-A', type: 'Lecture' },
+                    { period: 5, span: 2, subject: 'AIML-C', type: 'Lab' },
                 ]
             },
             {
                 day: 'Tuesday', slots: [
-                    { period: 3, span: 1, subject: 'EEE', type: 'Lecture' },
-                    { period: 4, span: 1, subject: 'ME', type: 'Lecture' },
+                    { period: 3, span: 1, subject: 'EEE-B', type: 'Lecture' },
+                    { period: 4, span: 1, subject: 'ME-D', type: 'Lecture' },
                 ]
             },
             {
                 day: 'Wednesday', slots: [
-                    { period: 1, span: 1, subject: 'CV', type: 'Lecture' },
-                    { period: 2, span: 1, subject: 'CSE', type: 'Lecture' },
-                    { period: 3, span: 2, subject: 'ECE', type: 'Lab' },
+                    { period: 1, span: 1, subject: 'CV-A', type: 'Lecture' },
+                    { period: 2, span: 1, subject: 'CSE-H', type: 'Lecture' },
+                    { period: 3, span: 2, subject: 'ECE-A', type: 'Lab' },
                 ]
             },
             {
                 day: 'Thursday', slots: [
-                    { period: 3, span: 1, subject: 'AIML', type: 'Lecture' },
-                    { period: 4, span: 1, subject: 'EEE', type: 'Lecture' },
-                    { period: 5, span: 2, subject: 'ME', type: 'Lab' },
+                    { period: 3, span: 1, subject: 'AIML-C', type: 'Lecture' },
+                    { period: 4, span: 1, subject: 'EEE-B', type: 'Lecture' },
+                    { period: 5, span: 2, subject: 'ME-D', type: 'Lab' },
                 ]
             },
             {
                 day: 'Friday', slots: [
-                    { period: 1, span: 1, subject: 'CV', type: 'Lecture' },
-                    { period: 2, span: 1, subject: 'CSE', type: 'Lecture' },
-                    { period: 5, span: 2, subject: 'ECE', type: 'Lab' },
+                    { period: 1, span: 1, subject: 'CV-A', type: 'Lecture' },
+                    { period: 2, span: 1, subject: 'CSE-H', type: 'Lecture' },
+                    { period: 5, span: 2, subject: 'ECE-A', type: 'Lab' },
                 ]
             },
         ],
         exams: [
-            { date: '15/03/2026', subject: 'CSE', type: 'Internal 2 Evaluation' },
-            { date: '16/03/2026', subject: 'ECE', type: 'Internal 2 Evaluation' },
+            { date: '15/03/2026', subject: 'CSE-H', type: 'Internal 2 Evaluation' },
+            { date: '16/03/2026', subject: 'ECE-A', type: 'Internal 2 Evaluation' },
             { date: '20/04/2026', subject: 'All Sections', type: 'Semester End Assessment' },
         ]
     },
