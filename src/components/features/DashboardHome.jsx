@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { mockBackend } from '../../services/mockBackend';
 import {
@@ -16,6 +17,8 @@ import './DashboardHome.css';
 
 const DashboardHome = () => {
     const { user } = useAuth();
+    const router = useRouter();
+    const role = user?.role;
 
     // =========================================================================
     // ADMIN DASHBOARD STATES & HANDLERS
@@ -1469,6 +1472,41 @@ const DashboardHome = () => {
                             </>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* Live Faculty Locator Widget */}
+            <div className="home-locator-widget animate-enter">
+                <div className="home-locator-header">
+                    <h3>
+                        <Radio size={16} className="pulse-anim" color="#10b981" style={{ marginRight: '6px' }} />
+                        Live Faculty Tracker
+                    </h3>
+                    <button 
+                        className="home-locator-btn"
+                        onClick={() => router.push('/dashboard/teacher-locator')}
+                    >
+                        View Radar Map
+                    </button>
+                </div>
+                <div className="home-locator-list">
+                    {(mockBackend.teacherLocations || []).slice(0, 4).map(t => (
+                        <div key={t.id} className="home-locator-item">
+                            <div className="home-locator-item-left">
+                                <div className="home-locator-item-avatar" style={{ background: t.id === 1 ? '#7c3aed' : t.id === 2 ? '#2563eb' : t.id === 3 ? '#16a34a' : '#ea580c' }}>
+                                    {t.name.split(' ').pop().charAt(0).toUpperCase()}
+                                </div>
+                                <div className="home-locator-item-info">
+                                    <h4>{t.name}</h4>
+                                    <p>{t.subject}</p>
+                                </div>
+                            </div>
+                            <div className="home-locator-item-right">
+                                <span className="home-locator-item-room">{t.room}</span>
+                                <span className="home-locator-item-time">{t.lastSpotted}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
 
