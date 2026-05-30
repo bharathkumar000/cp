@@ -4,10 +4,50 @@ import { mockBackend } from '../../services/mockBackend';
 import { MessageCircle, Video, Upload, User, Check, Clock, Mic, Bell, Send, UserPlus } from 'lucide-react';
 import CustomDropdown from '../layout/CustomDropdown';
 import './FeatureStyles.css';
+import { useAuth } from '../../context/AuthContext';
 
 const DoubtSolving = () => {
+    const { user } = useAuth();
     const { doubts: initialDoubts, tutors } = mockBackend;
     const [doubts, setDoubts] = useState(initialDoubts);
+
+    const initialMathDoubts = [
+        {
+            id: 'math-1',
+            studentName: 'Ananya Y. K.',
+            usn: '4VV25EC012',
+            question: 'How do we find the eigenvalues and eigenvectors of a 3x3 matrix using the characteristic equation?',
+            subject: 'Mathematics',
+            status: 'Pending',
+            time: '10 mins ago',
+            replies: []
+        },
+        {
+            id: 'math-2',
+            studentName: 'Riddhi',
+            usn: '4VV25EC099',
+            question: 'Can you explain the difference between ordinary and partial differential equations with an example?',
+            subject: 'Mathematics',
+            status: 'Pending',
+            time: '1 hour ago',
+            replies: []
+        },
+        {
+            id: 'math-3',
+            studentName: 'Bharath Kumar A.',
+            usn: '4VV25EC001',
+            question: "What is the physical significance of the curl and divergence of a vector field in Green's theorem?",
+            subject: 'Mathematics',
+            status: 'Resolved',
+            time: '2 hours ago',
+            replies: [{ by: 'Dr. Bhavana', text: "Divergence measures source strength (flux density expansion), while curl measures local rotation velocity.", date: 'Today' }]
+        }
+    ];
+
+    const [mathDoubts, setMathDoubts] = useState(initialMathDoubts);
+    const [selectedMathDoubt, setSelectedMathDoubt] = useState(null);
+    const [mathReplyText, setMathReplyText] = useState('');
+
     const [selectedTeacher, setSelectedTeacher] = useState('');
     const [doubtText, setDoubtText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
@@ -15,6 +55,7 @@ const DoubtSolving = () => {
     const [activeDoubt, setActiveDoubt] = useState(null);
     const [showHistory, setShowHistory] = useState(false);
     const [notification, setNotification] = useState(null);
+
 
     const imageInputRef = React.useRef(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -169,7 +210,147 @@ const DoubtSolving = () => {
     };
 
     return (
-        <div className="feature-container">
+        user?.role === 'teacher' ? (
+            <div className="feature-container" style={{ color: '#fff' }}>
+                <div className="yellow-title-box" style={{ marginBottom: '2rem' }}>
+                    <h1>TEACHER DOUBT PORTAL (MATHEMATICS)</h1>
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '2rem', alignItems: 'start' }}>
+                    {/* Left Column: Student Doubt List */}
+                    <div style={{ background: '#111', border: '3px solid #fff', padding: '2rem', borderRadius: '12px', boxShadow: '10px 10px 0px rgba(255,255,255,0.05)' }}>
+                        <h2 style={{ fontSize: '1.4rem', fontWeight: 900, marginBottom: '1.5rem', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
+                            Students' Math Questions
+                        </h2>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            {mathDoubts.map(d => (
+                                <div 
+                                    key={d.id} 
+                                    onClick={() => setSelectedMathDoubt(d)}
+                                    style={{ 
+                                        background: '#000', 
+                                        border: selectedMathDoubt?.id === d.id ? '2px solid #fbbf24' : '1px solid #333', 
+                                        padding: '1.25rem', 
+                                        borderRadius: '8px', 
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        position: 'relative'
+                                    }}
+                                >
+                                    <span style={{ 
+                                        position: 'absolute', 
+                                        top: '12px', 
+                                        right: '12px', 
+                                        fontSize: '0.65rem', 
+                                        fontWeight: 'bold', 
+                                        padding: '3px 8px', 
+                                        borderRadius: '4px',
+                                        background: d.status === 'Resolved' ? 'rgba(74, 222, 128, 0.1)' : 'rgba(251, 191, 36, 0.1)',
+                                        color: d.status === 'Resolved' ? '#4ade80' : '#fbbf24',
+                                        border: d.status === 'Resolved' ? '1px solid #4ade80' : '1px solid #fbbf24'
+                                    }}>
+                                        {d.status.toUpperCase()}
+                                    </span>
+                                    
+                                    <div style={{ fontWeight: 800, color: '#fbbf24', fontSize: '0.85rem', marginBottom: '4px' }}>
+                                        {d.studentName} ({d.usn})
+                                    </div>
+                                    <p style={{ margin: '8px 0', fontSize: '0.95rem', lineHeight: 1.4, fontWeight: '700' }}>
+                                        {d.question}
+                                    </p>
+                                    <div style={{ fontSize: '0.7rem', color: '#666' }}>{d.time}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Right Column: Doubt Detail & Resolver */}
+                    <div style={{ background: '#111', border: '3px solid #fff', padding: '2rem', borderRadius: '12px', boxShadow: '10px 10px 0px rgba(255,255,255,0.05)', minHeight: '300px' }}>
+                        {selectedMathDoubt ? (
+                            <div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
+                                    <h3 style={{ margin: 0, fontWeight: 900, color: '#fbbf24' }}>Doubt Details</h3>
+                                    <span style={{ fontSize: '0.75rem', color: '#aaa' }}>{selectedMathDoubt.studentName}</span>
+                                </div>
+
+                                <div style={{ background: '#000', padding: '1.25rem', borderRadius: '8px', borderLeft: '4px solid #fbbf24', marginBottom: '1.5rem' }}>
+                                    <p style={{ margin: 0, fontSize: '1rem', fontStyle: 'italic', lineHeight: 1.5 }}>
+                                        "{selectedMathDoubt.question}"
+                                    </p>
+                                </div>
+
+                                {selectedMathDoubt.replies.length > 0 ? (
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <h4 style={{ fontSize: '0.8rem', fontWeight: 800, color: '#aaa', textTransform: 'uppercase', marginBottom: '8px' }}>Your Solution:</h4>
+                                        <div style={{ background: 'rgba(74, 222, 128, 0.05)', border: '1px solid #4ade80', padding: '1rem', borderRadius: '8px' }}>
+                                            <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>
+                                                {selectedMathDoubt.replies[0].text}
+                                            </p>
+                                            <span style={{ display: 'block', fontSize: '0.7rem', color: '#4ade80', marginTop: '6px', textAlign: 'right', fontWeight: 'bold' }}>
+                                                Solved {selectedMathDoubt.replies[0].date}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (!mathReplyText.trim()) return;
+                                        setMathDoubts(prev => prev.map(d => {
+                                            if (d.id !== selectedMathDoubt.id) return d;
+                                            return {
+                                                ...d,
+                                                status: 'Resolved',
+                                                replies: [{ by: 'Dr. Bhavana', text: mathReplyText, date: 'Just now' }]
+                                            };
+                                        }));
+                                        setSelectedMathDoubt(prev => ({
+                                            ...prev,
+                                            status: 'Resolved',
+                                            replies: [{ by: 'Dr. Bhavana', text: mathReplyText, date: 'Just now' }]
+                                        }));
+                                        setMathReplyText('');
+                                    }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                        <label style={{ fontSize: '0.8rem', fontWeight: 800, color: '#aaa', textTransform: 'uppercase' }}>
+                                            Type Your Reply / Explanation *
+                                        </label>
+                                        <textarea
+                                            placeholder="Write step-by-step solution here..."
+                                            value={mathReplyText}
+                                            onChange={e => setMathReplyText(e.target.value)}
+                                            required
+                                            style={{ width: '100%', minHeight: '120px', background: '#000', border: '2px solid #333', color: '#fff', padding: '10px', fontSize: '0.9rem', borderRadius: '6px', outline: 'none' }}
+                                        />
+                                        <button 
+                                            type="submit" 
+                                            style={{ 
+                                                background: '#fbbf24', 
+                                                color: '#000', 
+                                                border: '3px solid #000', 
+                                                padding: '12px', 
+                                                fontWeight: '900', 
+                                                borderRadius: '6px', 
+                                                cursor: 'pointer',
+                                                fontSize: '0.9rem',
+                                                boxShadow: '4px 4px 0px #000',
+                                                transition: 'all 0.1s'
+                                            }}
+                                        >
+                                            🚀 SUBMIT SOLUTION
+                                        </button>
+                                    </form>
+                                )}
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#666', textAlign: 'center', padding: '3rem' }}>
+                                <MessageCircle size={48} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                                <p style={{ fontWeight: 800 }}>Select a student question from the list to view details and reply.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        ) : (
+            <div className="feature-container">
             <div className="yellow-title-box" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
                 <h1>DOUBT SOLVING HUB</h1>
                 <button 
@@ -474,7 +655,8 @@ const DoubtSolving = () => {
                 }
             `}</style>
         </div>
-    );
+    )
+);
 };
 
 export default DoubtSolving;
