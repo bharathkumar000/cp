@@ -31,10 +31,6 @@ const TeacherLocator = () => {
         { time: '09:47:16', camera: 'CAM_M_402', text: 'Dr. Bhavana face detected. Confidence score: 99.7%' }
     ]);
 
-    // Form inputs for simulator
-    const [simTeacherId, setSimTeacherId] = useState('1');
-    const [simRoom, setSimRoom] = useState('M Block 402');
-    
     // Map room names to map coordinates percentages
     const roomCoordinates = {
         'M Block 402': { x: 40, y: 42 },
@@ -63,61 +59,6 @@ const TeacherLocator = () => {
             consoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
         }
     }, [consoleLogs]);
-
-    // Handle simulation trigger
-    const triggerSimulation = () => {
-        const teacherObj = teachers.find(t => t.id === parseInt(simTeacherId));
-        if (!teacherObj) return;
-
-        const coords = roomCoordinates[simRoom] || { x: 50, y: 50 };
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const shortTimeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        // Determine if scheduled room matches spotted room
-        const expectedRoom = scheduledRooms[teacherObj.name] || '';
-        const isScheduled = expectedRoom === simRoom;
-        const status = isScheduled ? 'On Track' : 'Unscheduled Spot';
-
-        // 1. Update teacher location in local state
-        setTeachers(prev => {
-            const updated = prev.map(t => {
-                if (t.id === teacherObj.id) {
-                    return {
-                        ...t,
-                        room: simRoom,
-                        lastSpotted: 'Just now',
-                        status: status,
-                        coords: coords
-                    };
-                }
-                return t;
-            });
-            // Update the shared mock backend so it stays active across pages
-            mockBackend.teacherLocations = updated;
-            return updated;
-        });
-
-        // 2. Append simulated camera logs
-        const camLabel = simRoom.toUpperCase().replace(/\s+/g, '_');
-        const matchConfidence = (95 + Math.random() * 4.9).toFixed(1);
-        
-        setConsoleLogs(prev => [
-            ...prev,
-            { 
-                time: timeStr, 
-                camera: `CAM_${camLabel}`, 
-                text: `Face recognition match: ${teacherObj.name} identified. Confidence: ${matchConfidence}%` 
-            },
-            {
-                time: timeStr,
-                camera: `MESH_NODE_OK`,
-                text: `Location coordinates synchronized. Node map updated: Room ${simRoom}`
-            }
-        ]);
-        
-        setSelectedTeacherId(teacherObj.id);
-    };
 
     // Filter teachers list based on query
     const filteredTeachers = teachers.filter(t => 
@@ -340,34 +281,6 @@ const TeacherLocator = () => {
                 </div>
             </div>
 
-            {/* Bottom Demo Simulator Panel */}
-            <div className="locator-simulation-card">
-                <h4><Sliders size={18} /> Simulation Control Panel (Demo & Assessment Sandbox)</h4>
-                <p>Use these controls to mock the facial recognition model telemetry input. Triggering a camera detection updates the database and positions the teacher location map pins live.</p>
-                <div className="locator-simulation-controls">
-                    <div className="simulator-form-group">
-                        <label>Select Lecturer</label>
-                        <select value={simTeacherId} onChange={(e) => setSimTeacherId(e.target.value)}>
-                            {teachers.map(t => (
-                                <option key={t.id} value={t.id}>{t.name} ({t.dept})</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="simulator-form-group">
-                        <label>Target Classroom / Location Node</label>
-                        <select value={simRoom} onChange={(e) => setSimRoom(e.target.value)}>
-                            {Object.keys(roomCoordinates).map(roomName => (
-                                <option key={roomName} value={roomName}>{roomName}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <button className="simulator-trigger-btn" onClick={triggerSimulation}>
-                        <Play size={14} /> Simulate Face Detection Scan
-                    </button>
-                </div>
-            </div>
         </div>
     );
 };
