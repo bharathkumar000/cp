@@ -162,7 +162,6 @@ const DashboardLayout = ({ children }) => {
         { type: 'divider' },
         { label: 'Doubt Solving', icon: <MessageSquare size={20} />, path: '/dashboard/doubts' },
         { label: 'Discussion Forum', icon: <Hash size={20} />, path: '/dashboard/chat' },
-        { label: 'Answer Analysis', icon: <BarChart2 size={20} />, path: '/dashboard/analysis' },
         { label: 'Project Hub', icon: <GitBranch size={20} />, path: '/dashboard/projects' },
         { label: 'Clubs Hub', icon: <Trophy size={20} />, path: '/dashboard/clubs' },
         { type: 'divider' },
