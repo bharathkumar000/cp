@@ -162,9 +162,6 @@ const DashboardLayout = ({ children }) => {
 
     const teacherNav = [
         { label: 'Subject Portal', icon: <Layout size={20} />, path: '/dashboard?view=subject' },
-        ...(user?.isClassTeacher ? [
-            { label: 'Class Advisor Tower', icon: <Sliders size={20} />, path: '/dashboard?view=advisor' }
-        ] : []),
         { label: 'Assignment Hub', icon: <BookOpenCheck size={20} />, path: '/dashboard/assignments' },
         { label: 'Attendance List', icon: <Calendar size={20} />, path: '/dashboard/attendance' },
         { label: 'Timetable', icon: <Clock size={20} />, path: '/dashboard/timetable' },
