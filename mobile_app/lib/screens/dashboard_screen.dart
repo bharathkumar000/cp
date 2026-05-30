@@ -16,6 +16,7 @@ import 'predictor_screen.dart';
 import 'notes_screen.dart';
 import 'study_groups_screen.dart';
 import 'feedback_screen.dart';
+import 'teacher_locator_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -535,6 +536,12 @@ class DashboardScreen extends StatelessWidget {
     } else {
       // Student
       tools = [
+        {
+          'title': 'Teacher Radar',
+          'icon': Icons.radar_rounded,
+          'color': AppTheme.accentOrange,
+          'screen': const TeacherLocatorScreen(),
+        },
         {
           'title': 'Prepcare AI',
           'icon': Icons.auto_awesome_rounded,
