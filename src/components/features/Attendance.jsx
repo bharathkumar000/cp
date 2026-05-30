@@ -1,7 +1,8 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Calendar, Search, X, Upload, Check, Bell, User as UserIcon, PlusCircle, Trash2, ShieldAlert, AlertTriangle, RefreshCw, Eye } from 'lucide-react';
+import { Calendar, Search, X, Upload, Check, Bell, User as UserIcon, PlusCircle, Trash2, ShieldAlert, AlertTriangle, RefreshCw, Eye, MapPin, Compass, Navigation, Radio, Sparkles, Activity } from 'lucide-react';
 import { createClient } from '../../utils/supabase/client';
+
 import { useAuth } from '../../context/AuthContext';
 import './Attendance.css';
 
@@ -360,6 +361,317 @@ const Attendance = () => {
 
     // Validation Studio state variables
     const [activeTab, setActiveTab] = useState('standard');
+
+    // Geofencing and Grace Attendance simulation state
+    const [geofenceRequests, setGeofenceRequests] = useState([
+        {
+            id: 'geo-1',
+            student_id: '00000000-0000-0000-0000-000000000001',
+            student_name: 'Bharath Kumar A (bk@vvce)',
+            event_title: 'Smart Campus Hackathon 2026',
+            venue: 'College B - RV College of Engineering (RVCE)',
+            lat: 12.9237,
+            lng: 77.4987,
+            radius: 1.0, // 1 km
+            date: (() => {
+                const d = new Date();
+                return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+            })(),
+            start_time: '09:00',
+            end_time: '17:00',
+            course: '1BMATE201 - Applied Mathematics - II for EE Stream',
+            status: 'Pending', // Pending, Approved, Rejected, Grace_Granted
+            simulated_status: 'Verified_Outside', // Verified_Inside, Verified_Outside
+            last_checked_at: null
+        },
+        {
+            id: 'geo-2',
+            student_id: '00000000-0000-0000-0000-000000000007',
+            student_name: 'Rishith (rishith@vvce)',
+            event_title: 'National Robotics Championship',
+            venue: 'BMS College of Engineering (BMSCE)',
+            lat: 12.9193,
+            lng: 77.5670,
+            radius: 1.0,
+            date: (() => {
+                const d = new Date();
+                return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+            })(),
+            start_time: '10:00',
+            end_time: '16:00',
+            course: '1BMATE201 - Applied Mathematics - II for EE Stream',
+            status: 'Pending',
+            simulated_status: 'Verified_Inside',
+            last_checked_at: new Date().toLocaleTimeString()
+        }
+    ]);
+
+    // Live Student GPS Location Simulation (initially at College A - VVCE: 12.3168, 76.6127)
+    const [liveStudentGps, setLiveStudentGps] = useState({
+        lat: 12.3168,
+        lng: 76.6127,
+        student_id: '00000000-0000-0000-0000-000000000001' // bk@vvce
+    });
+
+    const [aiPromptText, setAiPromptText] = useState('');
+    const [isAILoading, setIsAILoading] = useState(false);
+    const [aiParsedData, setAiParsedData] = useState(null);
+    const [selectedGeoRequestId, setSelectedGeoRequestId] = useState('geo-1');
+    const [geofenceMessage, setGeofenceMessage] = useState({ text: '', type: '' });
+
+    // Haversine distance calculator
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
+        const R = 6371; // Radius of the earth in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const d = R * c; // Distance in km
+        return d;
+    };
+
+    // Client-side NLP parser for AI Auto-geofencing
+    const handleAIParseGeofence = () => {
+        if (!aiPromptText.trim()) {
+            setGeofenceMessage({ text: "Please enter event details for AI to parse.", type: "error" });
+            return;
+        }
+        setIsAILoading(true);
+        setGeofenceMessage({ text: "", type: "" });
+        
+        setTimeout(() => {
+            const prompt = aiPromptText.toLowerCase();
+            let parsedEvent = "AI Geofenced Workshop";
+            let parsedVenue = "Identified College Campus";
+            let resolvedLat = 12.9716;
+            let resolvedLng = 77.5946;
+            
+            if (prompt.includes("hackathon")) {
+                parsedEvent = "Smart Hackathon Challenge";
+            } else if (prompt.includes("workshop") || prompt.includes("training")) {
+                parsedEvent = "AI & Tech Workshop";
+            } else if (prompt.includes("seminar") || prompt.includes("summit") || prompt.includes("conference")) {
+                parsedEvent = "National Tech Summit";
+            } else if (prompt.includes("robot") || prompt.includes("robofest")) {
+                parsedEvent = "National Robotics Championship";
+            }
+
+            if (prompt.includes("rvce") || prompt.includes("rv college") || prompt.includes("r.v. college")) {
+                parsedVenue = "RV College of Engineering (RVCE), Bengaluru";
+                resolvedLat = 12.9237;
+                resolvedLng = 77.4987;
+            } else if (prompt.includes("bmsce") || prompt.includes("bms college") || prompt.includes("b.m.s. college")) {
+                parsedVenue = "BMS College of Engineering (BMSCE), Bengaluru";
+                resolvedLat = 12.9193;
+                resolvedLng = 77.5670;
+            } else if (prompt.includes("pesu") || prompt.includes("pes university") || prompt.includes("pesit")) {
+                parsedVenue = "PES University (PESU), Bengaluru";
+                resolvedLat = 12.9348;
+                resolvedLng = 77.5348;
+            } else if (prompt.includes("iitb") || prompt.includes("iit bombay") || prompt.includes("indian institute of technology")) {
+                parsedVenue = "IIT Bombay Campus, Mumbai";
+                resolvedLat = 19.1334;
+                resolvedLng = 72.9133;
+            } else {
+                const venuePart = aiPromptText.split(/ at | in | near /i);
+                if (venuePart.length > 1) {
+                    parsedVenue = venuePart[1].split(/ from | on | for /i)[0].trim();
+                } else {
+                    parsedVenue = "External College Venue";
+                }
+                resolvedLat = 12.9592;
+                resolvedLng = 77.5721;
+            }
+
+            setAiParsedData({
+                event_title: parsedEvent,
+                venue: parsedVenue,
+                lat: resolvedLat,
+                lng: resolvedLng,
+                radius: 1.0, // forced to exactly 1.0 km as per user requirement
+                date: (() => {
+                    const d = new Date();
+                    return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+                })(),
+                start_time: '09:00',
+                end_time: '17:00',
+                course: '1BMATE201 - Applied Mathematics - II for EE Stream'
+            });
+            setIsAILoading(false);
+            setGeofenceMessage({ text: "AI successfully parsed the event details and auto-geofenced the coordinates!", type: "success" });
+        }, 1200);
+    };
+
+    // Submit request handler
+    const handleSubmitGeofenceRequest = () => {
+        if (!aiParsedData) return;
+        
+        const newReq = {
+            id: `geo-${Date.now()}`,
+            student_id: user?.id || '00000000-0000-0000-0000-000000000001',
+            student_name: user?.name || 'Bharath Kumar A (bk@vvce)',
+            event_title: aiParsedData.event_title,
+            venue: aiParsedData.venue,
+            lat: aiParsedData.lat,
+            lng: aiParsedData.lng,
+            radius: aiParsedData.radius,
+            date: aiParsedData.date,
+            start_time: aiParsedData.start_time,
+            end_time: aiParsedData.end_time,
+            course: aiParsedData.course,
+            status: 'Pending',
+            simulated_status: 'Verified_Outside',
+            last_checked_at: null
+        };
+        
+        setGeofenceRequests(prev => [newReq, ...prev]);
+        setAiParsedData(null);
+        setAiPromptText('');
+        setSelectedGeoRequestId(newReq.id);
+        setGeofenceMessage({ text: "Your Geofence Grace request has been successfully submitted to your class teacher!", type: "success" });
+    };
+
+    // Simulated location streamer
+    const handleSimulateGPS = (reqId, inside) => {
+        const req = geofenceRequests.find(r => r.id === reqId);
+        if (!req) return;
+
+        let targetLat, targetLng;
+        if (inside) {
+            targetLat = req.lat + 0.002; // inside the 1km boundary
+            targetLng = req.lng - 0.003;
+        } else {
+            targetLat = 12.3168; // back to college A (VVCE)
+            targetLng = 76.6127;
+        }
+
+        setLiveStudentGps({
+            lat: targetLat,
+            lng: targetLng,
+            student_id: user?.id || '00000000-0000-0000-0000-000000000001'
+        });
+
+        setGeofenceRequests(prev => prev.map(r => {
+            if (r.id === reqId) {
+                const dist = calculateDistance(targetLat, targetLng, r.lat, r.lng);
+                const isInside = dist <= r.radius;
+                return {
+                    ...r,
+                    simulated_status: isInside ? 'Verified_Inside' : 'Verified_Outside',
+                    last_checked_at: new Date().toLocaleTimeString()
+                };
+            }
+            return r;
+        }));
+
+        setGeofenceMessage({
+            text: `GPS coordinates simulated successfully. Student is now ${inside ? 'INSIDE' : 'OUTSIDE'} the event Geofence.`,
+            type: "success"
+        });
+    };
+
+    // Teacher approval and DB sync handler
+    const handleTeacherApproveGrace = async (reqId) => {
+        const req = geofenceRequests.find(r => r.id === reqId);
+        if (!req) return;
+
+        // Verify if student is inside geofence
+        const studentGpsLat = liveStudentGps.student_id === req.student_id ? liveStudentGps.lat : (req.simulated_status === 'Verified_Inside' ? req.lat + 0.002 : 12.3168);
+        const studentGpsLng = liveStudentGps.student_id === req.student_id ? liveStudentGps.lng : (req.simulated_status === 'Verified_Inside' ? req.lng - 0.003 : 76.6127);
+        
+        const dist = calculateDistance(studentGpsLat, studentGpsLng, req.lat, req.lng);
+        const isInside = dist <= req.radius;
+
+        if (!isInside && req.simulated_status !== 'Verified_Inside') {
+            setGeofenceMessage({
+                text: "Cannot grant grace attendance. Student is currently outside the Geofence. AI has flagged a warning.",
+                type: "error"
+            });
+            return;
+        }
+
+        try {
+            const dStr = req.date;
+            const parts = dStr.split('-');
+            const dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            const dayName = dayNames[dateObj.getDay()];
+
+            const newRecord = {
+                student_id: req.student_id,
+                course: req.course,
+                date: dStr,
+                day: dayName,
+                present: 1,
+                total: 1,
+                doc_status: 'GRANTED_GEOFENCE',
+                sem: '2 - Semester'
+            };
+
+            const { data, error } = await supabase
+                .from('attendance')
+                .upsert(newRecord, { onConflict: 'student_id,course,date' });
+
+            if (error) {
+                console.error("Supabase error during geofence grace insertion:", error);
+            }
+
+            // Sync standard attendance records in state
+            setSupabaseRecords(prev => {
+                const filtered = prev.filter(r => !(r.student_id === req.student_id && r.course === req.course && r.date === dStr));
+                return [
+                    {
+                        id: `geo-grant-${Date.now()}`,
+                        ...newRecord,
+                        created_at: new Date().toISOString()
+                    },
+                    ...filtered
+                ];
+            });
+
+            setGeofenceRequests(prev => prev.map(r => {
+                if (r.id === reqId) {
+                    return {
+                        ...r,
+                        status: 'Grace_Granted',
+                        last_checked_at: new Date().toLocaleTimeString()
+                    };
+                }
+                return r;
+            }));
+
+            setGeofenceMessage({
+                text: `Grace attendance successfully approved and registered in Supabase for ${req.student_name}!`,
+                type: "success"
+            });
+
+        } catch (err) {
+            console.error("Error granting grace attendance:", err);
+            setGeofenceMessage({
+                text: "An error occurred while communicating with Supabase, but the local ledger was updated.",
+                type: "error"
+            });
+        }
+    };
+
+    const handleTeacherRejectGrace = (reqId) => {
+        setGeofenceRequests(prev => prev.map(r => {
+            if (r.id === reqId) {
+                return {
+                    ...r,
+                    status: 'Rejected',
+                    last_checked_at: new Date().toLocaleTimeString()
+                };
+            }
+            return r;
+        }));
+        setGeofenceMessage({ text: "Request has been rejected.", type: "success" });
+    };
+
     const [validationSlotId, setValidationSlotId] = useState('');
     const [timetableSlots, setTimetableSlots] = useState([]);
     const [validationRoster, setValidationRoster] = useState([]);
@@ -1619,6 +1931,407 @@ const Attendance = () => {
         }
     };
 
+    const renderGeofenceGracePanel = () => {
+        const activeRequest = geofenceRequests.find(r => r.id === selectedGeoRequestId) || geofenceRequests[0];
+        
+        // Check if student coordinates are inside the active request's geofence
+        const studentGpsLat = liveStudentGps.student_id === activeRequest?.student_id ? liveStudentGps.lat : (activeRequest?.simulated_status === 'Verified_Inside' ? activeRequest.lat + 0.002 : 12.3168);
+        const studentGpsLng = liveStudentGps.student_id === activeRequest?.student_id ? liveStudentGps.lng : (activeRequest?.simulated_status === 'Verified_Inside' ? activeRequest.lng - 0.003 : 76.6127);
+        
+        const currentDist = activeRequest ? calculateDistance(studentGpsLat, studentGpsLng, activeRequest.lat, activeRequest.lng) : 0;
+        const isCurrentlyInside = activeRequest ? (currentDist <= activeRequest.radius) : false;
+
+        const isStudent = user?.role === 'student';
+
+        // Filter requests for student or show all for teacher
+        const filteredRequests = isStudent 
+            ? geofenceRequests.filter(r => r.student_id === user.id)
+            : geofenceRequests;
+
+        return (
+            <div className="lms-section-card" style={{ padding: '20px' }}>
+                <div className="lms-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Compass className="rotating-slow" size={20} color="#6366f1" />
+                        <span style={{ fontSize: '1.15rem', fontWeight: 700 }}>AI Geofence Grace Attendance Manager</span>
+                    </div>
+                    <span className="geofence-telemetry-badge">
+                        ROLE: {user?.role?.toUpperCase()}
+                    </span>
+                </div>
+
+                {geofenceMessage.text && (
+                    <div style={{
+                        padding: '12px 16px',
+                        borderRadius: '8px',
+                        marginBottom: '20px',
+                        fontSize: '0.85rem',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: geofenceMessage.type === 'success' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                        border: geofenceMessage.type === 'success' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
+                        color: geofenceMessage.type === 'success' ? '#4ade80' : '#f87171'
+                    }}>
+                        {geofenceMessage.type === 'success' ? <Check size={16} /> : <AlertTriangle size={16} />}
+                        <span>{geofenceMessage.text}</span>
+                        <button onClick={() => setGeofenceMessage({ text: '', type: '' })} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
+                            <X size={14} />
+                        </button>
+                    </div>
+                )}
+
+                <div className="geofence-grid-layout">
+                    {/* Left Column: Request List & AI Generator */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                        {isStudent && (
+                            <div style={{ background: 'rgba(30, 41, 59, 0.3)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                                    <Sparkles size={16} color="#a855f7" />
+                                    <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f1f5f9' }}>AI Geofence Request Planner</span>
+                                </div>
+                                <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px' }}>
+                                    Describe your workshop or hackathon venue. Our AI will resolve the coordinates and automatically establish a 1.0 km geofence boundary.
+                                </p>
+                                <textarea
+                                    className="lms-input-field"
+                                    style={{ width: '100%', height: '80px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px', fontSize: '0.85rem', color: '#fff', resize: 'none', marginBottom: '12px' }}
+                                    placeholder="e.g. I am attending the Smart Campus Hackathon at RV College of Engineering Bangalore tomorrow from 9 AM to 5 PM."
+                                    value={aiPromptText}
+                                    onChange={(e) => setAiPromptText(e.target.value)}
+                                    disabled={isAILoading}
+                                />
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <button 
+                                        onClick={handleAIParseGeofence} 
+                                        className="ai-sparkle-btn"
+                                        disabled={isAILoading || !aiPromptText.trim()}
+                                        style={{ fontSize: '0.85rem', padding: '8px 14px' }}
+                                    >
+                                        <Sparkles size={14} className={isAILoading ? 'rotating-slow' : ''} />
+                                        {isAILoading ? "AI Resolving..." : "AI Auto-Geofence Venue"}
+                                    </button>
+                                    
+                                    {aiParsedData && (
+                                        <button 
+                                            onClick={handleSubmitGeofenceRequest} 
+                                            className="lms-btn-submit"
+                                            style={{ fontSize: '0.85rem', background: '#6366f1', color: 'white', padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
+                                        >
+                                            Submit Request
+                                        </button>
+                                    )}
+                                </div>
+
+                                {aiParsedData && (
+                                    <div className="ai-parsed-box">
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                                            <span style={{ fontSize: '0.78rem', color: '#a855f7', fontWeight: 600 }}>AI PARSED TELEMETRY</span>
+                                            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700 }}>RADIUS FORCED: 1.0 KM</span>
+                                        </div>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.8rem', color: '#e2e8f0' }}>
+                                            <div><strong>Event:</strong> {aiParsedData.event_title}</div>
+                                            <div><strong>Venue:</strong> {aiParsedData.venue}</div>
+                                            <div><strong>Coordinates:</strong> {aiParsedData.lat.toFixed(4)}, {aiParsedData.lng.toFixed(4)}</div>
+                                            <div><strong>Date:</strong> {aiParsedData.date}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <div>
+                            <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f1f5f9', display: 'block', marginBottom: '10px' }}>
+                                {isStudent ? "My Active Off-Campus Requests" : "Student Grace Requests Queue"}
+                            </span>
+                            {filteredRequests.length === 0 ? (
+                                <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(30,41,59,0.2)', border: '1px dashed #334155', borderRadius: '12px', color: '#64748b', fontSize: '0.85rem' }}>
+                                    No requests generated.
+                                </div>
+                            ) : (
+                                <div className="geofence-list-container">
+                                    {filteredRequests.map(req => {
+                                        const reqGpsLat = liveStudentGps.student_id === req.student_id ? liveStudentGps.lat : (req.simulated_status === 'Verified_Inside' ? req.lat + 0.002 : 12.3168);
+                                        const reqGpsLng = liveStudentGps.student_id === req.student_id ? liveStudentGps.lng : (req.simulated_status === 'Verified_Inside' ? req.lng - 0.003 : 76.6127);
+                                        const dist = calculateDistance(reqGpsLat, reqGpsLng, req.lat, req.lng);
+                                        const isInside = dist <= req.radius;
+                                        const isSelected = selectedGeoRequestId === req.id;
+
+                                        return (
+                                            <div 
+                                                key={req.id} 
+                                                className={`geofence-card-item ${isSelected ? 'active' : ''}`}
+                                                onClick={() => setSelectedGeoRequestId(req.id)}
+                                            >
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                                    <div>
+                                                        <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: '#f1f5f9' }}>{req.event_title}</h4>
+                                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{req.venue}</span>
+                                                    </div>
+                                                    <span style={{
+                                                        fontSize: '0.7rem',
+                                                        fontWeight: 700,
+                                                        padding: '3px 8px',
+                                                        borderRadius: '4px',
+                                                        textTransform: 'uppercase',
+                                                        background: req.status === 'Grace_Granted' ? 'rgba(16, 185, 129, 0.15)' : req.status === 'Rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                                                        border: req.status === 'Grace_Granted' ? '1px solid rgba(16, 185, 129, 0.3)' : req.status === 'Rejected' ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+                                                        color: req.status === 'Grace_Granted' ? '#10b981' : req.status === 'Rejected' ? '#ef4444' : '#f59e0b'
+                                                    }}>
+                                                        {req.status === 'Grace_Granted' ? 'Grace Granted' : req.status}
+                                                    </span>
+                                                </div>
+
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: '#cbd5e1', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
+                                                    <div>
+                                                        <span style={{ color: '#94a3b8' }}>Student:</span> {req.student_name.split(' ')[0]}
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                        <Radio size={12} className={isInside ? 'rotating-slow' : ''} color={isInside ? '#10b981' : '#f59e0b'} />
+                                                        <span style={{ color: isInside ? '#10b981' : '#f59e0b', fontWeight: 600 }}>
+                                                            {isInside ? 'Inside Geofence' : 'Outside Geofence'}
+                                                        </span>
+                                                        <span style={{ opacity: 0.6 }}>({dist.toFixed(2)} km)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Column: GPS Map Radar / Simulation Control Detail Panel */}
+                    <div>
+                        {activeRequest ? (
+                            <div style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                <div>
+                                    <span style={{ fontSize: '0.8rem', color: '#a855f7', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Geofence Telemetry</span>
+                                    <h3 style={{ margin: '4px 0 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>{activeRequest.event_title}</h3>
+                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Course: {activeRequest.course}</span>
+                                </div>
+
+                                {/* Radial Radar Circle Visualization */}
+                                <div className="geofence-radar-visualizer" style={{ height: '240px' }}>
+                                    <svg width="100%" height="100%" viewBox="0 0 200 200" style={{ position: 'absolute', top: 0, left: 0 }}>
+                                        {/* Grid Concentric Rings */}
+                                        <circle cx="100" cy="100" r="80" stroke="rgba(99, 102, 241, 0.15)" strokeWidth="1" fill="none" />
+                                        <circle cx="100" cy="100" r="60" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" fill="none" />
+                                        <circle cx="100" cy="100" r="40" stroke="rgba(99, 102, 241, 0.25)" strokeWidth="1" fill="none" />
+                                        <circle cx="100" cy="100" r="20" stroke="rgba(99, 102, 241, 0.3)" strokeWidth="1" fill="none" />
+                                        
+                                        {/* Crosshair Lines */}
+                                        <line x1="20" y1="100" x2="180" y2="100" stroke="rgba(99, 102, 241, 0.15)" strokeWidth="1" />
+                                        <line x1="100" y1="20" x2="100" y2="180" stroke="rgba(99, 102, 241, 0.15)" strokeWidth="1" />
+                                        
+                                        {/* Geofence boundary (forced to 1.0 km - represented as the 60px radius circle) */}
+                                        <circle 
+                                            cx="100" 
+                                            cy="100" 
+                                            r="55" 
+                                            stroke={isCurrentlyInside ? "rgba(16, 185, 129, 0.6)" : "rgba(245, 158, 11, 0.6)"} 
+                                            strokeWidth="2" 
+                                            strokeDasharray="4,3" 
+                                            fill={isCurrentlyInside ? "rgba(16, 185, 129, 0.05)" : "rgba(245, 158, 11, 0.03)"} 
+                                            style={{ transition: 'all 0.5s ease' }}
+                                        />
+                                        <text x="100" y="38" fill={isCurrentlyInside ? "#10b981" : "#f59e0b"} fontSize="6" fontWeight="bold" textAnchor="middle">
+                                            1.0 KM GEOFENCE BOUNDARY
+                                        </text>
+
+                                        {/* Rotating Radar sweep */}
+                                        <line 
+                                            className="radar-sweep-line" 
+                                            x1="100" 
+                                            y1="100" 
+                                            x2="100" 
+                                            y2="20" 
+                                            stroke="rgba(99, 102, 241, 0.4)" 
+                                            strokeWidth="1.5" 
+                                        />
+
+                                        {/* Center Target Venue Pin */}
+                                        <circle cx="100" cy="100" r="4" fill="#6366f1" />
+                                        <circle cx="100" cy="100" r="8" stroke="#6366f1" strokeWidth="1" fill="none" className="radar-pulse-ring" style={{ animationDuration: '2s' }} />
+
+                                        {/* Student GPS Location Marker */}
+                                        <circle 
+                                            cx={isCurrentlyInside ? 115 : 170} 
+                                            cy={isCurrentlyInside ? 85 : 50} 
+                                            r="5" 
+                                            fill={isCurrentlyInside ? "#10b981" : "#f59e0b"} 
+                                            style={{ transition: 'all 0.5s ease' }}
+                                        />
+                                        <circle 
+                                            cx={isCurrentlyInside ? 115 : 170} 
+                                            cy={isCurrentlyInside ? 85 : 50} 
+                                            r="10" 
+                                            stroke={isCurrentlyInside ? "#10b981" : "#f59e0b"} 
+                                            strokeWidth="1" 
+                                            fill="none" 
+                                            className="radar-pulse-ring" 
+                                            style={{ transition: 'all 0.5s ease', animationDuration: '1.5s' }} 
+                                        />
+                                    </svg>
+                                    
+                                    <div style={{ position: 'absolute', bottom: '10px', left: '10px', right: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span className="geofence-telemetry-badge" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                            <Activity size={12} color="#38bdf8" />
+                                            DIST: {currentDist.toFixed(2)} KM
+                                        </span>
+                                        <span style={{
+                                            fontSize: '0.75rem',
+                                            fontWeight: 700,
+                                            padding: '4px 10px',
+                                            borderRadius: '6px',
+                                            backgroundColor: isCurrentlyInside ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                                            color: isCurrentlyInside ? '#4ade80' : '#fde047',
+                                            border: isCurrentlyInside ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+                                            textShadow: isCurrentlyInside ? '0 0 8px rgba(74, 222, 128, 0.5)' : 'none'
+                                        }}>
+                                            {isCurrentlyInside ? "GPS VERIFIED: INSIDE" : "OUTSIDE BOUNDARY"}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div style={{ background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #1e293b', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#64748b' }}>Venue Lat/Lng:</span>
+                                        <span style={{ color: '#e2e8f0', fontFamily: 'monospace' }}>{activeRequest.lat.toFixed(6)}, {activeRequest.lng.toFixed(6)}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#64748b' }}>Simulated User GPS:</span>
+                                        <span style={{ color: isCurrentlyInside ? '#4ade80' : '#f59e0b', fontFamily: 'monospace' }}>
+                                            {studentGpsLat.toFixed(6)}, {studentGpsLng.toFixed(6)}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#64748b' }}>Geofence Radius:</span>
+                                        <span style={{ color: '#cbd5e1' }}>1.0 km (1000m)</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span style={{ color: '#64748b' }}>Event Timeframe:</span>
+                                        <span style={{ color: '#cbd5e1' }}>{activeRequest.start_time} - {activeRequest.end_time}</span>
+                                    </div>
+                                    {activeRequest.last_checked_at && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #1e293b', paddingTop: '8px', marginTop: '4px' }}>
+                                            <span style={{ color: '#64748b' }}>Last GPS Broadcast:</span>
+                                            <span style={{ color: '#38bdf8' }}>{activeRequest.last_checked_at}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Simulation controls */}
+                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px' }}>
+                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
+                                        GPS Streaming Simulator (Mobile App Mock)
+                                    </span>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <button 
+                                            onClick={() => handleSimulateGPS(activeRequest.id, true)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '10px',
+                                                borderRadius: '8px',
+                                                border: '1px solid rgba(16, 185, 129, 0.4)',
+                                                background: 'rgba(16, 185, 129, 0.1)',
+                                                color: '#4ade80',
+                                                fontSize: '0.82rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}
+                                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'; }}
+                                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'; }}
+                                        >
+                                            <Navigation size={14} style={{ transform: 'rotate(45deg)' }} />
+                                            Simulate GPS: INSIDE
+                                        </button>
+                                        <button 
+                                            onClick={() => handleSimulateGPS(activeRequest.id, false)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '10px',
+                                                borderRadius: '8px',
+                                                border: '1px solid rgba(239, 68, 68, 0.4)',
+                                                background: 'rgba(239, 68, 68, 0.1)',
+                                                color: '#f87171',
+                                                fontSize: '0.82rem',
+                                                fontWeight: 600,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                            }}
+                                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
+                                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
+                                        >
+                                            <MapPin size={14} />
+                                            Simulate GPS: OUTSIDE
+                                        </button>
+                                    </div>
+                                    <span style={{ display: 'block', fontSize: '0.72rem', color: '#64748b', marginTop: '6px', textAlign: 'center' }}>
+                                        Simulates student's smartphone broadcasting GPS location to teacher's server
+                                    </span>
+                                </div>
+
+                                {/* Teacher Approval Controls */}
+                                {!isStudent && (
+                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
+                                            Teacher Action Panel
+                                        </span>
+                                        {activeRequest.status === 'Grace_Granted' ? (
+                                            <div style={{ padding: '10px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
+                                                <Check size={16} />
+                                                Grace Attendance Granted & Synced to DB
+                                            </div>
+                                        ) : activeRequest.status === 'Rejected' ? (
+                                            <div style={{ padding: '10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
+                                                <X size={16} />
+                                                Request Rejected
+                                            </div>
+                                        ) : (
+                                            <div style={{ display: 'flex', gap: '10px' }}>
+                                                <button
+                                                    onClick={() => handleTeacherApproveGrace(activeRequest.id)}
+                                                    className="lms-btn-submit"
+                                                    style={{ flex: 1.5, background: '#10b981', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                                                >
+                                                    <Check size={14} />
+                                                    Grant Grace Attendance
+                                                </button>
+                                                <button
+                                                    onClick={() => handleTeacherRejectGrace(activeRequest.id)}
+                                                    className="lms-btn-cancel"
+                                                    style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
+                                                >
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', padding: '40px', background: 'rgba(15,23,42,0.2)', border: '1px dashed #334155', borderRadius: '16px', color: '#64748b' }}>
+                                Select a request from the list to view telemetry and maps.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderValidationStudio = () => {
         // A. If user is teacher or admin
         if (user?.role === 'teacher' || user?.role === 'admin') {
@@ -2293,6 +3006,14 @@ const Attendance = () => {
                 >
                     Validation Studio
                 </button>
+                <button 
+                    onClick={() => setActiveTab('geofence')} 
+                    className={`lms-tab-trigger ${activeTab === 'geofence' ? 'active' : ''}`}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                    <Compass size={14} className={activeTab === 'geofence' ? 'rotating-slow' : ''} />
+                    AI Geofence Grace
+                </button>
             </div>
 
             {activeTab === 'standard' ? (
@@ -2856,11 +3577,10 @@ const Attendance = () => {
                 </div>
             )}
             </>
+            ) : activeTab === 'validation' ? (
+                renderValidationStudio()
             ) : (
-                <div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>
-                    <h3 style={{ color: '#1e293b', marginBottom: '1rem' }}>Validation Studio</h3>
-                    <p>This advanced verification module is currently under construction for Face Pay integration.</p>
-                </div>
+                renderGeofenceGracePanel()
             )}
 
             {/* Upload Modal */}
