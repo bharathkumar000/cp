@@ -12,7 +12,7 @@ import {
     Pencil, Clock, Hash, BrainCircuit, Calculator, Activity,
     Flame, StickyNote, CheckCircle2, Shield, GitBranch, ClipboardList,
     Home, Wallet, ShieldAlert, TrendingUp, BookOpenCheck, Search, Sparkles, Sliders,
-    Zap, MapPin, Radio
+    Zap, MapPin, Radio, Building2
 } from 'lucide-react';
 import '../../components/layout/DashboardLayout.css';
 import AIChatWidget from '../../components/layout/AIChatWidget';
@@ -121,6 +121,7 @@ const DashboardLayout = ({ children }) => {
         { label: 'Assignment Hub', icon: <BookOpenCheck size={20} />, path: '/dashboard/assignments' },
         { label: 'Attendance List', icon: <Calendar size={20} />, path: '/dashboard/attendance' },
         { label: 'Timetable', icon: <Clock size={20} />, path: '/dashboard/timetable' },
+        { label: 'Teacher Radar', icon: <MapPin size={20} />, path: '/dashboard/teacher-locator' },
         { label: 'Notes & PYQs', icon: <BookOpen size={20} />, path: '/dashboard/notes' },
         { type: 'divider' },
         { label: 'Doubt Solving', icon: <MessageSquare size={20} />, path: '/dashboard/doubts' },
@@ -166,6 +167,7 @@ const DashboardLayout = ({ children }) => {
         { label: 'Clubs Hub', icon: <Trophy size={20} />, path: '/dashboard/clubs' },
         { type: 'divider' },
         { label: 'Teacher\'s Diary', icon: <BookOpenCheck size={20} />, path: '/dashboard/teachers-diary' },
+        { label: 'Classroom Booking', icon: <Building2 size={20} />, path: '/dashboard/classroom-booking' },
         { label: 'Paper Generator', icon: <ClipboardList size={20} />, path: '/dashboard/paper-generator' },
         { label: 'Complaint Box', icon: <Shield size={20} />, path: '/dashboard/complaints' },
     ];
