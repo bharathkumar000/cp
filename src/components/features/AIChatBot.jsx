@@ -352,7 +352,7 @@ const AIChatBot = () => {
             const errorMessage = {
                 id: `msg-${Date.now() + 1}`,
                 sender: 'ai',
-                text: '❌ Connection error. Please make sure local Ollama is active with gemma4:latest.',
+                text: '❌ Connection error. Please make sure local Ollama is active with qwen3.5:9b-mlx.',
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             setMessages(prev => [...prev, errorMessage]);
