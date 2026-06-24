@@ -25,7 +25,11 @@ export const POST = withCors(async (request: NextRequest) => {
             pythonExecutable = pythonVenvPath;
         }
 
-        const args = [scriptPath, '--slot', slot_id];
+        // Get the host of the current request dynamically to point the python script to the correct port (e.g. 3001)
+        const host = request.headers.get('host') || 'localhost:3000';
+        const apiUrl = `http://${host}/api/attendance/snapshot`;
+
+        const args = [scriptPath, '--slot', slot_id, '--api', apiUrl];
         if (duration) {
             args.push('--duration', String(duration));
         }

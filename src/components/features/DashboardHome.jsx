@@ -7,7 +7,7 @@ import {
     BookOpen, CheckCircle, Clock, TrendingUp, Calendar, AlertCircle, Target,
     Users, ShieldAlert, Power, MessageSquare, Radio, Sparkles, Send,
     MapPin, RefreshCw, Trophy, FileText, ArrowRight, Bell, Zap, Play, Check, ShieldCheck,
-    BookOpenCheck
+    BookOpenCheck, Star
 } from 'lucide-react';
 import {
     PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
@@ -140,6 +140,22 @@ const DashboardHome = () => {
         { day: 'Fri', hours: 6 },
         { day: 'Sat', hours: 3 },
         { day: 'Sun', hours: 1 },
+    ];
+    const syllabusProgressData = [
+        { name: 'Mod 1', progress: 100 },
+        { name: 'Mod 2', progress: 100 },
+        { name: 'Mod 3', progress: 100 },
+        { name: 'Mod 4', progress: 85 },
+        { name: 'Mod 5', progress: 20 }
+    ];
+    const gradeDistributionData = [
+        { grade: 'O', count: 24, fill: '#6366f1' },
+        { grade: 'A+', count: 42, fill: '#818cf8' },
+        { grade: 'A', count: 35, fill: '#a5b4fc' },
+        { grade: 'B+', count: 18, fill: '#cbd5e1' },
+        { grade: 'B', count: 8, fill: '#94a3b8' },
+        { grade: 'C', count: 3, fill: '#64748b' },
+        { grade: 'F', count: 1, fill: '#f87171' }
     ];
     // Render logic by User Role
     const role = user?.role || 'student';
@@ -1449,46 +1465,6 @@ const DashboardHome = () => {
                 </div>
             </div>
             <div className="stats-grid">
-                <div className="stat-card streak-card">
-                    <div className="stat-icon-wrapper">
-                        <TrendingUp size={24} />
-                    </div>
-                    <div className="stat-content">
-                        <h3>Study Streak</h3>
-                        <div className="stat-value">12 Days <span className="fire-emoji">🔥</span></div>
-                        <p className="stat-subtitle">Keep it up!</p>
-                    </div>
-                </div>
-                <div className="stat-card pending-card">
-                    <div className="stat-icon-wrapper">
-                        <AlertCircle size={24} />
-                    </div>
-                    <div className="stat-content">
-                        <h3>Tasks Pending</h3>
-                        <div className="stat-value">5</div>
-                        <p className="stat-subtitle">High Priority</p>
-                    </div>
-                </div>
-                <div className="stat-card event-card">
-                    <div className="stat-icon-wrapper">
-                        <Clock size={24} />
-                    </div>
-                    <div className="stat-content">
-                        <h3>Next Event</h3>
-                        <div className="stat-value event-name">Math Marathon</div>
-                        <p className="stat-subtitle">Today, 2:00 PM</p>
-                    </div>
-                </div>
-                <div className="stat-card xp-card">
-                    <div className="stat-icon-wrapper">
-                        <TrendingUp size={24} color="var(--accent-action)" />
-                    </div>
-                    <div className="stat-content">
-                        <h3>Current XP</h3>
-                        <div className="stat-value">4,500 <span className="rank-badge">#2</span></div>
-                        <p className="stat-subtitle">Scholar Rank</p>
-                    </div>
-                </div>
                 {role === 'teacher' ? (
                     <>
                         <div className="stat-card streak-card">
