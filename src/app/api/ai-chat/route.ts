@@ -18,8 +18,59 @@ Strict Policy:
 - Under NO circumstances are you allowed to answer off-topic, casual, personal, social, or general questions (e.g. movies, entertainment, sports, jokes, creative writing, general programming questions unrelated to study, chat-bot identities, personal details, or general chit-chat).
 - If a query is not strictly academic, study-related, or educational, you MUST decline to answer. You must reply exactly: "I can only help with academic and study-related topics." and nothing else. Do not explain your policy or add conversational fluff; keep the rejection short, professional, and direct.`;
 
-        const apiKey = process.env.GEMINI_API_KEY;
+        // Format history for Ollama chat API
+        const ollamaMessages = [
+            { role: 'system', content: systemPrompt },
+            ...history.map((m: any) => ({
+                role: m.sender === 'user' ? 'user' : 'assistant',
+                content: m.text,
+                ...(m.image ? { images: [m.image.split(',')[1] || m.image] } : {})
+            })),
+            { 
+                role: 'user', 
+                content: message,
+                ...(image ? { images: [image.split(',')[1] || image] } : {})
+            }
+        ];
 
+        // 1. Try local Ollama Server (Primary)
+        try {
+            console.log('[AI Chat] Utilizing local Ollama (qwen3.5:9b-mlx) for request...');
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second timeout for local Ollama
+
+            const response = await fetch('http://127.0.0.1:11434/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: 'qwen3.5:9b-mlx',
+                    messages: ollamaMessages,
+                    stream: false,
+                    options: {
+                        temperature: 0.15
+                    }
+                }),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`Ollama responded with status ${response.status}: ${errText}`);
+            }
+
+            const data = await response.json();
+            const reply = data.message?.content || 'No response from local model.';
+            
+            return NextResponse.json({ text: reply }, { status: 200 });
+
+        } catch (ollamaErr: any) {
+            console.log('[AI Chat] Ollama offline or failed, trying Gemini fallback...', ollamaErr.message);
+        }
+
+        // 2. Fallback: Gemini API (Secondary)
+        const apiKey = process.env.GEMINI_API_KEY;
         if (apiKey) {
             try {
                 console.log('[AI Chat] Utilizing Gemini API for request...');
@@ -66,7 +117,7 @@ Strict Policy:
                             ]
                         },
                         generationConfig: {
-                            temperature: 0.15, // Low temperature for high instruction compliance
+                            temperature: 0.15,
                             maxOutputTokens: 2048
                         }
                     }),
@@ -90,56 +141,9 @@ Strict Policy:
             }
         }
 
-        // Fallback: local Ollama Server or simulated demo engine
-        // Format history for Ollama chat API
-        const ollamaMessages = [
-            { role: 'system', content: systemPrompt },
-            ...history.map((m: any) => ({
-                role: m.sender === 'user' ? 'user' : 'assistant',
-                content: m.text,
-                ...(m.image ? { images: [m.image.split(',')[1] || m.image] } : {})
-            })),
-            { 
-                role: 'user', 
-                content: message,
-                ...(image ? { images: [image.split(',')[1] || image] } : {})
-            }
-        ];
-
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15-second timeout for local Ollama
-
-            const response = await fetch('http://127.0.0.1:11434/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: 'gemma4:latest',
-                    messages: ollamaMessages,
-                    stream: false,
-                    options: {
-                        temperature: 0.2
-                    }
-                }),
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`Ollama responded with status ${response.status}: ${errText}`);
-            }
-
-            const data = await response.json();
-            const reply = data.message?.content || 'No response from local model.';
-            
-            return NextResponse.json({ text: reply }, { status: 200 });
-
-        } catch (ollamaErr: any) {
-            console.log('[AI Chat] Ollama offline, utilizing static academic verification rules...', ollamaErr.message);
-            
-            const academicKeywords = [
+        // 3. Last resort static responses
+        console.log('[AI Chat] Both Ollama and Gemini unavailable. Using static verification rules.');
+        const academicKeywords = [
                 'voltage', 'diode', 'circuit', 'pcb', 'transistor', 'capacitor', 'resistor', 'network',
                 'osi model', 'tcp', 'ip', 'ethernet', 'communication', 'optical', 'frequency', 'signal',
                 'fourier', 'laplace', 'differential', 'integral', 'math', 'physics', 'chemistry', 'electronics',
