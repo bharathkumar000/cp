@@ -37,7 +37,7 @@ Strict Policy:
         try {
             console.log('[AI Chat] Utilizing local Ollama (qwen3.5:9b-mlx) for request...');
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second timeout for local Ollama
+            const timeoutId = setTimeout(() => controller.abort(), 90000); // 90-second timeout for local Ollama
 
             const response = await fetch('http://127.0.0.1:11434/api/chat', {
                 method: 'POST',
