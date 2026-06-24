@@ -174,7 +174,6 @@ Here is a study outline:
             }
             
             return NextResponse.json({ text: fallbackMessage, offline: true }, { status: 200 });
-        }
 
     } catch (err: any) {
         console.error('API Error in ai-chat:', err);
