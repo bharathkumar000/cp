@@ -76,32 +76,36 @@ export const AuthProvider = ({ children }) => {
             }
 
             // Attempt to login to Supabase
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email: supabaseEmail,
-                password: supabasePassword
-            });
+            try {
+                const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                    email: supabaseEmail,
+                    password: supabasePassword
+                });
 
-            if (signInError) {
-                // If login fails (user doesn't exist), attempt auto-signup
-                if (signInError.message.includes('Invalid login credentials') || signInError.message.includes('User not found')) {
-                    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-                        email: supabaseEmail,
-                        password: supabasePassword,
-                        options: {
-                            data: {
-                                role: role || 'student'
-                            }
-                        }
-                    });
-
-                    if (!signUpError && signUpData?.user) {
-                        // Auto login after signup
-                        await supabase.auth.signInWithPassword({
+                if (signInError) {
+                    // If login fails (user doesn't exist), attempt auto-signup
+                    if (signInError.message.includes('Invalid login credentials') || signInError.message.includes('User not found')) {
+                        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
                             email: supabaseEmail,
-                            password: supabasePassword
+                            password: supabasePassword,
+                            options: {
+                                data: {
+                                    role: role || 'student'
+                                }
+                            }
                         });
+
+                        if (!signUpError && signUpData?.user) {
+                            // Auto login after signup
+                            await supabase.auth.signInWithPassword({
+                                email: supabaseEmail,
+                                password: supabasePassword
+                            });
+                        }
                     }
                 }
+            } catch (authErr) {
+                console.warn("Supabase auth API call failed:", authErr.message || authErr);
             }
         } catch (err) {
             console.warn("Background Supabase auth sync warning:", err);
