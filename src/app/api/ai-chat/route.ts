@@ -14,9 +14,32 @@ export async function POST(req: Request) {
         // System prompt to enforce academic study-only focus
         const systemPrompt = `You are an expert AI academic tutor for the Connect & Prep college platform.
 Strict Policy:
-- You must ONLY answer questions related to academics, studies, exams, course concepts, engineering, mathematics, computer science, and study-related topics.
+- You must ONLY answer questions related to academics, studies, exams, educational course concepts, theorems, laws, engineering, physics, chemistry, mathematics, and scientists.
 - Under NO circumstances are you allowed to answer off-topic, casual, personal, social, or general questions (e.g. movies, entertainment, sports, jokes, creative writing, general programming questions unrelated to study, chat-bot identities, personal details, or general chit-chat).
 - If a query is not strictly academic, study-related, or educational, you MUST decline to answer. You must reply exactly: "I can only help with academic and study-related topics." and nothing else. Do not explain your policy or add conversational fluff; keep the rejection short, professional, and direct.`;
+
+        // Pre-validate message to restrict API to only academic keywords (Theorems, laws, scientists, course work, etc.)
+        const academicKeywords = [
+            'voltage', 'diode', 'circuit', 'pcb', 'transistor', 'capacitor', 'resistor', 'network',
+            'osi model', 'tcp', 'ip', 'ethernet', 'communication', 'optical', 'frequency', 'signal',
+            'fourier', 'laplace', 'differential', 'integral', 'math', 'physics', 'chemistry', 'electronics',
+            'electrical', 'microcontroller', 'embedded', 'sensor', 'programming', 'code', 'algorithm',
+            'op-amp', 'amplifier', 'altium', 'kicad', 'schematic', 'soldering', 'induction', 'transformer',
+            'motor', 'maxwell', 'electromagnetic', 'wave', 'antenna', 'laser', 'fiber', '5g', 'lte', 'study',
+            'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition', 'homework', 'assignment',
+            'motion', 'force', 'newton', 'gravity', 'velocity', 'acceleration', 'laws', 'theorem', 'scientist',
+            'einstein', 'tesla', 'galileo', 'curie', 'darwin', 'copernicus', 'faraday', 'bohr', 'schrodinger',
+            'heisenberg', 'planck', 'kepler', 'hawking', 'pasteur', 'mendel', 'maxwell', 'ampere', 'coulomb',
+            'ohm', 'joule', 'watt', 'pascal', 'bernoulli', 'euler', 'pythagoras', 'gauss', 'newtonian', 'relativity',
+            'quantum', 'thermodynamics', 'optics', 'mechanics', 'calculus', 'algebra', 'geometry', 'statistics'
+        ];
+
+        const cleanText = message.toLowerCase();
+        const isAcademic = academicKeywords.some(keyword => cleanText.includes(keyword)) || message.length > 50;
+
+        if (!isAcademic) {
+            return NextResponse.json({ text: "I can only help with academic and study-related topics." }, { status: 200 });
+        }
 
         // Format history for Ollama chat API
         const ollamaMessages = [
@@ -143,25 +166,11 @@ Strict Policy:
 
         // 3. Last resort static responses
         console.log('[AI Chat] Both Ollama and Gemini unavailable. Using static verification rules.');
-        const academicKeywords = [
-                'voltage', 'diode', 'circuit', 'pcb', 'transistor', 'capacitor', 'resistor', 'network',
-                'osi model', 'tcp', 'ip', 'ethernet', 'communication', 'optical', 'frequency', 'signal',
-                'fourier', 'laplace', 'differential', 'integral', 'math', 'physics', 'chemistry', 'electronics',
-                'electrical', 'microcontroller', 'embedded', 'sensor', 'programming', 'code', 'algorithm',
-                'op-amp', 'amplifier', 'altium', 'kicad', 'schematic', 'soldering', 'induction', 'transformer',
-                'motor', 'maxwell', 'electromagnetic', 'wave', 'antenna', 'laser', 'fiber', '5g', 'lte', 'study',
-                'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition', 'homework', 'assignment',
-                'motion', 'force', 'newton', 'gravity', 'velocity', 'acceleration', 'laws'
-            ];
+        let fallbackMessage = '';
+        
+        if (isAcademic) {
+            fallbackMessage = `⚠️ **[Prepcare Tutor - Offline Study Mode]**
             
-            const cleanText = message.toLowerCase();
-            const isAcademic = academicKeywords.some(keyword => cleanText.includes(keyword)) || message.length > 35;
-
-            let fallbackMessage = '';
-            
-            if (isAcademic) {
-                fallbackMessage = `⚠️ **[Prepcare Tutor - Offline Study Mode]**
-                
 Your query relates to core engineering studies. To enable dynamic responses, please configure your \`GEMINI_API_KEY\` in your \`.env\` file.
 
 Here is a study outline:
@@ -169,11 +178,11 @@ Here is a study outline:
 - **Formulas**: $f_c = \\frac{1}{2\\pi RC}$ for lowpass cutoff frequencies.
 
 *Provide a valid Gemini API key in your configuration for complete answers.*`;
-            } else {
-                fallbackMessage = `I can only help with academic and study-related topics.`;
-            }
-            
-            return NextResponse.json({ text: fallbackMessage, offline: true }, { status: 200 });
+        } else {
+            fallbackMessage = `I can only help with academic and study-related topics.`;
+        }
+        
+        return NextResponse.json({ text: fallbackMessage, offline: true }, { status: 200 });
 
     } catch (err: any) {
         console.error('API Error in ai-chat:', err);
