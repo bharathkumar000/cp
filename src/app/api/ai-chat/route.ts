@@ -146,7 +146,8 @@ Strict Policy:
                 'electrical', 'microcontroller', 'embedded', 'sensor', 'programming', 'code', 'algorithm',
                 'op-amp', 'amplifier', 'altium', 'kicad', 'schematic', 'soldering', 'induction', 'transformer',
                 'motor', 'maxwell', 'electromagnetic', 'wave', 'antenna', 'laser', 'fiber', '5g', 'lte', 'study',
-                'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition', 'homework', 'assignment'
+                'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition', 'homework', 'assignment',
+                'motion', 'force', 'newton', 'gravity', 'velocity', 'acceleration', 'laws'
             ];
             
             const cleanText = message.toLowerCase();
