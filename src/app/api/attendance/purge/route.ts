@@ -5,18 +5,24 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
-const LOCAL_DATA_DIR = path.join(process.cwd(), 'Facerecognition');
-const SNAPSHOTS_FILE = path.join(LOCAL_DATA_DIR, 'live_snapshots.json');
-const LEDGER_FILE = path.join(LOCAL_DATA_DIR, 'live_ledger.json');
+// Local file paths - computed lazily to prevent Turbopack from statically analyzing and bundling the dataset directory
+function getLocalPaths() {
+    const dir = path.resolve(/* turbopackIgnore: true */ process.cwd(), 'Facerecognition');
+    return {
+        snapshotsFile: path.join(dir, 'live_snapshots.json'),
+        ledgerFile: path.join(dir, 'live_ledger.json'),
+    };
+}
 
 export const POST = withCors(async (request: NextRequest) => {
     try {
+        const { snapshotsFile, ledgerFile } = getLocalPaths();
         // Delete local snapshot and ledger files
-        if (fs.existsSync(SNAPSHOTS_FILE)) {
-            fs.unlinkSync(SNAPSHOTS_FILE);
+        if (fs.existsSync(snapshotsFile)) {
+            fs.unlinkSync(snapshotsFile);
         }
-        if (fs.existsSync(LEDGER_FILE)) {
-            fs.unlinkSync(LEDGER_FILE);
+        if (fs.existsSync(ledgerFile)) {
+            fs.unlinkSync(ledgerFile);
         }
 
         console.log('[Purge API] Local snapshot and ledger files cleared.');

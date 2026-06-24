@@ -26,10 +26,14 @@ const mockPercentages: Record<string, number> = {
     '00000000-0000-0000-0000-000000000009': 78,
 };
 
-// Local file paths
-const LOCAL_DATA_DIR = path.join(process.cwd(), 'Facerecognition');
-const LEDGER_FILE = path.join(LOCAL_DATA_DIR, 'live_ledger.json');
-const SNAPSHOTS_FILE = path.join(LOCAL_DATA_DIR, 'live_snapshots.json');
+// Local file paths - computed lazily to prevent Turbopack from statically analyzing and bundling the dataset directory
+function getLocalPaths() {
+    const dir = path.resolve(/* turbopackIgnore: true */ process.cwd(), 'Facerecognition');
+    return {
+        ledgerFile: path.join(dir, 'live_ledger.json'),
+        snapshotsFile: path.join(dir, 'live_snapshots.json'),
+    };
+}
 
 interface LedgerEntry {
     student_id: string;
@@ -43,8 +47,9 @@ interface LedgerEntry {
 
 function readLocalLedger(): LedgerEntry[] {
     try {
-        if (fs.existsSync(LEDGER_FILE)) {
-            return JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf-8'));
+        const { ledgerFile } = getLocalPaths();
+        if (fs.existsSync(ledgerFile)) {
+            return JSON.parse(fs.readFileSync(ledgerFile, 'utf-8'));
         }
     } catch (e) {
         console.error('Error reading local ledger:', e);
@@ -54,8 +59,9 @@ function readLocalLedger(): LedgerEntry[] {
 
 function countLocalSnapshots(slot_id: string): number {
     try {
-        if (fs.existsSync(SNAPSHOTS_FILE)) {
-            const snapshots = JSON.parse(fs.readFileSync(SNAPSHOTS_FILE, 'utf-8'));
+        const { snapshotsFile } = getLocalPaths();
+        if (fs.existsSync(snapshotsFile)) {
+            const snapshots = JSON.parse(fs.readFileSync(snapshotsFile, 'utf-8'));
             const sessionDate = new Date().toISOString().split('T')[0];
             return snapshots.filter((s: any) => 
                 s.slot_id === slot_id && s.captured_at?.startsWith(sessionDate)

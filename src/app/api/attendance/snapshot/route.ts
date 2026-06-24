@@ -45,10 +45,19 @@ const studentNames: Record<string, string> = {
     '00000000-0000-0000-0000-000000000009': 'Anagha (anagha@vvce)'
 };
 
-// Local file path for storing snapshot data (used when Supabase is unavailable)
-const LOCAL_DATA_DIR = path.join(process.cwd(), 'Facerecognition');
-const SNAPSHOTS_FILE = path.join(LOCAL_DATA_DIR, 'live_snapshots.json');
-const LEDGER_FILE = path.join(LOCAL_DATA_DIR, 'live_ledger.json');
+// Local file paths - computed lazily to prevent Turbopack from statically analyzing and bundling the dataset directory
+function getLocalPaths() {
+    const dir = path.resolve(/* turbopackIgnore: true */ process.cwd(), 'Facerecognition');
+    return {
+        dataDir: dir,
+        snapshotsFile: path.join(dir, 'live_snapshots.json'),
+        ledgerFile: path.join(dir, 'live_ledger.json'),
+    };
+}
+
+// Use dynamic fs to prevent Turbopack from tracing filesystem operations
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const _fs: typeof import('fs') = require(/* turbopackIgnore: true */ 'fs');
 
 interface Snapshot {
     slot_id: string;
@@ -69,8 +78,9 @@ interface LedgerEntry {
 
 function readSnapshots(): Snapshot[] {
     try {
-        if (fs.existsSync(SNAPSHOTS_FILE)) {
-            return JSON.parse(fs.readFileSync(SNAPSHOTS_FILE, 'utf-8'));
+        const { snapshotsFile } = getLocalPaths();
+        if (_fs.existsSync(snapshotsFile)) {
+            return JSON.parse(_fs.readFileSync(snapshotsFile, 'utf-8'));
         }
     } catch (e) {
         console.error('Error reading snapshots file:', e);
@@ -80,10 +90,11 @@ function readSnapshots(): Snapshot[] {
 
 function writeSnapshots(snapshots: Snapshot[]) {
     try {
-        if (!fs.existsSync(LOCAL_DATA_DIR)) {
-            fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+        const { dataDir, snapshotsFile } = getLocalPaths();
+        if (!_fs.existsSync(dataDir)) {
+            _fs.mkdirSync(dataDir, { recursive: true });
         }
-        fs.writeFileSync(SNAPSHOTS_FILE, JSON.stringify(snapshots, null, 2));
+        _fs.writeFileSync(snapshotsFile, JSON.stringify(snapshots, null, 2));
     } catch (e) {
         console.error('Error writing snapshots file:', e);
     }
@@ -91,8 +102,9 @@ function writeSnapshots(snapshots: Snapshot[]) {
 
 function readLedger(): LedgerEntry[] {
     try {
-        if (fs.existsSync(LEDGER_FILE)) {
-            return JSON.parse(fs.readFileSync(LEDGER_FILE, 'utf-8'));
+        const { ledgerFile } = getLocalPaths();
+        if (_fs.existsSync(ledgerFile)) {
+            return JSON.parse(_fs.readFileSync(ledgerFile, 'utf-8'));
         }
     } catch (e) {
         console.error('Error reading ledger file:', e);
@@ -102,10 +114,11 @@ function readLedger(): LedgerEntry[] {
 
 function writeLedger(ledger: LedgerEntry[]) {
     try {
-        if (!fs.existsSync(LOCAL_DATA_DIR)) {
-            fs.mkdirSync(LOCAL_DATA_DIR, { recursive: true });
+        const { dataDir, ledgerFile } = getLocalPaths();
+        if (!_fs.existsSync(dataDir)) {
+            _fs.mkdirSync(dataDir, { recursive: true });
         }
-        fs.writeFileSync(LEDGER_FILE, JSON.stringify(ledger, null, 2));
+        _fs.writeFileSync(ledgerFile, JSON.stringify(ledger, null, 2));
     } catch (e) {
         console.error('Error writing ledger file:', e);
     }
