@@ -6,8 +6,8 @@ import { Lock, ArrowRight, GraduationCap, Users, Building2, Mail, Eye, EyeOff } 
 import './LoginPage.css';
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('bp@vvce');
-    const [password, setPassword] = useState('bp');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
