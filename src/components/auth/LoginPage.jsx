@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
-import { Lock, ArrowRight, GraduationCap, Users, Building2, Mail, Eye, EyeOff } from 'lucide-react';
+import { Lock, ArrowRight, Mail, Eye, EyeOff } from 'lucide-react';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -51,36 +51,6 @@ const LoginPage = () => {
                             Learn. Collaborate. Grow.<br />
                             All in one place.
                         </p>
-                        
-                        <div className="metrics-row">
-                            <div className="metric-item">
-                                <div className="metric-icon-wrap">
-                                    <Users size={22} strokeWidth={1.5} />
-                                </div>
-                                <div className="metric-value">10K+</div>
-                                <div className="metric-label">Students</div>
-                            </div>
-                            
-                            <div className="metric-divider"></div>
-                            
-                            <div className="metric-item">
-                                <div className="metric-icon-wrap">
-                                    <GraduationCap size={22} strokeWidth={1.5} />
-                                </div>
-                                <div className="metric-value">500+</div>
-                                <div className="metric-label">Faculty</div>
-                            </div>
-                            
-                            <div className="metric-divider"></div>
-                            
-                            <div className="metric-item">
-                                <div className="metric-icon-wrap">
-                                    <Building2 size={22} strokeWidth={1.5} />
-                                </div>
-                                <div className="metric-value">50+</div>
-                                <div className="metric-label">Institutions</div>
-                            </div>
-                        </div>
                     </div>
 
                     <div className="sidebar-illustration-wrap">
