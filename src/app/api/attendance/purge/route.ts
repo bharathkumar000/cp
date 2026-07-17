@@ -7,8 +7,16 @@ export const dynamic = 'force-dynamic';
 
 // Local file paths - computed lazily to prevent Turbopack from statically analyzing and bundling the dataset directory
 function getLocalPaths() {
-    const dir = path.resolve(/* turbopackIgnore: true */ process.cwd(), 'Facerecognition');
+    if (process.env.VERCEL) {
+        return {
+            dataDir: '/tmp/Facerecognition',
+            snapshotsFile: '/tmp/Facerecognition/live_snapshots.json',
+            ledgerFile: '/tmp/Facerecognition/live_ledger.json',
+        };
+    }
+    const dir = path.join(/*turbopackIgnore: true*/ process.cwd(), 'Facerecognition');
     return {
+        dataDir: dir,
         snapshotsFile: path.join(dir, 'live_snapshots.json'),
         ledgerFile: path.join(dir, 'live_ledger.json'),
     };

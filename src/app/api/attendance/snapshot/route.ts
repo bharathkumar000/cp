@@ -47,7 +47,16 @@ const studentNames: Record<string, string> = {
 
 // Local file paths - computed lazily to prevent Turbopack from statically analyzing and bundling the dataset directory
 function getLocalPaths() {
-    const dir = path.resolve(/* turbopackIgnore: true */ process.cwd(), 'Facerecognition');
+    if (process.env.VERCEL) {
+        return {
+            dataDir: '/tmp/Facerecognition',
+            snapshotsFile: '/tmp/Facerecognition/live_snapshots.json',
+            ledgerFile: '/tmp/Facerecognition/live_ledger.json',
+        };
+    }
+    const prop = 'cwd';
+    const root = (process as any)[prop]();
+    const dir = path.join(root, 'Facerecognition');
     return {
         dataDir: dir,
         snapshotsFile: path.join(dir, 'live_snapshots.json'),

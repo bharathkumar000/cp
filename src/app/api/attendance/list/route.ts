@@ -28,8 +28,16 @@ const mockPercentages: Record<string, number> = {
 
 // Local file paths - computed lazily to prevent Turbopack from statically analyzing and bundling the dataset directory
 function getLocalPaths() {
-    const dir = path.resolve(/* turbopackIgnore: true */ process.cwd(), 'Facerecognition');
+    if (process.env.VERCEL) {
+        return {
+            dataDir: '/tmp/Facerecognition',
+            ledgerFile: '/tmp/Facerecognition/live_ledger.json',
+            snapshotsFile: '/tmp/Facerecognition/live_snapshots.json',
+        };
+    }
+    const dir = path.join(/*turbopackIgnore: true*/ process.cwd(), 'Facerecognition');
     return {
+        dataDir: dir,
         ledgerFile: path.join(dir, 'live_ledger.json'),
         snapshotsFile: path.join(dir, 'live_snapshots.json'),
     };
