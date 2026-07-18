@@ -11,18 +11,6 @@ const nextConfig = {
       './builds/**/*',
     ],
   },
-  experimental: {
-    outputFileTracingExcludes: {
-      '*': [
-        './Facerecognition/dataset/**/*',
-        './Facerecognition/trainer/**/*',
-        './Facerecognition/venv/**/*',
-        './mobile_app/**/*',
-        './scratch/**/*',
-        './builds/**/*',
-      ],
-    },
-  },
 };
 
 export default nextConfig;
