@@ -93,6 +93,7 @@
     white-space: nowrap;
     overflow: hidden;
     position: relative;
+    text-decoration: none;
 }
 
 .icon-container {
