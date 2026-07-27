@@ -3,6 +3,92 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Trash2, Copy, Sparkles, Download, Check, Image as ImageIcon, X, History, Plus } from 'lucide-react';
 
+const renderMathToHtml = (latex) => {
+    let html = latex;
+    
+    // Remove wrapping $ or $$
+    html = html.replace(/^\$\$?|\$\$?$/g, '').trim();
+
+    // Replace LaTeX fractions: \frac{a}{b} -> a/b
+    let prevHtml;
+    do {
+        prevHtml = html;
+        html = html.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '($1)/($2)');
+    } while (html !== prevHtml);
+
+    // Replace subscripts and superscripts
+    html = html.replace(/_\{?([a-zA-Z0-9+-=]+)\}?/g, '<sub>$1</sub>');
+    html = html.replace(/\^\{?([a-zA-Z0-9+-=]+)\}?/g, '<sup>$1</sup>');
+
+    // Replace common LaTeX math symbols
+    const mathSymbols = {
+        '\\\\mathcal\\{E\\}': '<span style="font-family: \'Times New Roman\', serif; font-style: italic; font-weight: bold; font-size: 1.1em;">ℰ</span>',
+        '\\\\mathcal\\{([A-Z])\\}': '<span style="font-family: \'Times New Roman\', serif; font-style: italic; font-weight: bold; font-size: 1.1em;">$1</span>',
+        '\\\\Phi': 'Φ',
+        '\\\\phi': 'φ',
+        '\\\\pi': 'π',
+        '\\\\theta': 'θ',
+        '\\\\Delta': 'Δ',
+        '\\\\times': '×',
+        '\\\\cdot': '·',
+        '\\\\pm': '±',
+        '\\\\infty': '∞',
+        '\\\\partial': '∂',
+        '\\\\int': '∫',
+        '\\\\sum': '∑',
+        '\\\\alpha': 'α',
+        '\\\\beta': 'β',
+        '\\\\gamma': 'γ',
+        '\\\\omega': 'ω',
+        '\\\\lambda': 'λ',
+        '\\\\mu': 'μ',
+        '\\\\sigma': 'σ',
+        '\\\\tau': 'τ',
+        '\\\\epsilon': 'ε',
+        '\\\\eta': 'η',
+        '\\\\rho': 'ρ',
+        '\\\\chi': 'χ',
+        '\\\\psi': 'ψ',
+        '\\\\nabla': '∇',
+        '\\\\sqrt\\{([^}]+)\\}': '√$1',
+        '\\\\approx': '≈',
+        '\\\\ne': '≠',
+        '\\\\le': '≤',
+        '\\\\ge': '≥',
+        '\\\\to': '→',
+        '\\\\rightarrow': '→',
+        '\\\\leftarrow': '←',
+        '\\\\gets': '←',
+        '\\\\forall': '∀',
+        '\\\\exists': '∃',
+        '\\\\in': '∈',
+        '\\\\notin': '∉',
+        '\\\\subset': '⊂',
+        '\\\\supset': '⊃',
+        '\\\\cap': '∩',
+        '\\\\cup': '∪',
+    };
+
+    for (const [pattern, replacement] of Object.entries(mathSymbols)) {
+        const regex = new RegExp(pattern, 'g');
+        html = html.replace(regex, replacement);
+    }
+
+    return (
+        <span 
+            className="math-render-inline" 
+            style={{ 
+                fontFamily: "'Cambria Math', 'Times New Roman', serif", 
+                fontStyle: 'italic',
+                padding: '0 2px',
+                color: '#818cf8',
+                fontSize: '1.05em'
+            }}
+            dangerouslySetInnerHTML={{ __html: html }}
+        />
+    );
+};
+
 const renderMarkdown = (text) => {
     if (!text) return null;
     
@@ -71,36 +157,45 @@ const renderMarkdown = (text) => {
                 }
                 
                 const inlineParts = [];
-                const regex = /(\*\*.*?\*\*|`.*?`|https?:\/\/[^\s]+)/g;
-                const matches = currentLine.split(regex);
+                const mathRegex = /(\$\$.*?\{}|\$\$.*?\$\$|\$.*?\$)/g;
+                const mathMatches = currentLine.split(mathRegex);
                 
-                matches.forEach((item, itemIdx) => {
-                    if (item.startsWith('**') && item.endsWith('**')) {
-                        inlineParts.push(<strong key={itemIdx} style={{ color: '#fff', fontWeight: '700' }}>{item.slice(2, -2)}</strong>);
-                    } else if (item.startsWith('`') && item.endsWith('`')) {
-                        inlineParts.push(
-                            <code key={itemIdx} style={{
-                                background: 'rgba(255,255,255,0.08)',
-                                padding: '2px 5px',
-                                borderRadius: '4px',
-                                fontFamily: 'monospace',
-                                fontSize: '0.8rem',
-                                color: '#f43f5e'
-                            }}>
-                                {item.slice(1, -1)}
-                            </code>
-                        );
-                    } else if (item.startsWith('http://') || item.startsWith('https://')) {
-                        inlineParts.push(
-                            <a key={itemIdx} href={item} target="_blank" rel="noopener noreferrer" style={{
-                                color: '#6366f1',
-                                textDecoration: 'underline'
-                            }}>
-                                {item}
-                            </a>
-                        );
+                mathMatches.forEach((mathItem, mathIdx) => {
+                    if (mathItem.startsWith('$') && mathItem.endsWith('$')) {
+                        inlineParts.push(<React.Fragment key={mathIdx}>{renderMathToHtml(mathItem)}</React.Fragment>);
                     } else {
-                        inlineParts.push(item);
+                        const regex = /(\*\*.*?\*\*|`.*?`|https?:\/\/[^\s]+)/g;
+                        const matches = mathItem.split(regex);
+                        
+                        matches.forEach((item, itemIdx) => {
+                            if (item.startsWith('**') && item.endsWith('**')) {
+                                inlineParts.push(<strong key={`${mathIdx}-${itemIdx}`} style={{ color: '#fff', fontWeight: '700' }}>{item.slice(2, -2)}</strong>);
+                            } else if (item.startsWith('`') && item.endsWith('`')) {
+                                inlineParts.push(
+                                    <code key={`${mathIdx}-${itemIdx}`} style={{
+                                        background: 'rgba(255,255,255,0.08)',
+                                        padding: '2px 5px',
+                                        borderRadius: '4px',
+                                        fontFamily: 'monospace',
+                                        fontSize: '0.8rem',
+                                        color: '#f43f5e'
+                                    }}>
+                                        {item.slice(1, -1)}
+                                    </code>
+                                );
+                            } else if (item.startsWith('http://') || item.startsWith('https://')) {
+                                inlineParts.push(
+                                    <a key={`${mathIdx}-${itemIdx}`} href={item} target="_blank" rel="noopener noreferrer" style={{
+                                        color: '#6366f1',
+                                        textDecoration: 'underline'
+                                    }}>
+                                        {item}
+                                    </a>
+                                );
+                            } else {
+                                inlineParts.push(item);
+                            }
+                        });
                     }
                 });
                 
@@ -441,7 +536,7 @@ const AIChatBot = () => {
                 <div className="chat-header">
                     <div className="bot-info">
                         <div className="bot-avatar-glow">
-                            <Bot size={22} className="bot-icon" />
+                            <Sparkles size={22} className="bot-icon" style={{ color: '#818cf8' }} />
                             <div className="online-indicator"></div>
                         </div>
                         <div className="bot-details">
@@ -473,7 +568,7 @@ const AIChatBot = () => {
                 {messages.map((msg) => (
                     <div key={msg.id} className={`chat-bubble-container ${msg.sender === 'user' ? 'user-layout' : 'ai-layout'}`}>
                         <div className="avatar-frame">
-                            {msg.sender === 'user' ? <User size={15} /> : <Bot size={15} />}
+                            {msg.sender === 'user' ? <User size={15} /> : <Sparkles size={15} style={{ color: '#818cf8' }} />}
                         </div>
                         <div className="bubble-wrapper">
                             <div className="message-bubble">
@@ -504,7 +599,7 @@ const AIChatBot = () => {
                 {isTyping && (
                     <div className="chat-bubble-container ai-layout">
                         <div className="avatar-frame typing-frame">
-                            <Bot size={15} />
+                            <Sparkles size={15} style={{ color: '#818cf8' }} />
                         </div>
                         <div className="bubble-wrapper">
                             <div className="message-bubble typing-bubble">
