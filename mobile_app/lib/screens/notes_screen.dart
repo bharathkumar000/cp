@@ -27,11 +27,26 @@ class _NotesScreenState extends State<NotesScreen> {
     setState(() => _isLoading = true);
     try {
       final data = await _db.getNotes();
-      setState(() => _notes = data);
+      if (data.isNotEmpty) {
+        setState(() => _notes = data);
+      } else {
+        _setMockNotes();
+      }
     } catch (_) {
-      // RLS may restrict data – handle gracefully
+      _setMockNotes();
     }
     setState(() => _isLoading = false);
+  }
+
+  void _setMockNotes() {
+    setState(() {
+      _notes = [
+        {'id': 'mock-note-1', 'title': 'Applied Mathematics II - Module 3 Notes', 'college': 'vvce.edu'},
+        {'id': 'mock-note-2', 'title': 'PCB Routing Best Practices & Design Rules', 'college': 'vvce.edu'},
+        {'id': 'mock-note-3', 'title': 'Introduction to TCP/IP and Network OSI Model', 'college': 'vvce.edu'},
+        {'id': 'mock-note-4', 'title': 'C Programming Lab - Final Examination Practice', 'college': 'vvce.edu'},
+      ];
+    });
   }
 
   Future<void> _addNote() async {

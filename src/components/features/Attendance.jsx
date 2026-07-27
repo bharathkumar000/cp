@@ -710,21 +710,21 @@ const Attendance = () => {
                 } else {
                     rosterData = [
                         { student_id: '00000000-0000-0000-0000-000000000001', full_name: 'Bharath Kumar A (bk@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 87, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                        { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: Math.min(completedChecks, 3), total_checks: 5, cumulative_percentage: 64, final_status: completedChecks >= 3 ? 'LATE' : (completedChecks >= 1 ? 'LATE' : 'ABSENT'), absence_reason: 'Transit delay', reason_status: 'PENDING' },
+                        { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 64, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' },
                         { student_id: '00000000-0000-0000-0000-000000000003', full_name: 'Riddhi (riddhi@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 71, final_status: 'ABSENT', absence_reason: 'Sick leave', reason_status: 'PENDING' },
-                        { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 82, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                        { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 92, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                        { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: Math.min(completedChecks, 3), total_checks: 5, cumulative_percentage: 78, final_status: completedChecks >= 3 ? 'LATE' : (completedChecks >= 1 ? 'LATE' : 'ABSENT'), absence_reason: 'Transit delay', reason_status: 'PENDING' }
+                        { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 82, final_status: 'ABSENT' },
+                        { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 92, final_status: 'ABSENT' },
+                        { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 78, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' }
                     ];
                 }
             } else {
                 rosterData = [
                     { student_id: '00000000-0000-0000-0000-000000000001', full_name: 'Bharath Kumar A (bk@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 87, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                    { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: Math.min(completedChecks, 3), total_checks: 5, cumulative_percentage: 64, final_status: completedChecks >= 3 ? 'LATE' : (completedChecks >= 1 ? 'LATE' : 'ABSENT'), absence_reason: 'Transit delay', reason_status: 'PENDING' },
+                    { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 64, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' },
                     { student_id: '00000000-0000-0000-0000-000000000003', full_name: 'Riddhi (riddhi@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 71, final_status: 'ABSENT', absence_reason: 'Sick leave', reason_status: 'PENDING' },
-                    { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 82, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                    { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 92, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                    { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: Math.min(completedChecks, 3), total_checks: 5, cumulative_percentage: 78, final_status: completedChecks >= 3 ? 'LATE' : (completedChecks >= 1 ? 'LATE' : 'ABSENT'), absence_reason: 'Transit delay', reason_status: 'PENDING' }
+                    { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 82, final_status: 'ABSENT' },
+                    { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 92, final_status: 'ABSENT' },
+                    { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 78, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' }
                 ];
             }
 
@@ -741,11 +741,11 @@ const Attendance = () => {
             console.error("Failed to fetch validation roster:", err);
             const fallbackData = [
                 { student_id: '00000000-0000-0000-0000-000000000001', full_name: 'Bharath Kumar A (bk@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 87, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: Math.min(completedChecks, 3), total_checks: 5, cumulative_percentage: 64, final_status: completedChecks >= 3 ? 'LATE' : (completedChecks >= 1 ? 'LATE' : 'ABSENT'), absence_reason: 'Transit delay', reason_status: 'PENDING' },
+                { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 64, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' },
                 { student_id: '00000000-0000-0000-0000-000000000003', full_name: 'Riddhi (riddhi@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 71, final_status: 'ABSENT', absence_reason: 'Sick leave', reason_status: 'PENDING' },
-                { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 82, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 92, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: Math.min(completedChecks, 3), total_checks: 5, cumulative_percentage: 78, final_status: completedChecks >= 3 ? 'LATE' : (completedChecks >= 1 ? 'LATE' : 'ABSENT'), absence_reason: 'Transit delay', reason_status: 'PENDING' }
+                { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 82, final_status: 'ABSENT' },
+                { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 92, final_status: 'ABSENT' },
+                { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 78, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' }
             ];
             setValidationRoster(fallbackData);
             
@@ -980,17 +980,11 @@ const Attendance = () => {
                 setCompletedChecks(currentCheck);
                 
                 // Show mock toast alert
-                const mockDetected = [];
-                mockDetected.push('Bharath Kumar A');
-                if (currentCheck === 1 || currentCheck === 2 || currentCheck === 4 || currentCheck === 5) {
-                    mockDetected.push('Bharath P');
-                }
+                const mockDetected = ['Bharath Kumar A'];
                 
                 setLiveNotification({
                     title: `Mock Checkpoint #${currentCheck} 📸`,
-                    message: mockDetected.length > 0 
-                        ? `Detected: ${mockDetected.join(', ')}`
-                        : 'No student faces detected.'
+                    message: `Detected: ${mockDetected.join(', ')} (Only Bharath Kumar face registered. Other student faces are removed/unregistered)`
                 });
                 setTimeout(() => setLiveNotification(null), 3000);
                 
@@ -998,11 +992,11 @@ const Attendance = () => {
                 setValidationRoster(prev => {
                     const detectedMap = {
                         '00000000-0000-0000-0000-000000000001': currentCheck,
-                        '00000000-0000-0000-0000-000000000002': currentCheck >= 4 ? 3 : (currentCheck >= 2 ? 2 : 1),
+                        '00000000-0000-0000-0000-000000000002': 0,
                         '00000000-0000-0000-0000-000000000003': 0,
-                        '00000000-0000-0000-0000-000000000007': currentCheck,
-                        '00000000-0000-0000-0000-000000000008': currentCheck,
-                        '00000000-0000-0000-0000-000000000009': currentCheck >= 4 ? 3 : (currentCheck >= 2 ? 2 : 1)
+                        '00000000-0000-0000-0000-000000000007': 0,
+                        '00000000-0000-0000-0000-000000000008': 0,
+                        '00000000-0000-0000-0000-000000000009': 0
                     };
                     
                     return prev.map(student => {
@@ -1088,17 +1082,11 @@ const Attendance = () => {
                 setCompletedChecks(currentCheck);
                 
                 // Show mock toast alert
-                const mockDetected = [];
-                mockDetected.push('Bharath Kumar A');
-                if (currentCheck === 1 || currentCheck === 2 || currentCheck === 4 || currentCheck === 5) {
-                    mockDetected.push('Bharath P');
-                }
+                const mockDetected = ['Bharath Kumar A'];
                 
                 setLiveNotification({
                     title: `Mock Checkpoint #${currentCheck} 📸`,
-                    message: mockDetected.length > 0 
-                        ? `Detected: ${mockDetected.join(', ')}`
-                        : 'No student faces detected.'
+                    message: `Detected: ${mockDetected.join(', ')} (Only Bharath Kumar face registered)`
                 });
                 setTimeout(() => setLiveNotification(null), 3000);
                 
@@ -1106,11 +1094,11 @@ const Attendance = () => {
                 setClassRosterStatus(prev => {
                     const detectedMap = {
                         '00000000-0000-0000-0000-000000000001': true, // present
-                        '00000000-0000-0000-0000-000000000002': (currentCheck >= 4 || currentCheck === 1 || currentCheck === 2 || currentCheck === 5), // present
-                        '00000000-0000-0000-0000-000000000003': false, // absent
-                        '00000000-0000-0000-0000-000000000007': true, // present
-                        '00000000-0000-0000-0000-000000000008': true, // present
-                        '00000000-0000-0000-0000-000000000009': (currentCheck >= 4 || currentCheck === 1 || currentCheck === 2 || currentCheck === 5) // present
+                        '00000000-0000-0000-0000-000000000002': false,
+                        '00000000-0000-0000-0000-000000000003': false,
+                        '00000000-0000-0000-0000-000000000007': false,
+                        '00000000-0000-0000-0000-000000000008': false,
+                        '00000000-0000-0000-0000-000000000009': false
                     };
                     return { ...prev, ...detectedMap };
                 });

@@ -92,10 +92,57 @@ Strict Policy:
             return NextResponse.json({ text: reply }, { status: 200 });
 
         } catch (ollamaErr: any) {
-            console.log('[AI Chat] Ollama offline or failed, trying Gemini fallback...', ollamaErr.message);
+            console.log('[AI Chat] Ollama offline or failed, trying Groq fallback...', ollamaErr.message);
         }
 
-        // 2. Fallback: Gemini API (Secondary)
+        // 2. Fallback: Groq API (Secondary)
+        const groqApiKey = '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';
+        if (groqApiKey) {
+            try {
+                console.log('[AI Chat] Utilizing Groq API for request...');
+                
+                const groqMessages = [
+                    { role: 'system', content: systemPrompt },
+                    ...history.map((m: any) => ({
+                        role: m.sender === 'user' ? 'user' : 'assistant',
+                        content: m.text
+                    })),
+                    { role: 'user', content: message }
+                ];
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000); // 20-second timeout
+
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${groqApiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'llama-3.1-8b-instant',
+                        messages: groqMessages,
+                        temperature: 0.15
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const reply = data.choices?.[0]?.message?.content || 'No response from Groq.';
+                    return NextResponse.json({ text: reply }, { status: 200 });
+                } else {
+                    const errText = await response.text();
+                    throw new Error(`Groq API responded with status ${response.status}: ${errText}`);
+                }
+            } catch (groqErr: any) {
+                console.error('[AI Chat] Groq API failed, trying Gemini...', groqErr.message || groqErr);
+            }
+        }
+
+        // 3. Fallback: Gemini API (Tertiary)
         const apiKey = process.env.GEMINI_API_KEY;
         if (apiKey) {
             try {

@@ -54,6 +54,7 @@ const Analysis = () => {
                             value={selectedExam}
                             onChange={(val) => setSelectedExam(val)}
                             placeholder="Select Exam"
+                            direction="up"
                         />
 
                         <div style={{

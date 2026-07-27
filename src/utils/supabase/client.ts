@@ -179,10 +179,17 @@ const createMockClient = () => {
         },
         channel: (name: string) => {
             console.log(`%c[Supabase Mock Client] Channel Subscription -> ${name}`, "color: #fb7185;");
-            return {
-                on: () => { return { subscribe: () => {} }; },
-                subscribe: () => {}
+            const channelMock = {
+                on: (event: string, filter: any, callback: any) => {
+                    console.log(`%c[Supabase Mock Client] Channel Listener registered for: ${event}`, "color: #fb7185;", filter);
+                    return channelMock;
+                },
+                subscribe: () => {
+                    console.log("%c[Supabase Mock Client] Channel subscribed", "color: #fb7185;");
+                    return channelMock;
+                }
             };
+            return channelMock;
         },
         removeChannel: (channel: any) => {
             console.log("%c[Supabase Mock Client] Removed subscription channel", "color: #fb7185;");

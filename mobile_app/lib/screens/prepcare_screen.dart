@@ -60,7 +60,7 @@ class _PrepcareScreenState extends State<PrepcareScreen> {
 
   void _initializeDefaultSession() {
     final newId = 'session-${DateTime.now().millisecondsSinceEpoch}';
-    final initialWelcome = [
+    final List<Map<String, dynamic>> initialWelcome = [
       {
         'id': 'welcome',
         'sender': 'ai',
@@ -77,7 +77,7 @@ class _PrepcareScreenState extends State<PrepcareScreen> {
     setState(() {
       _sessions = [defaultSession];
       _currentSessionId = newId;
-      _messages = initialWelcome;
+      _messages = List<Map<String, dynamic>>.from(initialWelcome);
     });
     _saveSessionsToStorage();
   }
@@ -95,7 +95,7 @@ class _PrepcareScreenState extends State<PrepcareScreen> {
 
   void _startNewChat() {
     final newId = 'session-${DateTime.now().millisecondsSinceEpoch}';
-    final initialWelcome = [
+    final List<Map<String, dynamic>> initialWelcome = [
       {
         'id': 'welcome',
         'sender': 'ai',
@@ -112,7 +112,7 @@ class _PrepcareScreenState extends State<PrepcareScreen> {
     setState(() {
       _sessions.insert(0, newSession);
       _currentSessionId = newId;
-      _messages = initialWelcome;
+      _messages = List<Map<String, dynamic>>.from(initialWelcome);
     });
     _saveSessionsToStorage();
     Navigator.of(context).pop(); // Close drawer
@@ -220,7 +220,7 @@ class _PrepcareScreenState extends State<PrepcareScreen> {
             'text': m['text'],
           }).toList(),
         }),
-      ).timeout(const Duration(seconds: 180));
+      ).timeout(const Duration(seconds: 2)); // Fail fast to activate standalone Groq fallback
 
       if (response.statusCode == 200) {
         final resData = jsonDecode(response.body);
@@ -238,66 +238,112 @@ class _PrepcareScreenState extends State<PrepcareScreen> {
         throw Exception('Status code: ${response.statusCode}');
       }
     } catch (e) {
-      debugPrint('Connection to backend failed, falling back to local fallback logic: $e');
-      _handleOfflineFallback(text);
+      debugPrint('Local backend connection bypassed/failed. Executing direct Groq standalone fallback...');
+      await _callDirectGroq(text, imgBase64);
     }
 
     _scrollToBottom();
     _updateActiveSessionInList();
   }
 
-  void _handleOfflineFallback(String message) {
-    final academicKeywords = [
-      'voltage', 'diode', 'circuit', 'pcb', 'transistor', 'capacitor', 'resistor', 'network',
-      'osi model', 'tcp', 'ip', 'ethernet', 'communication', 'optical', 'frequency', 'signal',
-      'fourier', 'laplace', 'differential', 'integral', 'math', 'physics', 'chemistry', 'electronics',
-      'electrical', 'microcontroller', 'embedded', 'sensor', 'programming', 'code', 'algorithm',
-      'op-amp', 'amplifier', 'altium', 'kicad', 'schematic', 'soldering', 'induction', 'transformer',
-      'motor', 'maxwell', 'electromagnetic', 'wave', 'antenna', 'laser', 'fiber', '5g', 'lte', 'study',
-      'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition'
-    ];
-    
-    final cleanText = message.toLowerCase();
-    final isAcademic = academicKeywords.any((k) => cleanText.contains(k)) || message.length > 30;
+  Future<void> _callDirectGroq(String text, String? imgBase64) async {
+    try {
+      const systemPrompt = "You are an expert AI academic tutor and career counselor for the Connect & Prep college platform.\n"
+          "Strict Policy:\n"
+          "- You must ONLY answer questions related to academics, studies, exams, educational course concepts, theorems, laws, engineering, physics, chemistry, mathematics, doubt solving, careers, placements, jobs, internships, interview preparation, resume building, and placement preparation.\n"
+          "- Under NO circumstances are you allowed to answer off-topic, casual, personal, social, or general questions (e.g. movies, entertainment, sports, jokes, creative writing, chat-bot identities, personal details, or general chit-chat).\n"
+          "- If a query is not strictly academic, career-related, study-related, doubt-solving, or educational, you MUST decline to answer. You must reply exactly: 'I can only help with academic, study, and career-related topics.' and nothing else.\n"
+          "- IMPORTANT: Format mathematical equations cleanly using LaTeX style (e.g., \$E = mc^2\$ or \$\$\$V = I \\times R\$\$\$) so they are rendered beautifully.";
 
-    String reply = '';
-    if (isAcademic) {
-      reply = '''⚠️ **[Local Ollama Server Offline - Demo Tutor Mode]**
+      final academicKeywords = [
+        'voltage', 'diode', 'circuit', 'pcb', 'transistor', 'capacitor', 'resistor', 'network',
+        'osi model', 'tcp', 'ip', 'ethernet', 'communication', 'optical', 'frequency', 'signal',
+        'fourier', 'laplace', 'differential', 'integral', 'math', 'physics', 'chemistry', 'electronics',
+        'electrical', 'microcontroller', 'embedded', 'sensor', 'programming', 'code', 'algorithm',
+        'op-amp', 'amplifier', 'altium', 'kicad', 'schematic', 'soldering', 'induction', 'transformer',
+        'motor', 'maxwell', 'electromagnetic', 'wave', 'antenna', 'laser', 'fiber', '5g', 'lte', 'study',
+        'exam', 'explain', 'how to', 'what is', 'solve', 'derive', 'definition', 'homework', 'assignment',
+        'motion', 'force', 'newton', 'gravity', 'velocity', 'acceleration', 'laws', 'theorem', 'scientist',
+        'einstein', 'tesla', 'galileo', 'curie', 'darwin', 'copernicus', 'faraday', 'bohr', 'schrodinger',
+        'heisenberg', 'planck', 'kepler', 'hawking', 'pasteur', 'mendel', 'maxwell', 'ampere', 'coulomb',
+        'ohm', 'joule', 'watt', 'pascal', 'bernoulli', 'euler', 'pythagoras', 'gauss', 'newtonian', 'relativity',
+        'quantum', 'thermodynamics', 'optics', 'mechanics', 'calculus', 'algebra', 'geometry', 'statistics',
+        'career', 'placement', 'job', 'internship', 'interview', 'resume', 'cv', 'hiring', 'recruitment',
+        'recruit', 'aptitude', 'software engineer', 'developer', 'hired', 'company', 'microsoft', 'google',
+        'placement prep', 'interview prep', 'doubt', 'solving', 'question', 'answer'
+      ];
 
-Could not connect to your local Ollama service at **http://127.0.0.1:11434**. To enable fully private dynamic AI, start Ollama and run `ollama pull gemma4:latest`.
+      final cleanText = text.toLowerCase();
+      final isAcademic = academicKeywords.any((k) => cleanText.contains(k)) || text.length > 50;
 
-Here is a study assistant response for your query *"$message"*:
+      if (!isAcademic) {
+        setState(() {
+          _messages.add({
+            'id': 'msg-${DateTime.now().millisecondsSinceEpoch}',
+            'sender': 'ai',
+            'text': 'I can only help with academic, study, and career-related topics.',
+            'timestamp': _formatTimeNow(),
+          });
+          _isTyping = false;
+        });
+        _scrollToBottom();
+        return;
+      }
 
-- **Topic Overview**: Your query relates to core engineering study areas (Electronics, Electrical, PCB, or Communication Networks).
-- **Core Concept**: 
-  1. For circuits/hardware, ensure proper ground plane separation and trace impedance matching.
-  2. For networks, follow layered models (OSI/TCP-IP) to guarantee reliable routing and message framing.
-- **Formulas & Rules**: 
-  - V = I * R (Ohm's Law)
-  - f_c = 1 / (2 * pi * R * C) (Cutoff frequency for active filters)
+      final List<Map<String, String>> groqMessages = [
+        {'role': 'system', 'content': systemPrompt}
+      ];
 
-*Ask another study question or start your local Ollama server to unlock full generative AI responses.*''';
-    } else {
-      reply = '''⚠️ **[Local Ollama Server Offline - Non-Academic Query Blocked]**
+      for (final m in _messages) {
+        final sender = m['sender'];
+        final mText = m['text'] ?? '';
+        if (sender == 'user') {
+          groqMessages.add({'role': 'user', 'content': mText});
+        } else if (sender == 'ai') {
+          groqMessages.add({'role': 'assistant', 'content': mText});
+        }
+      }
 
-Could not connect to your local Ollama service at **http://127.0.0.1:11434**.
+      final groqResponse = await http.post(
+        Uri.parse('https://api.groq.com/openai/v1/chat/completions'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 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',
+        },
+        body: jsonEncode({
+          'model': 'llama-3.1-8b-instant',
+          'messages': groqMessages,
+          'temperature': 0.15,
+        }),
+      ).timeout(const Duration(seconds: 25));
 
-**Prepcare Tutor Policy:**
-I received your query: *"$message"*.
-I can only help with academic and study-related topics (like Electronics, Electricals, PCB Designing, or Communication Networks).
-
-Please make sure to query me only with academic problems. Once Ollama is running with `gemma4:latest`, we will utilize your local GPU/CPU for fully private, locally-processed answers!''';
-    }
-
-    setState(() {
-      _messages.add({
-        'id': 'msg-${DateTime.now().millisecondsSinceEpoch}',
-        'sender': 'ai',
-        'text': reply,
-        'timestamp': _formatTimeNow(),
+      if (groqResponse.statusCode == 200) {
+        final resData = jsonDecode(groqResponse.body);
+        final replyText = resData['choices']?[0]?['message']?['content'] ?? 'No response from Groq.';
+        setState(() {
+          _messages.add({
+            'id': 'msg-${DateTime.now().millisecondsSinceEpoch}',
+            'sender': 'ai',
+            'text': replyText,
+            'timestamp': _formatTimeNow(),
+          });
+          _isTyping = false;
+        });
+      } else {
+        throw Exception('Groq API Error: status code ${groqResponse.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Groq fallback failed: $e');
+      setState(() {
+        _messages.add({
+          'id': 'msg-${DateTime.now().millisecondsSinceEpoch}',
+          'sender': 'ai',
+          'text': '⚠️ Failed to connect to Prepcare API and Groq fallback. Please check your internet connection.',
+          'timestamp': _formatTimeNow(),
+        });
+        _isTyping = false;
       });
-      _isTyping = false;
-    });
+    }
   }
 
   void _clearCurrentChat() {
@@ -316,7 +362,7 @@ Please make sure to query me only with academic problems. Once Ollama is running
             onPressed: () {
               Navigator.of(ctx).pop();
               setState(() {
-                _messages = [
+                _messages = <Map<String, dynamic>>[
                   {
                     'id': 'welcome',
                     'sender': 'ai',
@@ -355,9 +401,105 @@ Please make sure to query me only with academic problems. Once Ollama is running
     return '${now.day}/${now.month}/${now.year}';
   }
 
-  List<TextSpan> _parseMarkdown(String text) {
+  String _cleanUpMath(String latex) {
+    String clean = latex;
+    // Remove wrapping $ or $$
+    if (clean.startsWith(r'$$') && clean.endsWith(r'$$')) {
+      clean = clean.substring(2, clean.length - 2).trim();
+    } else if (clean.startsWith(r'$') && clean.endsWith(r'$')) {
+      clean = clean.substring(1, clean.length - 1).trim();
+    }
+    
+    // Replace LaTeX fraction \frac{num}{den} -> (num)/(den)
+    RegExp fracRegex = RegExp(r'\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}');
+    while (fracRegex.hasMatch(clean)) {
+      clean = clean.replaceAllMapped(fracRegex, (match) {
+        return '(${match.group(1)})/(${match.group(2)})';
+      });
+    }
+
+    // Replace basic superscripts and subscripts
+    final Map<String, String> superscripts = {
+      '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+      '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+      '+': '⁺', '-': '⁻', '=': '⁼', 'n': 'ⁿ', 'i': 'ⁱ',
+    };
+    final Map<String, String> subscripts = {
+      '0': '₀', '1': '₁', '2': '₂', '3': '₃', '4': '₄',
+      '5': '₅', '6': '₆', '7': '₇', '8': '₈', '9': '₉',
+      '+': '₊', '-': '₋', '=': '₌', 'a': 'ₐ', 'e': 'ₑ',
+      'o': 'ₒ', 'x': 'ₓ',
+    };
+
+    clean = clean.replaceAllMapped(RegExp(r'\^\{?([0-9+-=ni])\}?'), (match) {
+      return superscripts[match.group(1)] ?? '^${match.group(1)}';
+    });
+    clean = clean.replaceAllMapped(RegExp(r'_\{?([0-9+-=aebox])\}?'), (match) {
+      return subscripts[match.group(1)] ?? '_${match.group(1)}';
+    });
+
+    // Replace common LaTeX symbols
+    final Map<String, String> symbols = {
+      r'\mathcal{E}': 'ℰ',
+      r'\Phi': 'Φ',
+      r'\phi': 'φ',
+      r'\pi': 'π',
+      r'\theta': 'θ',
+      r'\Delta': 'Δ',
+      r'\times': '×',
+      r'\cdot': '·',
+      r'\pm': '±',
+      r'\infty': '∞',
+      r'\partial': '∂',
+      r'\int': '∫',
+      r'\sum': '∑',
+      r'\alpha': 'α',
+      r'\beta': 'β',
+      r'\gamma': 'γ',
+      r'\omega': 'ω',
+      r'\lambda': 'λ',
+      r'\mu': 'μ',
+      r'\sigma': 'σ',
+      r'\tau': 'τ',
+      r'\epsilon': 'ε',
+      r'\eta': 'η',
+      r'\rho': 'ρ',
+      r'\chi': 'χ',
+      r'\psi': 'ψ',
+      r'\nabla': '∇',
+      r'\approx': '≈',
+      r'\ne': '≠',
+      r'\le': '≤',
+      r'\ge': '≥',
+      r'\to': '→',
+      r'\rightarrow': '→',
+      r'\leftarrow': '←',
+      r'\gets': '←',
+      r'\forall': '∀',
+      r'\exists': '∃',
+      r'\in': '∈',
+      r'\notin': '∉',
+      r'\subset': '⊂',
+      r'\supset': '⊃',
+      r'\cap': '∩',
+      r'\cup': '∪',
+    };
+
+    symbols.forEach((pattern, replacement) {
+      clean = clean.replaceAll(pattern, replacement);
+    });
+
+    clean = clean.replaceAll(RegExp(r'\\sqrt\s*\{([^}]+)\}'), r'√$1');
+    clean = clean.replaceAll(r'\\', r'\');
+    
+    return clean;
+  }
+
+  List<TextSpan> _parseMarkdown(String rawText) {
+    // Normalize triple dollar signs to double dollar signs
+    final text = rawText.replaceAll('\$\$\$', '\$\$');
     final List<TextSpan> spans = [];
-    final RegExp regex = RegExp(r'(\*\*.*?\*\*|`.*?`|\n)');
+    final RegExp regex = RegExp(r'(\$\$.*?\$\$|\$.*?\$|\*\*.*?\*\*|`.*?`|\n)', dotAll: true);
     
     int lastIndex = 0;
     for (final match in regex.allMatches(text)) {
@@ -371,6 +513,25 @@ Please make sure to query me only with academic problems. Once Ollama is running
       final matchedText = match.group(0)!;
       if (matchedText == '\n') {
         spans.add(const TextSpan(text: '\n'));
+      } else if (matchedText.startsWith('\$\$') && matchedText.endsWith('\$\$')) {
+        spans.add(TextSpan(
+          text: '\n${_cleanUpMath(matchedText)}\n',
+          style: GoogleFonts.spaceGrotesk(
+            color: AppTheme.accentBlue,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            height: 1.6,
+          ),
+        ));
+      } else if (matchedText.startsWith('\$') && matchedText.endsWith('\$')) {
+        spans.add(TextSpan(
+          text: _cleanUpMath(matchedText),
+          style: GoogleFonts.spaceGrotesk(
+            color: AppTheme.accentBlue,
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.w600,
+          ),
+        ));
       } else if (matchedText.startsWith('**') && matchedText.endsWith('**')) {
         spans.add(TextSpan(
           text: matchedText.substring(2, matchedText.length - 2),
@@ -699,6 +860,8 @@ Please make sure to query me only with academic problems. Once Ollama is running
               style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
               maxLines: 4,
               minLines: 1,
+              textInputAction: TextInputAction.send,
+              onSubmitted: (_) => _sendMessage(),
               decoration: InputDecoration(
                 hintText: 'Ask Prepcare a study question...',
                 hintStyle: GoogleFonts.inter(color: AppTheme.textMuted, fontSize: 13),

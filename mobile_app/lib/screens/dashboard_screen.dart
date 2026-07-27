@@ -12,11 +12,11 @@ import 'prepcare_screen.dart';
 import 'project_hub_screen.dart';
 import 'assignment_hub_screen.dart';
 import 'parent_performance_screen.dart';
-import 'predictor_screen.dart';
 import 'notes_screen.dart';
 import 'study_groups_screen.dart';
 import 'feedback_screen.dart';
-import 'teacher_locator_screen.dart';
+import 'notices_screen.dart';
+import 'results_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -458,6 +458,18 @@ class DashboardScreen extends StatelessWidget {
     if (role == 'parent') {
       tools = [
         {
+          'title': 'Notice Board',
+          'icon': Icons.campaign_rounded,
+          'color': AppTheme.accentOrange,
+          'screen': const NoticesScreen(),
+        },
+        {
+          'title': 'Report Cards',
+          'icon': Icons.assignment_rounded,
+          'color': AppTheme.accentIndigo,
+          'screen': const ResultsScreen(),
+        },
+        {
           'title': 'Safety Monitor',
           'icon': Icons.security_rounded,
           'color': AppTheme.accentGreen,
@@ -482,12 +494,6 @@ class DashboardScreen extends StatelessWidget {
           'screen': const ParentPerformanceScreen(),
         },
         {
-          'title': 'Exam Predictor',
-          'icon': Icons.psychology_rounded,
-          'color': AppTheme.accentIndigo,
-          'screen': const PredictorScreen(),
-        },
-        {
           'title': 'Complaint Box',
           'icon': Icons.warning_amber_rounded,
           'color': AppTheme.accentRed,
@@ -496,6 +502,12 @@ class DashboardScreen extends StatelessWidget {
       ];
     } else if (role == 'teacher') {
       tools = [
+        {
+          'title': 'Notice Board',
+          'icon': Icons.campaign_rounded,
+          'color': AppTheme.accentOrange,
+          'screen': const NoticesScreen(),
+        },
         {
           'title': 'Paper Generator',
           'icon': Icons.article_rounded,
@@ -537,10 +549,16 @@ class DashboardScreen extends StatelessWidget {
       // Student
       tools = [
         {
-          'title': 'Teacher Radar',
-          'icon': Icons.radar_rounded,
+          'title': 'Notice Board',
+          'icon': Icons.campaign_rounded,
           'color': AppTheme.accentOrange,
-          'screen': const TeacherLocatorScreen(),
+          'screen': const NoticesScreen(),
+        },
+        {
+          'title': 'Report Cards',
+          'icon': Icons.assignment_rounded,
+          'color': AppTheme.accentIndigo,
+          'screen': const ResultsScreen(),
         },
         {
           'title': 'Prepcare AI',
@@ -591,18 +609,6 @@ class DashboardScreen extends StatelessWidget {
           'screen': const AlumniMatchScreen(),
         },
         {
-          'title': 'Smart Predictor',
-          'icon': Icons.psychology_rounded,
-          'color': AppTheme.accentBlue,
-          'screen': const PredictorScreen(),
-        },
-        {
-          'title': 'CGPA Calculator',
-          'icon': Icons.calculate_rounded,
-          'color': AppTheme.accentGreen,
-          'screen': null, // displays modal
-        },
-        {
           'title': 'Paper Generator',
           'icon': Icons.description_rounded,
           'color': AppTheme.accentBlue,
@@ -638,25 +644,6 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => t['screen'] as Widget),
-                );
-              } else {
-                // Show CGPA Dialog
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: AppTheme.bgCard,
-                    title: Text('CGPA Calculator', style: GoogleFonts.outfit(color: AppTheme.textPrimary)),
-                    content: const Text(
-                      'Sem 1: 8.20 GPA\nSem 2: 8.50 GPA\nSem 3: 8.10 GPA\nSem 4: 8.80 GPA\n\nEstimated Overall CGPA: 8.40 🎓',
-                      style: TextStyle(color: AppTheme.textSecondary, height: 1.5),
-                    ),
-                    actions: [
-                      TextButton(
-                        child: const Text('Close'),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                      )
-                    ],
-                  ),
                 );
               }
             },

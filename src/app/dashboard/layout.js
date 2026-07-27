@@ -13,7 +13,7 @@ import {
     Pencil, Clock, Hash, BrainCircuit, Calculator, Activity,
     Flame, StickyNote, CheckCircle2, Shield, GitBranch, ClipboardList,
     Home, Wallet, ShieldAlert, TrendingUp, BookOpenCheck, Search, Sparkles, Sliders,
-    Zap, MapPin, Radio, Building2
+    Zap, MapPin, Radio, Building2, Megaphone
 } from 'lucide-react';
 import '../../components/layout/DashboardLayout.css';
 import AIChatWidget from '../../components/layout/AIChatWidget';
@@ -126,23 +126,22 @@ const DashboardLayout = ({ children }) => {
         { label: 'Attendance List', icon: <Calendar size={20} />, path: '/dashboard/attendance' },
         { label: 'Timetable', icon: <Clock size={20} />, path: '/dashboard/timetable' },
         { label: 'Prepcare', icon: <Sparkles size={20} />, path: '/dashboard/ai-bot' },
+        { label: 'Report Cards', icon: <GraduationCap size={20} />, path: '/dashboard/results' },
         { type: 'divider' },
         { label: 'Notes & PYQs', icon: <BookOpen size={20} />, path: '/dashboard/notes' },
         { label: 'Discussion Forum', icon: <Hash size={20} />, path: '/dashboard/chat' },
         { label: 'Doubt Solving', icon: <MessageSquare size={20} />, path: '/dashboard/doubts' },
         { label: 'Library & Borrowing', icon: <BookOpen size={20} />, path: '/dashboard/borrowing' },
         { label: 'Complaint Box', icon: <Shield size={20} />, path: '/dashboard/complaints' },
+        { label: 'Notice Board', icon: <Megaphone size={20} />, path: '/dashboard/notices' },
         { type: 'divider' },
         { label: 'Clubs Hub', icon: <Trophy size={20} />, path: '/dashboard/clubs' },
         { label: 'Project Hub', icon: <GitBranch size={20} />, path: '/dashboard/projects' },
         { label: 'Study Zone', icon: <Users size={20} />, path: '/dashboard/studyzone' },
         { label: 'Activity Feed', icon: <Activity size={20} />, path: '/dashboard/feed' },
-        { label: 'CGPA Calculator', icon: <Calculator size={20} />, path: '/dashboard/cgpa' },
         { label: 'Answer Analysis', icon: <BarChart2 size={20} />, path: '/dashboard/analysis' },
         { label: 'Paper Generator', icon: <ClipboardList size={20} />, path: '/dashboard/paper-generator' },
         { label: 'Placements & Interns', icon: <Briefcase size={20} />, path: '/dashboard/placements' },
-        { label: 'Smart Exam Predictor', icon: <BrainCircuit size={20} />, path: '/dashboard/predictor' },
-        { label: 'Weekly Challenges', icon: <Flame size={20} />, path: '/dashboard/challenges' },
         { label: 'Leaderboard & XP', icon: <Trophy size={20} />, path: '/dashboard/leaderboard' },
     ];
 
@@ -154,8 +153,9 @@ const DashboardLayout = ({ children }) => {
         { label: 'Finance Portal', icon: <Wallet size={20} />, path: '/dashboard/finance' },
         { label: 'Safety Monitor', icon: <ShieldAlert size={20} />, path: '/dashboard/safety' },
         { label: 'Teacher\'s Diary', icon: <BookOpenCheck size={20} />, path: '/dashboard/teachers-diary' },
-        { label: 'Smart Exam Predictor', icon: <BrainCircuit size={20} />, path: '/dashboard/predictor' },
         { label: 'Clubs Hub', icon: <Trophy size={20} />, path: '/dashboard/clubs' },
+        { label: 'Notice Board', icon: <Megaphone size={20} />, path: '/dashboard/notices' },
+        { label: 'Report Cards', icon: <GraduationCap size={20} />, path: '/dashboard/results' },
     ];
 
     const teacherNav = [
@@ -174,6 +174,7 @@ const DashboardLayout = ({ children }) => {
         { label: 'Classroom Booking', icon: <Building2 size={20} />, path: '/dashboard/classroom-booking' },
         { label: 'Paper Generator', icon: <ClipboardList size={20} />, path: '/dashboard/paper-generator' },
         { label: 'Complaint Box', icon: <Shield size={20} />, path: '/dashboard/complaints' },
+        { label: 'Notice Board', icon: <Megaphone size={20} />, path: '/dashboard/notices' },
     ];
 
     const adminNav = [

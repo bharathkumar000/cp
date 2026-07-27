@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import './CustomDropdown.css';
 
-const CustomDropdown = ({ options, value, onChange, placeholder = "Select option", label }) => {
+const CustomDropdown = ({ options, value, onChange, placeholder = "Select option", label, direction = "down", layout = "list" }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -39,7 +39,7 @@ const CustomDropdown = ({ options, value, onChange, placeholder = "Select option
             </div>
 
             {isOpen && (
-                <div className="dropdown-options-menu">
+                <div className={`dropdown-options-menu direction-${direction} layout-${layout}`}>
                     {options.map((option, index) => {
                         const optLabel = typeof option === 'string' ? option : option.label;
                         const optValue = typeof option === 'string' ? option : option.value;

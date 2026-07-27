@@ -171,11 +171,11 @@ const AssignmentHub = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1rem' }}>
                     <div>
                         <h2 style={{ fontSize: '1.8rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
-                            Dr. Bhavana's Assignment Control <Sparkles size={22} color="#fbbf24" />
+                            Dr. Bhavana's Assignment Control <Sparkles size={22} color="#818cf8" />
                         </h2>
                         <p style={{ color: '#888', margin: '4px 0 0 0', fontSize: '0.95rem' }}>Create, dispatch, and monitor coursework and homework for active engineering sections.</p>
                     </div>
-                    <button className="add-task-btn" style={{ margin: 0, padding: '12px 24px', background: '#fbbf24', color: '#000', border: 'none', fontWeight: 'bold' }} onClick={() => setShowTeacherModal(true)}>
+                    <button className="add-task-btn" style={{ margin: 0, padding: '12px 24px', background: '#818cf8', color: '#000', border: 'none', fontWeight: 'bold' }} onClick={() => setShowTeacherModal(true)}>
                         <Plus size={18} /> Dispatch Homework
                     </button>
                 </div>
@@ -184,7 +184,7 @@ const AssignmentHub = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
                     <div style={{ background: '#111', border: '2px solid #333', padding: '1.5rem', borderRadius: '12px' }}>
                         <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#888', textTransform: 'uppercase' }}>Active Assignments</span>
-                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#fbbf24', marginTop: '6px' }}>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: '#818cf8', marginTop: '6px' }}>
                             {teacherAssignments.filter(a => a.status === 'Active').length}
                         </div>
                     </div>
@@ -225,7 +225,7 @@ const AssignmentHub = () => {
                                         {a.priority} Priority
                                     </span>
 
-                                    <div style={{ fontWeight: 800, color: '#fbbf24', fontSize: '0.8rem', textTransform: 'uppercase' }}>
+                                    <div style={{ fontWeight: 800, color: '#818cf8', fontSize: '0.8rem', textTransform: 'uppercase' }}>
                                         {a.classTarget} • {a.subject}
                                     </div>
                                     <h4 style={{ margin: '8px 0', fontSize: '1.1rem', fontWeight: 900 }}>{a.title}</h4>
@@ -236,7 +236,7 @@ const AssignmentHub = () => {
                                             <Calendar size={14} />
                                             <span>Due: {a.dueDate}</span>
                                         </div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fbbf24', fontWeight: 'bold' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#818cf8', fontWeight: 'bold' }}>
                                             <BookOpenCheck size={14} />
                                             <span>Submissions: {a.submissions}</span>
                                         </div>
@@ -257,7 +257,7 @@ const AssignmentHub = () => {
                                 <div key={cls.code} style={{ background: '#000', border: '1px solid #222', borderRadius: '8px', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div>
                                         <h4 style={{ margin: 0, fontWeight: 900, fontSize: '0.95rem', color: '#fff' }}>{cls.name}</h4>
-                                        <span style={{ fontSize: '0.75rem', color: '#fbbf24', fontWeight: 'bold' }}>{cls.subject}</span>
+                                        <span style={{ fontSize: '0.75rem', color: '#818cf8', fontWeight: 'bold' }}>{cls.subject}</span>
                                         <div style={{ fontSize: '0.7rem', color: '#555', marginTop: '4px' }}>{cls.term}</div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
@@ -337,7 +337,7 @@ const AssignmentHub = () => {
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '1rem' }}>
                                     <button type="button" className="hub-btn hub-btn-secondary" style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #333', color: '#fff', borderRadius: '6px', cursor: 'pointer' }} onClick={() => setShowTeacherModal(false)}>CANCEL</button>
-                                    <button type="submit" className="hub-btn hub-btn-primary" style={{ padding: '8px 16px', background: '#fbbf24', border: 'none', color: '#000', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer' }}>DISPATCH</button>
+                                    <button type="submit" className="hub-btn hub-btn-primary" style={{ padding: '8px 16px', background: '#818cf8', border: 'none', color: '#000', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer' }}>DISPATCH</button>
                                 </div>
                             </form>
                         </div>
