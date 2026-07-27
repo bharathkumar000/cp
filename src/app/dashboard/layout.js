@@ -147,7 +147,7 @@ const DashboardLayout = ({ children }) => {
 
     const parentNav = [
         { label: 'Parent Dashboard', icon: <Home size={20} />, path: '/dashboard/parent-dashboard' },
-        { label: 'Child Performance', icon: <TrendingUp size={20} />, path: '/dashboard/parent-dashboard' },
+        { label: 'Child Performance', icon: <TrendingUp size={20} />, path: '/dashboard/parent-dashboard?tab=performance' },
         { label: 'Attendance & Class', icon: <Calendar size={20} />, path: '/dashboard/attendance' },
         { type: 'divider' },
         { label: 'Finance Portal', icon: <Wallet size={20} />, path: '/dashboard/finance' },
@@ -164,6 +164,7 @@ const DashboardLayout = ({ children }) => {
         { label: 'Attendance List', icon: <Calendar size={20} />, path: '/dashboard/attendance' },
         { label: 'Timetable', icon: <Clock size={20} />, path: '/dashboard/timetable' },
         { label: 'Notes & PYQs', icon: <BookOpen size={20} />, path: '/dashboard/notes' },
+        { label: 'Prepcare', icon: <Sparkles size={20} />, path: '/dashboard/ai-bot' },
         { type: 'divider' },
         { label: 'Doubt Solving', icon: <MessageSquare size={20} />, path: '/dashboard/doubts' },
         { label: 'Discussion Forum', icon: <Hash size={20} />, path: '/dashboard/chat' },
@@ -206,6 +207,12 @@ const DashboardLayout = ({ children }) => {
             if (i.path.includes('?view=subject')) {
                 return pathname === '/dashboard' && currentView !== 'advisor';
             }
+            if (i.path.includes('?tab=performance')) {
+                return pathname === '/dashboard/parent-dashboard' && searchParams.get('tab') === 'performance';
+            }
+            if (i.path === '/dashboard/parent-dashboard') {
+                return pathname === '/dashboard/parent-dashboard' && searchParams.get('tab') !== 'performance';
+            }
             return pathname === i.path;
         });
     const currentLabel = activeItem?.label || 'Dashboard';
@@ -233,6 +240,12 @@ const DashboardLayout = ({ children }) => {
                             }
                             if (item.path?.includes('?view=subject')) {
                                 return pathname === '/dashboard' && currentView !== 'advisor';
+                            }
+                            if (item.path?.includes('?tab=performance')) {
+                                return pathname === '/dashboard/parent-dashboard' && searchParams.get('tab') === 'performance';
+                            }
+                            if (item.path === '/dashboard/parent-dashboard') {
+                                return pathname === '/dashboard/parent-dashboard' && searchParams.get('tab') !== 'performance';
                             }
                             return pathname === item.path;
                         })();

@@ -21,7 +21,6 @@ const FinancePortal = () => {
     const [recharging, setRecharging] = useState(false);
     const [withdrawing, setWithdrawing] = useState(false);
     const [withdrawMessage, setWithdrawMessage] = useState({ text: '', type: '' });
-    const [showScanner, setShowScanner] = useState(false);
 
     const supabase = createClient();
     const rawStudentId = user?.id || user?._id;
@@ -165,94 +164,7 @@ const FinancePortal = () => {
         setWithdrawing(false);
     };
 
-    const triggerFacePay = async () => {
-        setShowScanner(false);
-        try {
-            const res = await fetch('/api/wallet/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    present_usns: [studentId],
-                    amount: 100,
-                    description: 'Judges Demo - Face Pay'
-                })
-            });
-            const data = await res.json();
-            if (res.ok) {
-                alert(`Success! ${data.message}`);
-                fetchWallet();
-                fetchTransactions();
-            } else {
-                alert(`Error: ${data.message}`);
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Failed to connect to checkout API.");
-        }
-    };
 
-    const FaceScannerModal = ({ onClose, onScanSuccess }) => {
-        const videoRef = React.useRef(null);
-        const [stream, setStream] = useState(null);
-        const [status, setStatus] = useState("Initializing Camera...");
-
-        useEffect(() => {
-            let activeStream = null;
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(s => {
-                    activeStream = s;
-                    setStream(s);
-                    if (videoRef.current) {
-                        videoRef.current.srcObject = s;
-                    }
-                    setStatus("Scanning Face...");
-                    
-                    setTimeout(() => {
-                        setStatus("Face Recognized! Processing Payment...");
-                        setTimeout(() => {
-                            onScanSuccess();
-                        }, 1500);
-                    }, 3000);
-                })
-                .catch(err => {
-                    setStatus("Camera Error: " + err.message);
-                });
-
-            return () => {
-                if (activeStream) {
-                    activeStream.getTracks().forEach(track => track.stop());
-                }
-            };
-        }, []);
-
-        return (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
-                <div style={{ background: '#1e293b', padding: '24px', borderRadius: '16px', border: '1px solid #3b82f6', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-                    <h2 style={{ color: 'white', marginTop: 0 }}>Face Pay POS Terminal</h2>
-                    <div style={{ position: 'relative', width: '320px', height: '240px', background: '#000', borderRadius: '8px', overflow: 'hidden', margin: '0 auto 16px' }}>
-                        <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <div style={{
-                            position: 'absolute',
-                            top: 0, left: 0, right: 0,
-                            height: '2px',
-                            background: '#10b981',
-                            boxShadow: '0 0 10px #10b981, 0 0 20px #10b981',
-                            animation: 'scan 2s infinite linear'
-                        }} />
-                        <style>{`
-                            @keyframes scan {
-                                0% { top: 0; }
-                                50% { top: 100%; }
-                                100% { top: 0; }
-                            }
-                        `}</style>
-                    </div>
-                    <p style={{ color: status.includes("Recognized") ? '#10b981' : '#60a5fa', fontWeight: 'bold' }}>{status}</p>
-                    <button onClick={onClose} style={{ marginTop: '16px', background: 'transparent', border: '1px solid #64748b', color: '#cbd5e1', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                </div>
-            </div>
-        );
-    };
 
     return (
         <div className="feature-container finance-portal">
@@ -281,24 +193,10 @@ const FinancePortal = () => {
                             <p style={{ margin: 0, fontSize: '2.5rem', fontWeight: '800', color: 'white' }}>₹{walletBalance.toFixed(2)}</p>
                         </div>
                     </div>
-                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(34, 197, 94, 0.2)', color: '#4ade80', padding: '6px 16px', borderRadius: '20px', fontWeight: '600', fontSize: '0.85rem' }}>
-                            <Camera size={14} />
-                            Face Pay Active
-                        </div>
-                        <button 
-                            onClick={() => setShowScanner(true)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(59, 130, 246, 0.3)' }}
-                        >
-                            <Camera size={16} />
-                            Demo Face Checkout (₹100)
-                        </button>
-                    </div>
                 </div>
-                {showScanner && <FaceScannerModal onClose={() => setShowScanner(false)} onScanSuccess={triggerFacePay} />}
 
                 <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '16px' }}>
-                    <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>Recent Face Pay & Transactions</h3>
+                    <h3 style={{ margin: '0 0 16px 0', fontSize: '1rem', color: '#cbd5e1', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>Recent Transactions</h3>
                     {transactions.length === 0 ? (
                         <p style={{ color: '#64748b', fontSize: '0.9rem' }}>No recent transactions.</p>
                     ) : (

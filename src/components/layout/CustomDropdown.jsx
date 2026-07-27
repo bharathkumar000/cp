@@ -1,63 +1,26 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import React from 'react';
 import './CustomDropdown.css';
 
-const CustomDropdown = ({ options, value, onChange, placeholder = "Select option", label, direction = "down", layout = "list" }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef(null);
-
-    const selectedOption = options.find(opt => opt === value || opt.value === value);
-    const displayValue = selectedOption 
-        ? (typeof selectedOption === 'string' ? selectedOption : selectedOption.label)
-        : placeholder;
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleSelect = (option) => {
-        const val = typeof option === 'string' ? option : option.value;
-        onChange(val);
-        setIsOpen(false);
-    };
-
+const CustomDropdown = ({ options = [], value, onChange, placeholder = "Select option", label }) => {
     return (
-        <div className="custom-dropdown-container" ref={dropdownRef}>
+        <div className="custom-dropdown-container">
             {label && <label className="dropdown-field-label">{label}</label>}
-            <div 
-                className={`dropdown-trigger ${isOpen ? 'active' : ''}`} 
-                onClick={() => setIsOpen(!isOpen)}
+            <select
+                value={value || ''}
+                onChange={(e) => onChange(e.target.value)}
+                className="lms-input-select"
             >
-                <span>{displayValue}</span>
-                <ChevronDown size={18} className={`chevron ${isOpen ? 'rotate' : ''}`} />
-            </div>
-
-            {isOpen && (
-                <div className={`dropdown-options-menu direction-${direction} layout-${layout}`}>
-                    {options.map((option, index) => {
-                        const optLabel = typeof option === 'string' ? option : option.label;
-                        const optValue = typeof option === 'string' ? option : option.value;
-                        const isSelected = optValue === value;
-
-                        return (
-                            <div 
-                                key={index} 
-                                className={`dropdown-option ${isSelected ? 'selected' : ''}`}
-                                onClick={() => handleSelect(option)}
-                            >
-                                {optLabel}
-                                {isSelected && <div className="selected-dot" />}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+                {placeholder && <option value="" disabled>{placeholder}</option>}
+                {options.map((option, index) => {
+                    const optLabel = typeof option === 'string' ? option : option.label;
+                    const optValue = typeof option === 'string' ? option : option.value;
+                    return (
+                        <option key={index} value={optValue}>
+                            {optLabel}
+                        </option>
+                    );
+                })}
+            </select>
         </div>
     );
 };

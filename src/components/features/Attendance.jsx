@@ -1,30 +1,71 @@
 "use client";
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Calendar, Search, X, Upload, Check, Bell, User as UserIcon, PlusCircle, Trash2, ShieldAlert, AlertTriangle, RefreshCw, Eye, MapPin, Compass, Navigation, Radio, Sparkles, Activity } from 'lucide-react';
+import { Calendar, Search, X, Upload, Check, Bell, User as UserIcon, PlusCircle, Trash2, Eye } from 'lucide-react';
 import { createClient } from '../../utils/supabase/client';
 
 import { useAuth } from '../../context/AuthContext';
 import './Attendance.css';
 
-// Formatted display names for seeded student accounts
-const studentNameMap = {
-    '00000000-0000-0000-0000-000000000001': 'Bharath Kumar A (bk@vvce)',
-    '00000000-0000-0000-0000-000000000002': 'Ananya Yk (ananya@vvce)',
-    '00000000-0000-0000-0000-000000000003': 'Riddhi (riddhi@vvce)',
-    '00000000-0000-0000-0000-000000000007': 'Rishith (rishith@vvce)',
-    '00000000-0000-0000-0000-000000000008': 'Bharath P (bp@vvce)',
-    '00000000-0000-0000-0000-000000000009': 'Anagha (anagha@vvce)',
+// Deterministic generator lists of Indian names for seeded student accounts
+const firstNames = [
+    'Aarav', 'Aditya', 'Amit', 'Arjun', 'Ashok', 'Chaitanya', 'Deepak', 'Ganesh', 'Hari',
+    'Ishaan', 'Kartik', 'Kiran', 'Madhav', 'Nikhil', 'Pranav', 'Rahul', 'Rohan', 'Sanjay', 'Vikram',
+    'Abhishek', 'Harish', 'Manjunath', 'Pradeep', 'Rajesh', 'Suresh', 'Vijay', 'Yash',
+    'Ananya', 'Divya', 'Jyothi', 'Kavya', 'Meera', 'Neha', 'Pooja', 'Priya', 'Sneha',
+    'Swati', 'Tanvi', 'Aishwarya', 'Deepa', 'Geetha', 'Latha', 'Nisha', 'Radha', 'Sandhya', 'Shalini', 'Uma', 'Vidya'
+];
+const lastNames = [
+    'Kumar', 'Sharma', 'Patel', 'Joshi', 'Rao', 'Nair', 'Singh', 'Reddy', 'Gowda', 'Prasad',
+    'Pai', 'Shenoy', 'Murthy', 'Kulkarni', 'Bhat', 'Hegde', 'Desai', 'Shetty', 'Acharya', 'Naidu'
+];
+
+const generateIndianName = (branch, section, index) => {
+    const hash = (branch.charCodeAt(0) * 7 + section.charCodeAt(0) * 13 + index * 17);
+    const first = firstNames[hash % firstNames.length];
+    const last = lastNames[(hash * 3) % lastNames.length];
+    const shortName = `${first.toLowerCase()}@vvce`;
+    return { name: `${first} ${last} (${shortName})` };
 };
 
-// Map student IDs to Branch and Section
-const studentBranchSectionMap = {
-    '00000000-0000-0000-0000-000000000001': { branch: 'ECE', section: 'A' },
-    '00000000-0000-0000-0000-000000000002': { branch: 'ECE', section: 'A' },
-    '00000000-0000-0000-0000-000000000003': { branch: 'ECE', section: 'A' },
-    '00000000-0000-0000-0000-000000000007': { branch: 'ECE', section: 'A' },
-    '00000000-0000-0000-0000-000000000008': { branch: 'ECE', section: 'A' },
-    '00000000-0000-0000-0000-000000000009': { branch: 'ECE', section: 'A' },
-};
+const studentNameMap = {};
+const studentBranchSectionMap = {};
+
+// Base profiles that must remain unchanged (ECE A)
+const baseProfiles = [
+    { id: 'mock-student-id', name: 'Demo Student', branch: 'ECE', section: 'A' },
+    { id: '00000000-0000-0000-0000-000000000001', name: 'Bharath Kumar A (bk@vvce)', branch: 'ECE', section: 'A' },
+    { id: '00000000-0000-0000-0000-000000000002', name: 'Ananya Yk (ananya@vvce)', branch: 'ECE', section: 'A' },
+    { id: '00000000-0000-0000-0000-000000000003', name: 'Riddhi (riddhi@vvce)', branch: 'ECE', section: 'A' },
+    { id: '00000000-0000-0000-0000-000000000007', name: 'Rishith (rishith@vvce)', branch: 'ECE', section: 'A' },
+    { id: '00000000-0000-0000-0000-000000000008', name: 'Bharath P (bp@vvce)', branch: 'ECE', section: 'A' },
+    { id: '00000000-0000-0000-0000-000000000009', name: 'Anagha (anagha@vvce)', branch: 'ECE', section: 'A' },
+];
+
+baseProfiles.forEach(p => {
+    studentNameMap[p.id] = p.name;
+    studentBranchSectionMap[p.id] = { branch: p.branch, section: p.section };
+});
+
+const seededBranches = ['CSE', 'ISE', 'ECE', 'EEE', 'AIML'];
+const seededSections = ['A', 'B', 'C', 'D'];
+
+const allSeededStudentsList = [...baseProfiles.map(p => ({ id: p.id, college: 'VVCE', role: 'student' }))];
+
+seededBranches.forEach(branch => {
+    seededSections.forEach(section => {
+        const existingCount = baseProfiles.filter(p => p.branch === branch && p.section === section).length;
+        const countToAdd = 8 - existingCount; // 8 students per class
+        
+        for (let i = 1; i <= countToAdd; i++) {
+            const id = `mock-student-${branch.toLowerCase()}-${section.toLowerCase()}-${i}`;
+            const { name } = generateIndianName(branch, section, i);
+            
+            studentNameMap[id] = name;
+            studentBranchSectionMap[id] = { branch, section };
+            allSeededStudentsList.push({ id, college: 'VVCE', role: 'student' });
+        }
+    });
+});
 
 // Premium Custom Month Picker Component
 function MonthPicker({ value, onChange }) {
@@ -306,7 +347,7 @@ const Attendance = () => {
     ];
 
     const branches = [
-        'All',
+        'None',
         'CSE',
         'ISE',
         'ECE',
@@ -315,10 +356,11 @@ const Attendance = () => {
     ];
 
     const sections = [
-        'All',
+        'None',
         'A',
         'B',
-        'C'
+        'C',
+        'D'
     ];
 
     const monthOptions = useMemo(() => {
@@ -336,8 +378,8 @@ const Attendance = () => {
     // Filter states
     const [curriculum, setCurriculum] = useState('B.E in FY 2025-2026');
     const [term, setTerm] = useState('2 - Semester');
-    const [selectedBranch, setSelectedBranch] = useState('All');
-    const [selectedSection, setSelectedSection] = useState('All');
+    const [selectedBranch, setSelectedBranch] = useState('ECE');
+    const [selectedSection, setSelectedSection] = useState('A');
     const [fromMonth, setFromMonth] = useState('01-2026');
     const [toMonth, setToMonth] = useState('12-2026');
     
@@ -351,336 +393,23 @@ const Attendance = () => {
     const [liveNotification, setLiveNotification] = useState(null);
 
     const filteredStudentProfiles = useMemo(() => {
+        if (selectedBranch === 'None' || selectedSection === 'None') {
+            return [];
+        }
         return studentProfiles.filter(student => {
-            const studentInfo = studentBranchSectionMap[student.id] || { branch: 'CSE', section: 'A' };
-            const branchMatch = selectedBranch === 'All' || studentInfo.branch === selectedBranch;
-            const sectionMatch = selectedSection === 'All' || studentInfo.section === selectedSection;
+            const studentInfo = studentBranchSectionMap[student.id];
+            if (!studentInfo) return false;
+            const branchMatch = studentInfo.branch === selectedBranch;
+            const sectionMatch = studentInfo.section === selectedSection;
             return branchMatch && sectionMatch;
         });
     }, [studentProfiles, selectedBranch, selectedSection]);
 
-    // Validation Studio state variables
-    const [activeTab, setActiveTab] = useState('standard');
-
-    // Geofencing and Grace Attendance simulation state
-    const [geofenceRequests, setGeofenceRequests] = useState([
-        {
-            id: 'geo-1',
-            student_id: '00000000-0000-0000-0000-000000000001',
-            student_name: 'Bharath Kumar A (bk@vvce)',
-            event_title: 'Smart Campus Hackathon 2026',
-            venue: 'College B - RV College of Engineering (RVCE)',
-            lat: 12.9237,
-            lng: 77.4987,
-            radius: 1.0, // 1 km
-            date: (() => {
-                const d = new Date();
-                return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-            })(),
-            start_time: '09:00',
-            end_time: '17:00',
-            course: '1BMATE201 - Applied Mathematics - II for EE Stream',
-            status: 'Pending', // Pending, Approved, Rejected, Grace_Granted
-            simulated_status: 'Verified_Outside', // Verified_Inside, Verified_Outside
-            last_checked_at: null
-        },
-        {
-            id: 'geo-2',
-            student_id: '00000000-0000-0000-0000-000000000007',
-            student_name: 'Rishith (rishith@vvce)',
-            event_title: 'National Robotics Championship',
-            venue: 'BMS College of Engineering (BMSCE)',
-            lat: 12.9193,
-            lng: 77.5670,
-            radius: 1.0,
-            date: (() => {
-                const d = new Date();
-                return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-            })(),
-            start_time: '10:00',
-            end_time: '16:00',
-            course: '1BMATE201 - Applied Mathematics - II for EE Stream',
-            status: 'Pending',
-            simulated_status: 'Verified_Inside',
-            last_checked_at: new Date().toLocaleTimeString()
-        }
-    ]);
-
-    // Live Student GPS Location Simulation (initially at College A - VVCE: 12.3168, 76.6127)
-    const [liveStudentGps, setLiveStudentGps] = useState({
-        lat: 12.3168,
-        lng: 76.6127,
-        student_id: '00000000-0000-0000-0000-000000000001' // bk@vvce
-    });
-
-    const [aiPromptText, setAiPromptText] = useState('');
-    const [isAILoading, setIsAILoading] = useState(false);
-    const [aiParsedData, setAiParsedData] = useState(null);
-    const [selectedGeoRequestId, setSelectedGeoRequestId] = useState('geo-1');
-    const [geofenceMessage, setGeofenceMessage] = useState({ text: '', type: '' });
-
-    // Haversine distance calculator
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-        if (!lat1 || !lon1 || !lat2 || !lon2) return 0;
-        const R = 6371; // Radius of the earth in km
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = 
-            Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        const d = R * c; // Distance in km
-        return d;
-    };
-
-    // Client-side NLP parser for AI Auto-geofencing
-    const handleAIParseGeofence = () => {
-        if (!aiPromptText.trim()) {
-            setGeofenceMessage({ text: "Please enter event details for AI to parse.", type: "error" });
-            return;
-        }
-        setIsAILoading(true);
-        setGeofenceMessage({ text: "", type: "" });
-        
-        setTimeout(() => {
-            const prompt = aiPromptText.toLowerCase();
-            let parsedEvent = "AI Geofenced Workshop";
-            let parsedVenue = "Identified College Campus";
-            let resolvedLat = 12.9716;
-            let resolvedLng = 77.5946;
-            
-            if (prompt.includes("hackathon")) {
-                parsedEvent = "Smart Hackathon Challenge";
-            } else if (prompt.includes("workshop") || prompt.includes("training")) {
-                parsedEvent = "AI & Tech Workshop";
-            } else if (prompt.includes("seminar") || prompt.includes("summit") || prompt.includes("conference")) {
-                parsedEvent = "National Tech Summit";
-            } else if (prompt.includes("robot") || prompt.includes("robofest")) {
-                parsedEvent = "National Robotics Championship";
-            }
-
-            if (prompt.includes("rvce") || prompt.includes("rv college") || prompt.includes("r.v. college")) {
-                parsedVenue = "RV College of Engineering (RVCE), Bengaluru";
-                resolvedLat = 12.9237;
-                resolvedLng = 77.4987;
-            } else if (prompt.includes("bmsce") || prompt.includes("bms college") || prompt.includes("b.m.s. college")) {
-                parsedVenue = "BMS College of Engineering (BMSCE), Bengaluru";
-                resolvedLat = 12.9193;
-                resolvedLng = 77.5670;
-            } else if (prompt.includes("pesu") || prompt.includes("pes university") || prompt.includes("pesit")) {
-                parsedVenue = "PES University (PESU), Bengaluru";
-                resolvedLat = 12.9348;
-                resolvedLng = 77.5348;
-            } else if (prompt.includes("iitb") || prompt.includes("iit bombay") || prompt.includes("indian institute of technology")) {
-                parsedVenue = "IIT Bombay Campus, Mumbai";
-                resolvedLat = 19.1334;
-                resolvedLng = 72.9133;
-            } else {
-                const venuePart = aiPromptText.split(/ at | in | near /i);
-                if (venuePart.length > 1) {
-                    parsedVenue = venuePart[1].split(/ from | on | for /i)[0].trim();
-                } else {
-                    parsedVenue = "External College Venue";
-                }
-                resolvedLat = 12.9592;
-                resolvedLng = 77.5721;
-            }
-
-            setAiParsedData({
-                event_title: parsedEvent,
-                venue: parsedVenue,
-                lat: resolvedLat,
-                lng: resolvedLng,
-                radius: 1.0, // forced to exactly 1.0 km as per user requirement
-                date: (() => {
-                    const d = new Date();
-                    return `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
-                })(),
-                start_time: '09:00',
-                end_time: '17:00',
-                course: '1BMATE201 - Applied Mathematics - II for EE Stream'
-            });
-            setIsAILoading(false);
-            setGeofenceMessage({ text: "AI successfully parsed the event details and auto-geofenced the coordinates!", type: "success" });
-        }, 1200);
-    };
-
-    // Submit request handler
-    const handleSubmitGeofenceRequest = () => {
-        if (!aiParsedData) return;
-        
-        const newReq = {
-            id: `geo-${Date.now()}`,
-            student_id: user?.id || '00000000-0000-0000-0000-000000000001',
-            student_name: user?.name || 'Bharath Kumar A (bk@vvce)',
-            event_title: aiParsedData.event_title,
-            venue: aiParsedData.venue,
-            lat: aiParsedData.lat,
-            lng: aiParsedData.lng,
-            radius: aiParsedData.radius,
-            date: aiParsedData.date,
-            start_time: aiParsedData.start_time,
-            end_time: aiParsedData.end_time,
-            course: aiParsedData.course,
-            status: 'Pending',
-            simulated_status: 'Verified_Outside',
-            last_checked_at: null
-        };
-        
-        setGeofenceRequests(prev => [newReq, ...prev]);
-        setAiParsedData(null);
-        setAiPromptText('');
-        setSelectedGeoRequestId(newReq.id);
-        setGeofenceMessage({ text: "Your Geofence Grace request has been successfully submitted to your class teacher!", type: "success" });
-    };
-
-    // Simulated location streamer
-    const handleSimulateGPS = (reqId, inside) => {
-        const req = geofenceRequests.find(r => r.id === reqId);
-        if (!req) return;
-
-        let targetLat, targetLng;
-        if (inside) {
-            targetLat = req.lat + 0.002; // inside the 1km boundary
-            targetLng = req.lng - 0.003;
-        } else {
-            targetLat = 12.3168; // back to college A (VVCE)
-            targetLng = 76.6127;
-        }
-
-        setLiveStudentGps({
-            lat: targetLat,
-            lng: targetLng,
-            student_id: user?.id || '00000000-0000-0000-0000-000000000001'
-        });
-
-        setGeofenceRequests(prev => prev.map(r => {
-            if (r.id === reqId) {
-                const dist = calculateDistance(targetLat, targetLng, r.lat, r.lng);
-                const isInside = dist <= r.radius;
-                return {
-                    ...r,
-                    simulated_status: isInside ? 'Verified_Inside' : 'Verified_Outside',
-                    last_checked_at: new Date().toLocaleTimeString()
-                };
-            }
-            return r;
-        }));
-
-        setGeofenceMessage({
-            text: `GPS coordinates simulated successfully. Student is now ${inside ? 'INSIDE' : 'OUTSIDE'} the event Geofence.`,
-            type: "success"
-        });
-    };
-
-    // Teacher approval and DB sync handler
-    const handleTeacherApproveGrace = async (reqId) => {
-        const req = geofenceRequests.find(r => r.id === reqId);
-        if (!req) return;
-
-        // Verify if student is inside geofence
-        const studentGpsLat = liveStudentGps.student_id === req.student_id ? liveStudentGps.lat : (req.simulated_status === 'Verified_Inside' ? req.lat + 0.002 : 12.3168);
-        const studentGpsLng = liveStudentGps.student_id === req.student_id ? liveStudentGps.lng : (req.simulated_status === 'Verified_Inside' ? req.lng - 0.003 : 76.6127);
-        
-        const dist = calculateDistance(studentGpsLat, studentGpsLng, req.lat, req.lng);
-        const isInside = dist <= req.radius;
-
-        if (!isInside && req.simulated_status !== 'Verified_Inside') {
-            setGeofenceMessage({
-                text: "Cannot grant grace attendance. Student is currently outside the Geofence. AI has flagged a warning.",
-                type: "error"
-            });
-            return;
-        }
-
-        try {
-            const dStr = req.date;
-            const parts = dStr.split('-');
-            const dateObj = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-            const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            const dayName = dayNames[dateObj.getDay()];
-
-            const newRecord = {
-                student_id: req.student_id,
-                course: req.course,
-                date: dStr,
-                day: dayName,
-                present: 1,
-                total: 1,
-                doc_status: 'GRANTED_GEOFENCE',
-                sem: '2 - Semester'
-            };
-
-            const { data, error } = await supabase
-                .from('attendance')
-                .upsert(newRecord, { onConflict: 'student_id,course,date' });
-
-            if (error) {
-                console.error("Supabase error during geofence grace insertion:", error);
-            }
-
-            // Sync standard attendance records in state
-            setSupabaseRecords(prev => {
-                const filtered = prev.filter(r => !(r.student_id === req.student_id && r.course === req.course && r.date === dStr));
-                return [
-                    {
-                        id: `geo-grant-${Date.now()}`,
-                        ...newRecord,
-                        created_at: new Date().toISOString()
-                    },
-                    ...filtered
-                ];
-            });
-
-            setGeofenceRequests(prev => prev.map(r => {
-                if (r.id === reqId) {
-                    return {
-                        ...r,
-                        status: 'Grace_Granted',
-                        last_checked_at: new Date().toLocaleTimeString()
-                    };
-                }
-                return r;
-            }));
-
-            setGeofenceMessage({
-                text: `Grace attendance successfully approved and registered in Supabase for ${req.student_name}!`,
-                type: "success"
-            });
-
-        } catch (err) {
-            console.error("Error granting grace attendance:", err);
-            setGeofenceMessage({
-                text: "An error occurred while communicating with Supabase, but the local ledger was updated.",
-                type: "error"
-            });
-        }
-    };
-
-    const handleTeacherRejectGrace = (reqId) => {
-        setGeofenceRequests(prev => prev.map(r => {
-            if (r.id === reqId) {
-                return {
-                    ...r,
-                    status: 'Rejected',
-                    last_checked_at: new Date().toLocaleTimeString()
-                };
-            }
-            return r;
-        }));
-        setGeofenceMessage({ text: "Request has been rejected.", type: "success" });
-    };
-
-    const [validationSlotId, setValidationSlotId] = useState('');
+    // Timetable slots state
     const [timetableSlots, setTimetableSlots] = useState([]);
-    const [validationRoster, setValidationRoster] = useState([]);
-    const [completedChecks, setCompletedChecks] = useState(0);
-    const [isFinalisingRoster, setIsFinalisingRoster] = useState(false);
-    const [studentLedger, setStudentLedger] = useState([]);
-    const [excuseTextMap, setExcuseTextMap] = useState({});
+    const [selectedTimeSlotId, setSelectedTimeSlotId] = useState('');
 
-    // Class-wide Attendance states for teachers (Standard Tab)
+    // Class-wide Attendance states for teachers
     const [classTeacherCourse, setClassTeacherCourse] = useState('1BMATE201 - Applied Mathematics - II for EE Stream');
     const [classTeacherDate, setClassTeacherDate] = useState(() => {
         const d = new Date();
@@ -692,506 +421,9 @@ const Attendance = () => {
     const [classRosterStatus, setClassRosterStatus] = useState({}); // student_id -> boolean (true=present, false=absent)
     const [classAttendanceSummary, setClassAttendanceSummary] = useState([]);
     const [classSessionHistory, setClassSessionHistory] = useState([]);
+    const [classCourseLogs, setClassCourseLogs] = useState([]);
     const [classMessage, setClassMessage] = useState('');
     const [isSavingClass, setIsSavingClass] = useState(false);
-    
-    const isWebcamRunning = completedChecks > 0 && completedChecks < 5;
-
-    // Helper: Fetch validation roster
-    const fetchValidationRoster = async () => {
-        if (!validationSlotId) return;
-        try {
-            const res = await fetch(`/api/attendance/list?slot_id=${validationSlotId}`);
-            let rosterData = [];
-            if (res.ok) {
-                const data = await res.json();
-                if (data && data.length > 0) {
-                    rosterData = data;
-                } else {
-                    rosterData = [
-                        { student_id: '00000000-0000-0000-0000-000000000001', full_name: 'Bharath Kumar A (bk@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 87, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                        { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 64, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' },
-                        { student_id: '00000000-0000-0000-0000-000000000003', full_name: 'Riddhi (riddhi@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 71, final_status: 'ABSENT', absence_reason: 'Sick leave', reason_status: 'PENDING' },
-                        { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 82, final_status: 'ABSENT' },
-                        { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 92, final_status: 'ABSENT' },
-                        { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 78, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' }
-                    ];
-                }
-            } else {
-                rosterData = [
-                    { student_id: '00000000-0000-0000-0000-000000000001', full_name: 'Bharath Kumar A (bk@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 87, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                    { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 64, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' },
-                    { student_id: '00000000-0000-0000-0000-000000000003', full_name: 'Riddhi (riddhi@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 71, final_status: 'ABSENT', absence_reason: 'Sick leave', reason_status: 'PENDING' },
-                    { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 82, final_status: 'ABSENT' },
-                    { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 92, final_status: 'ABSENT' },
-                    { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 78, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' }
-                ];
-            }
-
-            setValidationRoster(rosterData);
-
-            // Sync standard roster checklist in real-time
-            const newStatus = {};
-            rosterData.forEach(student => {
-                newStatus[student.student_id] = (student.final_status === 'PRESENT' || student.final_status === 'LATE');
-            });
-            setClassRosterStatus(prev => ({ ...prev, ...newStatus }));
-
-        } catch (err) {
-            console.error("Failed to fetch validation roster:", err);
-            const fallbackData = [
-                { student_id: '00000000-0000-0000-0000-000000000001', full_name: 'Bharath Kumar A (bk@vvce)', detected_count: completedChecks, total_checks: 5, cumulative_percentage: 87, final_status: completedChecks >= 4 ? 'PRESENT' : (completedChecks >= 1 ? 'LATE' : 'ABSENT') },
-                { student_id: '00000000-0000-0000-0000-000000000002', full_name: 'Ananya Yk (ananya@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 64, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' },
-                { student_id: '00000000-0000-0000-0000-000000000003', full_name: 'Riddhi (riddhi@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 71, final_status: 'ABSENT', absence_reason: 'Sick leave', reason_status: 'PENDING' },
-                { student_id: '00000000-0000-0000-0000-000000000007', full_name: 'Rishith (rishith@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 82, final_status: 'ABSENT' },
-                { student_id: '00000000-0000-0000-0000-000000000008', full_name: 'Bharath P (bp@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 92, final_status: 'ABSENT' },
-                { student_id: '00000000-0000-0000-0000-000000000009', full_name: 'Anagha (anagha@vvce)', detected_count: 0, total_checks: 5, cumulative_percentage: 78, final_status: 'ABSENT', absence_reason: 'Transit delay', reason_status: 'PENDING' }
-            ];
-            setValidationRoster(fallbackData);
-            
-            const newStatus = {};
-            fallbackData.forEach(student => {
-                newStatus[student.student_id] = (student.final_status === 'PRESENT' || student.final_status === 'LATE');
-            });
-            setClassRosterStatus(prev => ({ ...prev, ...newStatus }));
-        }
-    };
-
-    // Helper: Fetch completed checks count from the list API
-    const fetchCompletedChecks = async () => {
-        if (!validationSlotId) return;
-        try {
-            const res = await fetch(`/api/attendance/list?slot_id=${validationSlotId}`);
-            if (res.ok) {
-                const roster = await res.json();
-                if (Array.isArray(roster) && roster.length > 0) {
-                    // The max detected_count across all students approximates checks completed
-                    const maxDetected = Math.max(...roster.map(s => s.detected_count || 0));
-                    // Also check if any student has detections — if so, at least 1 check was done
-                    const totalDetectedStudents = roster.filter(s => s.detected_count > 0).length;
-                    setCompletedChecks(maxDetected);
-                }
-            }
-        } catch (err) {
-            console.error("Error fetching completed checks:", err);
-        }
-    };
-
-    // Helper: Fetch student's own validation ledger entries
-    const fetchStudentLedger = async () => {
-        try {
-            const activeUserRes = await supabase.auth.getUser();
-            const studentId = activeUserRes.data.user?.id || user?.id;
-            if (!studentId) return;
-
-            const { data, error } = await supabase
-                .from('attendance_session_ledger')
-                .select(`
-                    ledger_id,
-                    student_id,
-                    slot_id,
-                    session_date,
-                    detected_count,
-                    total_checks,
-                    final_status,
-                    is_finalised_by_teacher,
-                    absence_reason,
-                    reason_status,
-                    timetables:slot_id (
-                        subject,
-                        day,
-                        time,
-                        room
-                    )
-                `)
-                .eq('student_id', studentId);
-            
-            if (!error && data) {
-                setStudentLedger(data);
-            }
-        } catch (err) {
-            console.error("Error fetching student ledger:", err);
-        }
-    };
-
-    // Helper: Submit absence justification/excuse
-    const handleFileExcuse = async (ledgerId, reason) => {
-        if (!reason || !reason.trim()) {
-            alert("Please enter a reason.");
-            return;
-        }
-        try {
-            const res = await fetch('/api/attendance/file-excuse', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ledger_id: ledgerId, reason })
-            });
-            if (res.ok) {
-                fetchStudentLedger();
-            } else {
-                const errData = await res.json();
-                alert(`Error filing excuse: ${errData.message}`);
-            }
-        } catch (err) {
-            alert(`Failed to file excuse: ${err.message}`);
-        }
-    };
-
-    // Helper: Finalise student validation roster
-    const handleFinaliseValidation = async () => {
-        if (!validationSlotId) return;
-        setIsFinalisingRoster(true);
-        let responseOk = false;
-        try {
-            const res = await fetch('/api/attendance/finalise', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    slot_id: validationSlotId,
-                    roster: validationRoster
-                })
-            });
-            if (res.ok) {
-                responseOk = true;
-                setTeacherMessage("Roster finalised and legacy attendance logs created.");
-                fetchValidationRoster();
-            } else {
-                const errData = await res.json();
-                console.log(`Error finalising: ${errData.message}`);
-            }
-        } catch (err) {
-            console.log(`Error finalising roster: ${err.message}`);
-        } finally {
-            setIsFinalisingRoster(false);
-        }
-
-        if (!responseOk) {
-            // Mock finalisation success
-            setTeacherMessage("Database offline: Mock finalisation complete. Roster locked & parent alert notifications dispatched.");
-            setValidationRoster(prev => prev.map(student => ({
-                ...student,
-                is_finalised: true
-            })));
-        }
-    };
-
-    // Helper: Approve or Reject student excuse status
-    const handleUpdateExcuseStatus = async (studentId, status) => {
-        try {
-            const studentRow = validationRoster.find(s => s.student_id === studentId);
-            if (!studentRow || !studentRow.ledger_id) return;
-
-            const updatePayload = {
-                reason_status: status
-            };
-            if (status === 'APPROVED') {
-                updatePayload.final_status = 'PRESENT';
-            }
-
-            const { error } = await supabase
-                .from('attendance_session_ledger')
-                .update(updatePayload)
-                .eq('ledger_id', studentRow.ledger_id);
-
-            if (error) throw error;
-            fetchValidationRoster();
-        } catch (err) {
-            alert(`Failed to update excuse status: ${err.message}`);
-        }
-    };
-
-    // Helper: Cycle status overrides (ABSENT -> PRESENT -> LATE)
-    const toggleRosterStatus = (studentId) => {
-        const studentRow = validationRoster.find(s => s.student_id === studentId);
-        if (studentRow?.is_finalised) return;
-
-        setValidationRoster(prev => prev.map(s => {
-            if (s.student_id === studentId) {
-                const statusCycle = { 'ABSENT': 'PRESENT', 'PRESENT': 'LATE', 'LATE': 'ABSENT' };
-                const nextStatus = statusCycle[s.final_status] || 'PRESENT';
-                return { ...s, final_status: nextStatus };
-            }
-            return s;
-        }));
-    };
-
-    // Helper: Trigger physical webcam verification
-    const handleRunWebcamRandomizer = async () => {
-        if (!validationSlotId) {
-            alert("Please select a class slot to validate.");
-            return;
-        }
-        
-        setTeacherMessage('');
-        let responseOk = false;
-        
-        try {
-            const sessionDate = new Date().toISOString().split('T')[0];
-            
-            // 1. Purge previous session data for a clean run
-            try {
-                await fetch('/api/attendance/purge', { method: 'POST' });
-            } catch (e) {
-                console.log("Purge failed, continuing:", e);
-            }
-            
-            setCompletedChecks(0);
-            
-            // 2. Trigger Next.js API
-            try {
-                const response = await fetch('/api/attendance/trigger-randomizer', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        slot_id: validationSlotId,
-                        duration: 20,
-                        teacher_id: user.id || user._id
-                    })
-                });
-                
-                if (response.ok) {
-                    responseOk = true;
-                    const data = await response.json();
-                    setTeacherMessage(data.message || "Webcam attendance engine triggered!");
-                    fetchValidationRoster();
-                } else {
-                    const errData = await response.json();
-                    console.log(`Error calling trigger-randomizer API: ${errData.message}`);
-                }
-            } catch (err) {
-                console.log("Failed to connect to trigger-randomizer API:", err.message);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-
-        if (!responseOk) {
-            // Run a simulated check run on the frontend (5 checks over 20 seconds: 4s per check)
-            setTeacherMessage("Database/Webcam offline: Initializing 20-second mock camera telemetry loop...");
-            let currentCheck = 0;
-            const interval = setInterval(() => {
-                currentCheck += 1;
-                setCompletedChecks(currentCheck);
-                
-                // Show mock toast alert
-                const mockDetected = ['Bharath Kumar A'];
-                
-                setLiveNotification({
-                    title: `Mock Checkpoint #${currentCheck} 📸`,
-                    message: `Detected: ${mockDetected.join(', ')} (Only Bharath Kumar face registered. Other student faces are removed/unregistered)`
-                });
-                setTimeout(() => setLiveNotification(null), 3000);
-                
-                // Update validation roster with mock results for the current check
-                setValidationRoster(prev => {
-                    const detectedMap = {
-                        '00000000-0000-0000-0000-000000000001': currentCheck,
-                        '00000000-0000-0000-0000-000000000002': 0,
-                        '00000000-0000-0000-0000-000000000003': 0,
-                        '00000000-0000-0000-0000-000000000007': 0,
-                        '00000000-0000-0000-0000-000000000008': 0,
-                        '00000000-0000-0000-0000-000000000009': 0
-                    };
-                    
-                    return prev.map(student => {
-                        const detected = detectedMap[student.student_id] || 0;
-                        return {
-                            ...student,
-                            detected_count: detected,
-                            total_checks: 5,
-                            final_status: detected >= 4 ? 'PRESENT' : (detected >= 1 ? 'LATE' : 'ABSENT')
-                        };
-                    });
-                });
-
-                if (currentCheck >= 5) {
-                    clearInterval(interval);
-                    setTeacherMessage("Mock simulation completed! 5 checks finalized. Ready to Lock & Finalise.");
-                }
-            }, 4000);
-        }
-    };
-
-    // Helper: Find slot ID for the selected course on standard tab
-    const getSlotIdForSelectedCourse = () => {
-        const matchingSlot = timetableSlots.find(slot => slot.subject === classTeacherCourse);
-        return matchingSlot ? matchingSlot.id : (timetableSlots[0]?.id || '00000000-0000-0000-0000-000000000002');
-    };
-
-    // Helper: Trigger webcam verification directly from Standard tab
-    const handleStandardWebcamTrigger = async () => {
-        const slotId = getSlotIdForSelectedCourse();
-        setClassMessage('');
-        let responseOk = false;
-        
-        try {
-            const sessionDate = new Date().toISOString().split('T')[0];
-            
-            // 1. Purge previous session data for a clean run
-            try {
-                await fetch('/api/attendance/purge', { method: 'POST' });
-            } catch (e) {
-                console.log("Purge failed, continuing:", e);
-            }
-            
-            setCompletedChecks(0);
-            
-            // 2. Trigger Next.js API
-            try {
-                const response = await fetch('/api/attendance/trigger-randomizer', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        slot_id: slotId,
-                        duration: 20,
-                        teacher_id: user.id || user._id
-                    })
-                });
-                
-                if (response.ok) {
-                    responseOk = true;
-                    const data = await response.json();
-                    setClassMessage(data.message || "Webcam attendance engine triggered!");
-                    
-                    // Crucial: Set validationSlotId to listen to realtime telemetry updates
-                    setValidationSlotId(slotId);
-                } else {
-                    const errData = await response.json();
-                    console.log(`Error calling trigger-randomizer API: ${errData.message}`);
-                }
-            } catch (err) {
-                console.log("Failed to connect to trigger-randomizer API:", err.message);
-            }
-        } catch (err) {
-            console.error(err);
-        }
-
-        if (!responseOk) {
-            setClassMessage("Database/Webcam offline: Initializing 20-second mock camera telemetry loop...");
-            let currentCheck = 0;
-            const interval = setInterval(() => {
-                currentCheck += 1;
-                setCompletedChecks(currentCheck);
-                
-                // Show mock toast alert
-                const mockDetected = ['Bharath Kumar A'];
-                
-                setLiveNotification({
-                    title: `Mock Checkpoint #${currentCheck} 📸`,
-                    message: `Detected: ${mockDetected.join(', ')} (Only Bharath Kumar face registered)`
-                });
-                setTimeout(() => setLiveNotification(null), 3000);
-                
-                // Update classRosterStatus directly in mock mode
-                setClassRosterStatus(prev => {
-                    const detectedMap = {
-                        '00000000-0000-0000-0000-000000000001': true, // present
-                        '00000000-0000-0000-0000-000000000002': false,
-                        '00000000-0000-0000-0000-000000000003': false,
-                        '00000000-0000-0000-0000-000000000007': false,
-                        '00000000-0000-0000-0000-000000000008': false,
-                        '00000000-0000-0000-0000-000000000009': false
-                    };
-                    return { ...prev, ...detectedMap };
-                });
-
-                if (currentCheck >= 5) {
-                    clearInterval(interval);
-                    setClassMessage("Mock simulation completed! 5 checks finalized.");
-                }
-            }, 4000);
-        }
-    };
-
-    // Fetch validation roster and completed checks on slot ID or tab change
-    useEffect(() => {
-        if (activeTab === 'validation' || activeTab === 'standard') {
-            if (user?.role === 'teacher' || user?.role === 'admin') {
-                fetchValidationRoster();
-                fetchCompletedChecks();
-            } else if (user?.role === 'student') {
-                fetchStudentLedger();
-            }
-        }
-    }, [validationSlotId, activeTab, user]);
-
-    // Realtime listener for validation tables
-    useEffect(() => {
-        if (!user) return;
-
-        const handleChanges = () => {
-            if (user.role === 'teacher' || user.role === 'admin') {
-                fetchValidationRoster();
-                fetchCompletedChecks();
-            } else if (user.role === 'student') {
-                fetchStudentLedger();
-            }
-        };
-
-        const handleSnapshotInsert = (payload) => {
-            console.log('[Snapshot Realtime Insert Received]:', payload);
-            if (user.role === 'teacher' || user.role === 'admin') {
-                fetchValidationRoster();
-                fetchCompletedChecks();
-                
-                const detectedIds = payload.new.detected_students || [];
-                const checkNumber = payload.new.check_number;
-                const studentNames = {
-                    '00000000-0000-0000-0000-000000000001': 'Bharath Kumar A',
-                    '00000000-0000-0000-0000-000000000002': 'Ananya Yk',
-                    '00000000-0000-0000-0000-000000000003': 'Riddhi',
-                    '00000000-0000-0000-0000-000000000007': 'Rishith',
-                    '00000000-0000-0000-0000-000000000008': 'Bharath P',
-                    '00000000-0000-0000-0000-000000000009': 'Anagha'
-                };
-                
-                if (detectedIds.length > 0) {
-                    const detectedNamesList = detectedIds.map(id => studentNames[id] || `Student (${id.substring(0, 8)})`);
-                    setLiveNotification({
-                        title: `Checkpoint #${checkNumber} Completed 📸`,
-                        message: `Detected: ${detectedNamesList.join(', ')}`
-                    });
-                } else {
-                    setLiveNotification({
-                        title: `Checkpoint #${checkNumber} Completed 📸`,
-                        message: 'No student faces detected.'
-                    });
-                }
-                setTimeout(() => setLiveNotification(null), 6000);
-            }
-        };
-
-        const channel = supabase
-            .channel('realtime_validation_sync')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'attendance_snapshots' }, handleSnapshotInsert)
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'attendance_snapshots' }, handleChanges)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_session_ledger' }, handleChanges)
-            .subscribe();
-
-        // Polling fallback: poll the API every 3 seconds to catch local-file updates
-        // (Supabase Realtime won't fire for local file writes)
-        const pollInterval = setInterval(() => {
-            if (user?.role === 'teacher' || user?.role === 'admin') {
-                fetchValidationRoster();
-                fetchCompletedChecks();
-            } else if (user?.role === 'student') {
-                fetchStudentLedger();
-            }
-        }, 3000);
-
-        return () => {
-            supabase.removeChannel(channel);
-            clearInterval(pollInterval);
-        };
-    }, [user, activeTab, validationSlotId]);
 
     // Load timetable slots for teachers
     useEffect(() => {
@@ -1201,49 +433,77 @@ const Attendance = () => {
                     const { data, error } = await supabase
                         .from('timetables')
                         .select('*');
+                    
+                    let resolvedSlots = [];
                     if (!error && data && data.length > 0) {
-                        setTimetableSlots(data);
-                        if (!validationSlotId) {
-                            setValidationSlotId(data[0].id);
-                        }
+                        resolvedSlots = data;
                     } else {
-                        // Fallback to mock data if DB is empty or errors
-                        const mockSlots = [
+                        resolvedSlots = [
                             { id: '00000000-0000-0000-0000-000000000002', subject: '1BMATE201 - Applied Mathematics - II', day: 'Wednesday', time: '11:15 AM - 01:15 PM' },
                             { id: 'mock-slot-2', subject: '1BPLCO203 - Introduction to C Programming', day: 'Thursday', time: '09:00 AM - 11:00 AM' },
                             { id: 'mock-slot-3', subject: '1BPHYT202 - Applied Physics', day: 'Monday', time: '02:00 PM - 04:00 PM' }
                         ];
-                        setTimetableSlots(mockSlots);
-                        if (!validationSlotId) {
-                            setValidationSlotId(mockSlots[0].id);
-                        }
+                    }
+
+                    // Apply teacher subject constraints
+                    const nameLower = user?.name?.toLowerCase() || '';
+                    const emailVal = user?.email || '';
+                    if (nameLower.includes('demo teacher') || emailVal === '2') {
+                        resolvedSlots = resolvedSlots.filter(s => s.subject.toLowerCase().includes('c programming'));
+                    } else if (nameLower.includes('bhavana') || emailVal === 'bhav@vvce') {
+                        resolvedSlots = resolvedSlots.filter(s => s.subject.toLowerCase().includes('mathematics'));
+                    }
+
+                    setTimetableSlots(resolvedSlots);
+                    if (resolvedSlots.length > 0) {
+                        setSelectedTimeSlotId(resolvedSlots[0].id);
+                        setClassTeacherCourse(resolvedSlots[0].subject);
                     }
                 } catch (e) {
                     console.log("Error fetching slots, falling back to mock slots:", e);
-                    const mockSlots = [
+                    let resolvedSlots = [
                         { id: '00000000-0000-0000-0000-000000000002', subject: '1BMATE201 - Applied Mathematics - II', day: 'Wednesday', time: '11:15 AM - 01:15 PM' },
                         { id: 'mock-slot-2', subject: '1BPLCO203 - Introduction to C Programming', day: 'Thursday', time: '09:00 AM - 11:00 AM' },
                         { id: 'mock-slot-3', subject: '1BPHYT202 - Applied Physics', day: 'Monday', time: '02:00 PM - 04:00 PM' }
                     ];
-                    setTimetableSlots(mockSlots);
-                    if (!validationSlotId) {
-                        setValidationSlotId(mockSlots[0].id);
+
+                    const nameLower = user?.name?.toLowerCase() || '';
+                    const emailVal = user?.email || '';
+                    if (nameLower.includes('demo teacher') || emailVal === '2') {
+                        resolvedSlots = resolvedSlots.filter(s => s.subject.toLowerCase().includes('c programming'));
+                    } else if (nameLower.includes('bhavana') || emailVal === 'bhav@vvce') {
+                        resolvedSlots = resolvedSlots.filter(s => s.subject.toLowerCase().includes('mathematics'));
+                    }
+
+                    setTimetableSlots(resolvedSlots);
+                    if (resolvedSlots.length > 0) {
+                        setSelectedTimeSlotId(resolvedSlots[0].id);
+                        setClassTeacherCourse(resolvedSlots[0].subject);
                     }
                 }
             };
             fetchSlots();
         }
-    }, [user, activeTab]);
+    }, [user]);
 
     // Helper: Fetch class summaries and session history for the selected course
     const fetchClassAttendanceSummary = async () => {
         try {
             // 1. Get all students
-            const { data: students, error: studentError } = await supabase
+            let { data: students, error: studentError } = await supabase
                 .from('profiles')
                 .select('id, college')
                 .eq('role', 'student');
-            if (studentError || !students) return;
+            
+            let merged = [...allSeededStudentsList];
+            if (!studentError && students && students.length > 0) {
+                students.forEach(s => {
+                    if (!merged.find(ms => ms.id === s.id)) {
+                        merged.push(s);
+                    }
+                });
+            }
+            students = merged;
 
             // 2. Fetch all attendance logs for the selected course
             const { data: logs, error: logsError } = await supabase
@@ -1252,6 +512,8 @@ const Attendance = () => {
                 .eq('course', classTeacherCourse);
             
             if (logsError) return;
+
+            setClassCourseLogs(logs || []);
 
             // Build map of studentId -> { present, total }
             const statsMap = {};
@@ -1293,13 +555,15 @@ const Attendance = () => {
                     } else if (s.id === '00000000-0000-0000-0000-000000000003') {
                         present = 25; total = 29;
                     } else if (s.id === '00000000-0000-0000-0000-000000000007') {
-                        present = 35; total = 36;
+                        present = 28; total = 36;
                     } else if (s.id === '00000000-0000-0000-0000-000000000008') {
                         present = 33; total = 36;
                     } else if (s.id === '00000000-0000-0000-0000-000000000009') {
                         present = 28; total = 36;
                     } else {
-                        present = 0; total = 0;
+                        const charCodeSum = s.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                        total = 31 + (charCodeSum % 15); // 31 to 45 (today included)
+                        present = Math.floor(total * (0.65 + (charCodeSum % 30) / 100)); // 65% to 95% attendance
                     }
                 }
 
@@ -1346,16 +610,25 @@ const Attendance = () => {
             const statusMap = {};
             
             // Prefill with defaults (all true / present)
-            const { data: students } = await supabase
+            let { data: students } = await supabase
                 .from('profiles')
                 .select('id')
                 .eq('role', 'student');
             
-            if (students) {
-                students.forEach(s => {
-                    statusMap[s.id] = true;
-                });
+            if (!students || students.length === 0) {
+                students = [
+                    { id: '00000000-0000-0000-0000-000000000001' },
+                    { id: '00000000-0000-0000-0000-000000000002' },
+                    { id: '00000000-0000-0000-0000-000000000003' },
+                    { id: '00000000-0000-0000-0000-000000000007' },
+                    { id: '00000000-0000-0000-0000-000000000008' },
+                    { id: '00000000-0000-0000-0000-000000000009' }
+                ];
             }
+            
+            students.forEach(s => {
+                statusMap[s.id] = true;
+            });
 
             if (!error && logs) {
                 logs.forEach(log => {
@@ -1374,13 +647,20 @@ const Attendance = () => {
         setClassMessage('');
         setIsSavingClass(true);
         try {
-            const { data: students, error: studentError } = await supabase
+            let { data: students, error: studentError } = await supabase
                 .from('profiles')
                 .select('id')
                 .eq('role', 'student');
 
-            if (studentError || !students) {
-                throw new Error("Failed to load student profiles.");
+            if (studentError || !students || students.length === 0) {
+                students = [
+                    { id: '00000000-0000-0000-0000-000000000001' },
+                    { id: '00000000-0000-0000-0000-000000000002' },
+                    { id: '00000000-0000-0000-0000-000000000003' },
+                    { id: '00000000-0000-0000-0000-000000000007' },
+                    { id: '00000000-0000-0000-0000-000000000008' },
+                    { id: '00000000-0000-0000-0000-000000000009' }
+                ];
             }
 
             const dateParts = classTeacherDate.split('-');
@@ -1469,17 +749,17 @@ const Attendance = () => {
 
     // Load class summaries when course or term changes
     useEffect(() => {
-        if ((user?.role === 'teacher' || user?.role === 'admin') && activeTab === 'standard') {
+        if (user?.role === 'teacher' || user?.role === 'admin') {
             fetchClassAttendanceSummary();
         }
-    }, [classTeacherCourse, term, user, activeTab, supabaseRecords]);
+    }, [classTeacherCourse, term, user, supabaseRecords]);
 
     // Load existing roster status when date or course changes
     useEffect(() => {
-        if ((user?.role === 'teacher' || user?.role === 'admin') && activeTab === 'standard') {
+        if (user?.role === 'teacher' || user?.role === 'admin') {
             fetchExistingRosterForDate();
         }
-    }, [classTeacherCourse, classTeacherDate, user, activeTab]);
+    }, [classTeacherCourse, classTeacherDate, user]);
 
 
 
@@ -1521,12 +801,17 @@ const Attendance = () => {
                     .from('profiles')
                     .select('id, college')
                     .eq('role', 'student');
-                if (!error && data) {
-                    setStudentProfiles(data);
-                    if (data.length > 0) {
-                        setTeacherStudentId(data[0].id);
-                    }
+                
+                let merged = [...allSeededStudentsList];
+                if (!error && data && data.length > 0) {
+                    data.forEach(s => {
+                        if (!merged.find(ms => ms.id === s.id)) {
+                            merged.push(s);
+                        }
+                    });
                 }
+                setStudentProfiles(merged);
+                setTeacherStudentId(merged[0]?.id || '');
             };
             fetchStudents();
         }
@@ -1919,1026 +1204,9 @@ const Attendance = () => {
         }
     };
 
-    const renderGeofenceGracePanel = () => {
-        const activeRequest = geofenceRequests.find(r => r.id === selectedGeoRequestId) || geofenceRequests[0];
-        
-        // Check if student coordinates are inside the active request's geofence
-        const studentGpsLat = liveStudentGps.student_id === activeRequest?.student_id ? liveStudentGps.lat : (activeRequest?.simulated_status === 'Verified_Inside' ? activeRequest.lat + 0.002 : 12.3168);
-        const studentGpsLng = liveStudentGps.student_id === activeRequest?.student_id ? liveStudentGps.lng : (activeRequest?.simulated_status === 'Verified_Inside' ? activeRequest.lng - 0.003 : 76.6127);
-        
-        const currentDist = activeRequest ? calculateDistance(studentGpsLat, studentGpsLng, activeRequest.lat, activeRequest.lng) : 0;
-        const isCurrentlyInside = activeRequest ? (currentDist <= activeRequest.radius) : false;
 
-        const isStudent = user?.role === 'student';
 
-        // Filter requests for student or show all for teacher
-        const filteredRequests = isStudent 
-            ? geofenceRequests.filter(r => r.student_id === user.id)
-            : geofenceRequests;
 
-        return (
-            <div className="lms-section-card" style={{ padding: '20px' }}>
-                <div className="lms-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '12px', marginBottom: '20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Compass className="rotating-slow" size={20} color="#6366f1" />
-                        <span style={{ fontSize: '1.15rem', fontWeight: 700 }}>AI Geofence Grace Attendance Manager</span>
-                    </div>
-                    <span className="geofence-telemetry-badge">
-                        ROLE: {user?.role?.toUpperCase()}
-                    </span>
-                </div>
-
-                {geofenceMessage.text && (
-                    <div style={{
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        marginBottom: '20px',
-                        fontSize: '0.85rem',
-                        fontWeight: 500,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        background: geofenceMessage.type === 'success' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
-                        border: geofenceMessage.type === 'success' ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
-                        color: geofenceMessage.type === 'success' ? '#4ade80' : '#f87171'
-                    }}>
-                        {geofenceMessage.type === 'success' ? <Check size={16} /> : <AlertTriangle size={16} />}
-                        <span>{geofenceMessage.text}</span>
-                        <button onClick={() => setGeofenceMessage({ text: '', type: '' })} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}>
-                            <X size={14} />
-                        </button>
-                    </div>
-                )}
-
-                <div className="geofence-grid-layout">
-                    {/* Left Column: Request List & AI Generator */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        {isStudent && (
-                            <div style={{ background: 'rgba(30, 41, 59, 0.3)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '12px', padding: '16px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
-                                    <Sparkles size={16} color="#a855f7" />
-                                    <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f1f5f9' }}>AI Geofence Request Planner</span>
-                                </div>
-                                <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px' }}>
-                                    Describe your workshop or hackathon venue. Our AI will resolve the coordinates and automatically establish a 1.0 km geofence boundary.
-                                </p>
-                                <textarea
-                                    className="lms-input-field"
-                                    style={{ width: '100%', height: '80px', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', padding: '10px', fontSize: '0.85rem', color: '#fff', resize: 'none', marginBottom: '12px' }}
-                                    placeholder="e.g. I am attending the Smart Campus Hackathon at RV College of Engineering Bangalore tomorrow from 9 AM to 5 PM."
-                                    value={aiPromptText}
-                                    onChange={(e) => setAiPromptText(e.target.value)}
-                                    disabled={isAILoading}
-                                />
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button 
-                                        onClick={handleAIParseGeofence} 
-                                        className="ai-sparkle-btn"
-                                        disabled={isAILoading || !aiPromptText.trim()}
-                                        style={{ fontSize: '0.85rem', padding: '8px 14px' }}
-                                    >
-                                        <Sparkles size={14} className={isAILoading ? 'rotating-slow' : ''} />
-                                        {isAILoading ? "AI Resolving..." : "AI Auto-Geofence Venue"}
-                                    </button>
-                                    
-                                    {aiParsedData && (
-                                        <button 
-                                            onClick={handleSubmitGeofenceRequest} 
-                                            className="lms-btn-submit"
-                                            style={{ fontSize: '0.85rem', background: '#6366f1', color: 'white', padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}
-                                        >
-                                            Submit Request
-                                        </button>
-                                    )}
-                                </div>
-
-                                {aiParsedData && (
-                                    <div className="ai-parsed-box">
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                                            <span style={{ fontSize: '0.78rem', color: '#a855f7', fontWeight: 600 }}>AI PARSED TELEMETRY</span>
-                                            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700 }}>RADIUS FORCED: 1.0 KM</span>
-                                        </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: '0.8rem', color: '#e2e8f0' }}>
-                                            <div><strong>Event:</strong> {aiParsedData.event_title}</div>
-                                            <div><strong>Venue:</strong> {aiParsedData.venue}</div>
-                                            <div><strong>Coordinates:</strong> {aiParsedData.lat.toFixed(4)}, {aiParsedData.lng.toFixed(4)}</div>
-                                            <div><strong>Date:</strong> {aiParsedData.date}</div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        <div>
-                            <span style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f1f5f9', display: 'block', marginBottom: '10px' }}>
-                                {isStudent ? "My Active Off-Campus Requests" : "Student Grace Requests Queue"}
-                            </span>
-                            {filteredRequests.length === 0 ? (
-                                <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(30,41,59,0.2)', border: '1px dashed #334155', borderRadius: '12px', color: '#64748b', fontSize: '0.85rem' }}>
-                                    No requests generated.
-                                </div>
-                            ) : (
-                                <div className="geofence-list-container">
-                                    {filteredRequests.map(req => {
-                                        const reqGpsLat = liveStudentGps.student_id === req.student_id ? liveStudentGps.lat : (req.simulated_status === 'Verified_Inside' ? req.lat + 0.002 : 12.3168);
-                                        const reqGpsLng = liveStudentGps.student_id === req.student_id ? liveStudentGps.lng : (req.simulated_status === 'Verified_Inside' ? req.lng - 0.003 : 76.6127);
-                                        const dist = calculateDistance(reqGpsLat, reqGpsLng, req.lat, req.lng);
-                                        const isInside = dist <= req.radius;
-                                        const isSelected = selectedGeoRequestId === req.id;
-
-                                        return (
-                                            <div 
-                                                key={req.id} 
-                                                className={`geofence-card-item ${isSelected ? 'active' : ''}`}
-                                                onClick={() => setSelectedGeoRequestId(req.id)}
-                                            >
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                                                    <div>
-                                                        <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: '#f1f5f9' }}>{req.event_title}</h4>
-                                                        <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{req.venue}</span>
-                                                    </div>
-                                                    <span style={{
-                                                        fontSize: '0.7rem',
-                                                        fontWeight: 700,
-                                                        padding: '3px 8px',
-                                                        borderRadius: '4px',
-                                                        textTransform: 'uppercase',
-                                                        background: req.status === 'Grace_Granted' ? 'rgba(16, 185, 129, 0.15)' : req.status === 'Rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                                                        border: req.status === 'Grace_Granted' ? '1px solid rgba(16, 185, 129, 0.3)' : req.status === 'Rejected' ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
-                                                        color: req.status === 'Grace_Granted' ? '#10b981' : req.status === 'Rejected' ? '#ef4444' : '#f59e0b'
-                                                    }}>
-                                                        {req.status === 'Grace_Granted' ? 'Grace Granted' : req.status}
-                                                    </span>
-                                                </div>
-
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: '#cbd5e1', paddingTop: '8px', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
-                                                    <div>
-                                                        <span style={{ color: '#94a3b8' }}>Student:</span> {req.student_name.split(' ')[0]}
-                                                    </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                        <Radio size={12} className={isInside ? 'rotating-slow' : ''} color={isInside ? '#10b981' : '#f59e0b'} />
-                                                        <span style={{ color: isInside ? '#10b981' : '#f59e0b', fontWeight: 600 }}>
-                                                            {isInside ? 'Inside Geofence' : 'Outside Geofence'}
-                                                        </span>
-                                                        <span style={{ opacity: 0.6 }}>({dist.toFixed(2)} km)</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Right Column: GPS Map Radar / Simulation Control Detail Panel */}
-                    <div>
-                        {activeRequest ? (
-                            <div style={{ background: 'rgba(15, 23, 42, 0.4)', border: '1px solid rgba(255, 255, 255, 0.05)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                <div>
-                                    <span style={{ fontSize: '0.8rem', color: '#a855f7', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Active Geofence Telemetry</span>
-                                    <h3 style={{ margin: '4px 0 0 0', fontSize: '1.1rem', fontWeight: 700, color: '#fff' }}>{activeRequest.event_title}</h3>
-                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Course: {activeRequest.course}</span>
-                                </div>
-
-                                {/* Radial Radar Circle Visualization */}
-                                <div className="geofence-radar-visualizer" style={{ height: '240px' }}>
-                                    <svg width="100%" height="100%" viewBox="0 0 200 200" style={{ position: 'absolute', top: 0, left: 0 }}>
-                                        {/* Grid Concentric Rings */}
-                                        <circle cx="100" cy="100" r="80" stroke="rgba(99, 102, 241, 0.15)" strokeWidth="1" fill="none" />
-                                        <circle cx="100" cy="100" r="60" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" fill="none" />
-                                        <circle cx="100" cy="100" r="40" stroke="rgba(99, 102, 241, 0.25)" strokeWidth="1" fill="none" />
-                                        <circle cx="100" cy="100" r="20" stroke="rgba(99, 102, 241, 0.3)" strokeWidth="1" fill="none" />
-                                        
-                                        {/* Crosshair Lines */}
-                                        <line x1="20" y1="100" x2="180" y2="100" stroke="rgba(99, 102, 241, 0.15)" strokeWidth="1" />
-                                        <line x1="100" y1="20" x2="100" y2="180" stroke="rgba(99, 102, 241, 0.15)" strokeWidth="1" />
-                                        
-                                        {/* Geofence boundary (forced to 1.0 km - represented as the 60px radius circle) */}
-                                        <circle 
-                                            cx="100" 
-                                            cy="100" 
-                                            r="55" 
-                                            stroke={isCurrentlyInside ? "rgba(16, 185, 129, 0.6)" : "rgba(245, 158, 11, 0.6)"} 
-                                            strokeWidth="2" 
-                                            strokeDasharray="4,3" 
-                                            fill={isCurrentlyInside ? "rgba(16, 185, 129, 0.05)" : "rgba(245, 158, 11, 0.03)"} 
-                                            style={{ transition: 'all 0.5s ease' }}
-                                        />
-                                        <text x="100" y="38" fill={isCurrentlyInside ? "#10b981" : "#f59e0b"} fontSize="6" fontWeight="bold" textAnchor="middle">
-                                            1.0 KM GEOFENCE BOUNDARY
-                                        </text>
-
-                                        {/* Rotating Radar sweep */}
-                                        <line 
-                                            className="radar-sweep-line" 
-                                            x1="100" 
-                                            y1="100" 
-                                            x2="100" 
-                                            y2="20" 
-                                            stroke="rgba(99, 102, 241, 0.4)" 
-                                            strokeWidth="1.5" 
-                                        />
-
-                                        {/* Center Target Venue Pin */}
-                                        <circle cx="100" cy="100" r="4" fill="#6366f1" />
-                                        <circle cx="100" cy="100" r="8" stroke="#6366f1" strokeWidth="1" fill="none" className="radar-pulse-ring" style={{ animationDuration: '2s' }} />
-
-                                        {/* Student GPS Location Marker */}
-                                        <circle 
-                                            cx={isCurrentlyInside ? 115 : 170} 
-                                            cy={isCurrentlyInside ? 85 : 50} 
-                                            r="5" 
-                                            fill={isCurrentlyInside ? "#10b981" : "#f59e0b"} 
-                                            style={{ transition: 'all 0.5s ease' }}
-                                        />
-                                        <circle 
-                                            cx={isCurrentlyInside ? 115 : 170} 
-                                            cy={isCurrentlyInside ? 85 : 50} 
-                                            r="10" 
-                                            stroke={isCurrentlyInside ? "#10b981" : "#f59e0b"} 
-                                            strokeWidth="1" 
-                                            fill="none" 
-                                            className="radar-pulse-ring" 
-                                            style={{ transition: 'all 0.5s ease', animationDuration: '1.5s' }} 
-                                        />
-                                    </svg>
-                                    
-                                    <div style={{ position: 'absolute', bottom: '10px', left: '10px', right: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span className="geofence-telemetry-badge" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                            <Activity size={12} color="#38bdf8" />
-                                            DIST: {currentDist.toFixed(2)} KM
-                                        </span>
-                                        <span style={{
-                                            fontSize: '0.75rem',
-                                            fontWeight: 700,
-                                            padding: '4px 10px',
-                                            borderRadius: '6px',
-                                            backgroundColor: isCurrentlyInside ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                                            color: isCurrentlyInside ? '#4ade80' : '#fde047',
-                                            border: isCurrentlyInside ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
-                                            textShadow: isCurrentlyInside ? '0 0 8px rgba(74, 222, 128, 0.5)' : 'none'
-                                        }}>
-                                            {isCurrentlyInside ? "GPS VERIFIED: INSIDE" : "OUTSIDE BOUNDARY"}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div style={{ background: '#0f172a', borderRadius: '12px', padding: '14px', border: '1px solid #1e293b', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Venue Lat/Lng:</span>
-                                        <span style={{ color: '#e2e8f0', fontFamily: 'monospace' }}>{activeRequest.lat.toFixed(6)}, {activeRequest.lng.toFixed(6)}</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Simulated User GPS:</span>
-                                        <span style={{ color: isCurrentlyInside ? '#4ade80' : '#f59e0b', fontFamily: 'monospace' }}>
-                                            {studentGpsLat.toFixed(6)}, {studentGpsLng.toFixed(6)}
-                                        </span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Geofence Radius:</span>
-                                        <span style={{ color: '#cbd5e1' }}>1.0 km (1000m)</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ color: '#64748b' }}>Event Timeframe:</span>
-                                        <span style={{ color: '#cbd5e1' }}>{activeRequest.start_time} - {activeRequest.end_time}</span>
-                                    </div>
-                                    {activeRequest.last_checked_at && (
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #1e293b', paddingTop: '8px', marginTop: '4px' }}>
-                                            <span style={{ color: '#64748b' }}>Last GPS Broadcast:</span>
-                                            <span style={{ color: '#38bdf8' }}>{activeRequest.last_checked_at}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Simulation controls */}
-                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px' }}>
-                                    <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '8px' }}>
-                                        GPS Streaming Simulator (Mobile App Mock)
-                                    </span>
-                                    <div style={{ display: 'flex', gap: '10px' }}>
-                                        <button 
-                                            onClick={() => handleSimulateGPS(activeRequest.id, true)}
-                                            style={{
-                                                flex: 1,
-                                                padding: '10px',
-                                                borderRadius: '8px',
-                                                border: '1px solid rgba(16, 185, 129, 0.4)',
-                                                background: 'rgba(16, 185, 129, 0.1)',
-                                                color: '#4ade80',
-                                                fontSize: '0.82rem',
-                                                fontWeight: 600,
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s',
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                gap: '6px'
-                                            }}
-                                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'; }}
-                                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'; }}
-                                        >
-                                            <Navigation size={14} style={{ transform: 'rotate(45deg)' }} />
-                                            Simulate GPS: INSIDE
-                                        </button>
-                                        <button 
-                                            onClick={() => handleSimulateGPS(activeRequest.id, false)}
-                                            style={{
-                                                flex: 1,
-                                                padding: '10px',
-                                                borderRadius: '8px',
-                                                border: '1px solid rgba(239, 68, 68, 0.4)',
-                                                background: 'rgba(239, 68, 68, 0.1)',
-                                                color: '#f87171',
-                                                fontSize: '0.82rem',
-                                                fontWeight: 600,
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s',
-                                                display: 'flex',
-                                                justifyContent: 'center',
-                                                alignItems: 'center',
-                                                gap: '6px'
-                                            }}
-                                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'; }}
-                                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; }}
-                                        >
-                                            <MapPin size={14} />
-                                            Simulate GPS: OUTSIDE
-                                        </button>
-                                    </div>
-                                    <span style={{ display: 'block', fontSize: '0.72rem', color: '#64748b', marginTop: '6px', textAlign: 'center' }}>
-                                        Simulates student's smartphone broadcasting GPS location to teacher's server
-                                    </span>
-                                </div>
-
-                                {/* Teacher Approval Controls */}
-                                {!isStudent && (
-                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                        <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 600 }}>
-                                            Teacher Action Panel
-                                        </span>
-                                        {activeRequest.status === 'Grace_Granted' ? (
-                                            <div style={{ padding: '10px', borderRadius: '8px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#4ade80', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                                                <Check size={16} />
-                                                Grace Attendance Granted & Synced to DB
-                                            </div>
-                                        ) : activeRequest.status === 'Rejected' ? (
-                                            <div style={{ padding: '10px', borderRadius: '8px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.85rem', fontWeight: 600 }}>
-                                                <X size={16} />
-                                                Request Rejected
-                                            </div>
-                                        ) : (
-                                            <div style={{ display: 'flex', gap: '10px' }}>
-                                                <button
-                                                    onClick={() => handleTeacherApproveGrace(activeRequest.id)}
-                                                    className="lms-btn-submit"
-                                                    style={{ flex: 1.5, background: '#10b981', color: 'white', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
-                                                >
-                                                    <Check size={14} />
-                                                    Grant Grace Attendance
-                                                </button>
-                                                <button
-                                                    onClick={() => handleTeacherRejectGrace(activeRequest.id)}
-                                                    className="lms-btn-cancel"
-                                                    style={{ flex: 1, padding: '10px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}
-                                                >
-                                                    Reject
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', padding: '40px', background: 'rgba(15,23,42,0.2)', border: '1px dashed #334155', borderRadius: '16px', color: '#64748b' }}>
-                                Select a request from the list to view telemetry and maps.
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const renderValidationStudio = () => {
-        // A. If user is teacher or admin
-        if (user?.role === 'teacher' || user?.role === 'admin') {
-            const sessionDate = new Date().toISOString().split('T')[0];
-            
-            // Filter validation roster by branch and section
-            const filteredValidationRoster = validationRoster.filter(student => {
-                const studentInfo = studentBranchSectionMap[student.student_id] || { branch: 'CSE', section: 'A' };
-                const branchMatch = selectedBranch === 'All' || studentInfo.branch === selectedBranch;
-                const sectionMatch = selectedSection === 'All' || studentInfo.section === selectedSection;
-                return branchMatch && sectionMatch;
-            });
-
-            // Filter roster for breaches (<75%)
-            const breachRoster = filteredValidationRoster.filter(student => student.cumulative_percentage < 75);
-
-            return (
-                <div className="validation-studio-container">
-                    <div className="validation-header">
-                        <div className="validation-header-title-block">
-                            <h2 className="section-title">Randomized Face Validation Studio</h2>
-                            <p className="subtitle">Live session telemetry, verification checkpoints, and parent breach dispatch board</p>
-                        </div>
-                        <div className="validation-header-controls">
-                            <div className="validation-filters-group">
-                                <div className="validation-filter-item">
-                                    <label className="validation-filter-label">Class Slot</label>
-                                    <select
-                                        value={validationSlotId}
-                                        onChange={(e) => setValidationSlotId(e.target.value)}
-                                        className="lms-input-select"
-                                        style={{ width: 'auto', minWidth: '220px', height: '38px', margin: 0 }}
-                                    >
-                                        {timetableSlots.map(slot => (
-                                            <option key={slot.id} value={slot.id}>
-                                                {slot.subject} ({slot.day} - {slot.time})
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="validation-filter-item">
-                                    <label className="validation-filter-label">Branch</label>
-                                    <select
-                                        value={selectedBranch}
-                                        onChange={(e) => setSelectedBranch(e.target.value)}
-                                        className="lms-input-select"
-                                        style={{ width: 'auto', minWidth: '90px', height: '38px', margin: 0 }}
-                                    >
-                                        {branches.map(opt => (
-                                            <option key={opt} value={opt}>{opt}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="validation-filter-item">
-                                    <label className="validation-filter-label">Section</label>
-                                    <select
-                                        value={selectedSection}
-                                        onChange={(e) => setSelectedSection(e.target.value)}
-                                        className="lms-input-select"
-                                        style={{ width: 'auto', minWidth: '80px', height: '38px', margin: 0 }}
-                                    >
-                                        {sections.map(opt => (
-                                            <option key={opt} value={opt}>{opt}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div className="validation-actions-group">
-                                <button
-                                    onClick={handleRunWebcamRandomizer}
-                                    className="webcam-btn"
-                                    disabled={isWebcamRunning || !validationSlotId}
-                                    style={{ margin: 0 }}
-                                >
-                                    ⚡ Trigger Webcam Attendance (20s)
-                                </button>
-
-                                <button
-                                    onClick={handleFinaliseValidation}
-                                    className={`finalise-btn ${validationRoster[0]?.is_finalised ? 'finalised' : ''}`}
-                                    disabled={completedChecks < 5 || isFinalisingRoster || validationRoster[0]?.is_finalised}
-                                    style={{ margin: 0 }}
-                                >
-                                    {validationRoster[0]?.is_finalised ? '✓ Finalised & Dispatched' : (isFinalisingRoster ? 'Finalising...' : 'Lock & Finalise Session')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {isWebcamRunning && (
-                        <div style={{
-                            padding: '12px 18px',
-                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
-                            border: '1px solid rgba(5, 150, 105, 0.3)',
-                            borderRadius: '8px',
-                            color: '#34d399',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            animation: 'pulse 2s infinite'
-                        }}>
-                            ⏳ Webcam Validation Engine Active (20s)... Check status in checkpoints and ledger below.
-                        </div>
-                    )}
-
-                    {teacherMessage && (
-                        <div style={{
-                            padding: '12px 18px',
-                            borderRadius: '8px',
-                            backgroundColor: teacherMessage.startsWith('Error') ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                            border: teacherMessage.startsWith('Error') ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(99, 102, 241, 0.3)',
-                            color: teacherMessage.startsWith('Error') ? '#f87171' : '#a5b4fc',
-                            fontSize: '0.88rem',
-                            fontWeight: '500'
-                        }}>
-                            {teacherMessage}
-                        </div>
-                    )}
-
-                    <div className="checks-progress-card">
-                        <div className="progress-info">
-                            <span>Random Check Telemetry Feed Status</span>
-                            <span className="checks-badge">{completedChecks} / 5 Completed</span>
-                        </div>
-                        <div className="checks-visual-bar">
-                            {[1, 2, 3, 4, 5].map(checkNum => {
-                                const isActive = completedChecks >= checkNum;
-                                return (
-                                    <div key={checkNum} className={`check-dot ${isActive ? 'active' : ''}`}>
-                                        <div className="dot-icon">{checkNum}</div>
-                                        <span className="dot-label">Check {checkNum}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    <div className="validation-grid">
-                        {/* Column 1: Roster Panel */}
-                        <div className="roster-panel">
-                            <h3 className="panel-title">Active Session Ledger</h3>
-                            <p className="panel-hint">Click student row to toggle compliance status manually (while active/unfinalised)</p>
-                            
-                            <div className="roster-list">
-                                {filteredValidationRoster.length > 0 ? (
-                                    filteredValidationRoster.map(student => {
-                                        const statusClass = student.final_status.toLowerCase();
-                                        const isUnderLimit = student.cumulative_percentage < 75;
-                                        
-                                        return (
-                                            <div key={student.student_id} className="roster-item-wrapper">
-                                                <div 
-                                                    className={`roster-item ${statusClass}`}
-                                                    onClick={() => toggleRosterStatus(student.student_id)}
-                                                >
-                                                    <div className="student-details">
-                                                        <div className={`status-led ${statusClass}`}></div>
-                                                        <div>
-                                                            <div className={`student-name ${isUnderLimit ? 'warn' : ''}`}>
-                                                                {student.full_name}
-                                                            </div>
-                                                            <div className={`student-usn ${isUnderLimit ? 'warn' : ''}`}>
-                                                                USN: {student.student_id.substring(0, 8).toUpperCase()}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="status-meta">
-                                                        <span className="checks-count">
-                                                            Detected: {student.detected_count} / {student.total_checks}
-                                                        </span>
-                                                        <span className="checks-count" style={{ color: isUnderLimit ? '#f87171' : '#64748b' }}>
-                                                            Compliance: {student.cumulative_percentage}%
-                                                        </span>
-                                                        <span className={`status-tag ${statusClass}`}>
-                                                            {student.final_status}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                {/* Excuse attachments for teacher review */}
-                                                {student.absence_reason && (
-                                                    <div className="excuse-attachment">
-                                                        <p className="excuse-text">
-                                                            <strong>Excuse Statement:</strong> "{student.absence_reason}"
-                                                        </p>
-                                                        <div className="excuse-actions">
-                                                            <div>
-                                                                Status: <span className={`excuse-status-tag ${student.reason_status?.toLowerCase() || 'pending'}`}>
-                                                                    {student.reason_status || 'PENDING'}
-                                                                </span>
-                                                            </div>
-                                                            {student.reason_status === 'PENDING' && (
-                                                                <div className="action-buttons">
-                                                                    <button 
-                                                                        onClick={(e) => { e.stopPropagation(); handleUpdateExcuseStatus(student.student_id, 'APPROVED'); }} 
-                                                                        className="approve-excuse-btn"
-                                                                    >
-                                                                        Approve
-                                                                    </button>
-                                                                    <button 
-                                                                        onClick={(e) => { e.stopPropagation(); handleUpdateExcuseStatus(student.student_id, 'REJECTED'); }} 
-                                                                        className="reject-excuse-btn"
-                                                                    >
-                                                                        Reject
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <div className="empty-roster">No students loaded. Select a slot to view roster.</div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Column 2: Breach Panel */}
-                        <div className="breach-panel">
-                            <h3 className="panel-title warn">Attendance Risk Board</h3>
-                            <p className="panel-desc">Students with cumulative attendance under the 75% threshold who will trigger Twilio alerts on absence.</p>
-                            
-                            <div className="breach-list">
-                                {breachRoster.length > 0 ? (
-                                    breachRoster.map(student => (
-                                        <div key={student.student_id} className="breach-card">
-                                            <div className="student-details">
-                                                <div className="status-led absent"></div>
-                                                <div>
-                                                    <div className="student-name warn">{student.full_name}</div>
-                                                    <div className="student-usn warn">USN: {student.student_id.substring(0, 8).toUpperCase()}</div>
-                                                </div>
-                                            </div>
-                                            <div className="breach-stats">
-                                                <span className="percentage-red">{student.cumulative_percentage}%</span>
-                                                <span className="risk-label">At Risk</span>
-                                            </div>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="empty-breach">No critical compliance breaches.</div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        // B. If user is student
-        if (user?.role === 'student') {
-            const flaggedEntries = studentLedger.filter(entry => entry.final_status === 'ABSENT' || entry.final_status === 'LATE');
-            
-            return (
-                <div className="student-validation-console">
-                    <h2 className="section-title" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>My Compliance Control Tower</h2>
-                    
-                    <div className="student-alerts-list">
-                        {flaggedEntries.length > 0 ? (
-                            flaggedEntries.map(entry => {
-                                const statusClass = entry.final_status.toLowerCase();
-                                const subject = entry.timetables?.subject || 'Class Session';
-                                const time = entry.timetables?.time || '';
-                                const room = entry.timetables?.room || 'L-301';
-                                
-                                return (
-                                    <div key={entry.ledger_id} className={`student-status-card ${statusClass}`}>
-                                        <div className="card-top">
-                                            <div>
-                                                <span className={`status-badge ${statusClass}`}>{entry.final_status}</span>
-                                                <h3 className="subject-title">{subject}</h3>
-                                                <div className="session-date-time">{entry.session_date} | {time}</div>
-                                            </div>
-                                            <div className="card-top-right">
-                                                Room: {room}
-                                            </div>
-                                        </div>
-
-                                        <div className="check-results-info" style={{ marginBottom: '12px' }}>
-                                            {entry.final_status === 'ABSENT' ? (
-                                                <>
-                                                    🚨 Our automated system ran 5 verification checks during this class session and did not detect your face. 
-                                                    Please submit a valid excuse statement below to appeal your absence.
-                                                </>
-                                            ) : (
-                                                <>
-                                                    ⚠️ Our automated system detected your face in <strong>{entry.detected_count} / {entry.total_checks}</strong> checks, 
-                                                    but missed the initial checkpoints. Your attendance has been marked as <strong>LATE</strong>.
-                                                </>
-                                            )}
-                                        </div>
-
-                                        {entry.absence_reason ? (
-                                            <div className="filed-excuse-banner">
-                                                Excuse Filed: "{entry.absence_reason}" (Status: {entry.reason_status || 'PENDING'})
-                                            </div>
-                                        ) : (
-                                            <form 
-                                                onSubmit={(e) => {
-                                                    e.preventDefault();
-                                                    handleFileExcuse(entry.ledger_id, excuseTextMap[entry.ledger_id]);
-                                                }}
-                                                className="excuse-filing-form"
-                                            >
-                                                <label className="input-label">File Official Excuse Justification:</label>
-                                                <div className="input-row">
-                                                    <input 
-                                                        type="text" 
-                                                        value={excuseTextMap[entry.ledger_id] || ''} 
-                                                        onChange={(e) => setExcuseTextMap(prev => ({ ...prev, [entry.ledger_id]: e.target.value }))}
-                                                        placeholder="Provide brief excuse (medical, personal, technical)..."
-                                                        className="excuse-text-input"
-                                                        required
-                                                    />
-                                                    <button type="submit" className="submit-excuse-btn">
-                                                        Submit Excuse
-                                                    </button>
-                                                </div>
-                                            </form>
-                                        )}
-                                    </div>
-                                );
-                            })
-                        ) : (
-                            <div style={{
-                                textAlign: 'center',
-                                padding: '3rem',
-                                background: 'rgba(16, 185, 129, 0.05)',
-                                border: '1px dashed rgba(16, 185, 129, 0.2)',
-                                borderRadius: '12px',
-                                color: '#34d399'
-                            }}>
-                                <Check size={48} style={{ margin: '0 auto 1rem', display: 'block', color: '#10b981' }} />
-                                <h3 style={{ fontSize: '1.2rem', fontWeight: '700', marginBottom: '4px' }}>All Clear!</h3>
-                                <p style={{ fontSize: '0.88rem', color: '#64748b' }}>
-                                    Congratulations! You have no active compliance alerts or flagged absences. Keep it up!
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        }
-
-        return null;
-    };
-
-    if (user?.role === 'admin') {
-        const dispatchWarning = (id, name) => {
-            setAuditAlerts(prev => prev.map(alert => alert.id === id ? { ...alert, status: 'warned' } : alert));
-            setScanMessage(`Dispatched high-impact proxy violation alert to parents of student: ${name}`);
-            setTimeout(() => setScanMessage(''), 4000);
-        };
-
-        const clearAlert = (id) => {
-            setAuditAlerts(prev => prev.filter(alert => alert.id !== id));
-        };
-
-        const triggerProxyAuditSweep = () => {
-            setIsGateScanRunning(true);
-            setScanMessage('Scanning global gateway entries for proxy tap signals...');
-            setTimeout(() => {
-                setIsGateScanRunning(false);
-                const randomId = String(Date.now());
-                const names = ['Kiran M', 'Tejas R', 'Neha S'];
-                const usns = ['4VV25CS048', '4VV25EC112', '4VV25ME029'];
-                const gates = ['CSE Block Gate B', 'IS Block Gate 1', 'Admin Entrance'];
-                const randIndex = Math.floor(Math.random() * names.length);
-                
-                setAuditAlerts(prev => [
-                    ...prev,
-                    {
-                        id: randomId,
-                        name: names[randIndex],
-                        usn: usns[randIndex],
-                        gateway: gates[randIndex],
-                        conflictGate: 'Central Library Gate 2',
-                        timeGap: Math.floor(Math.random() * 12) + 2,
-                        status: 'unresolved'
-                    }
-                ]);
-                setScanMessage('Audit sweep complete. Discovered 1 new proxy tap mismatch signature.');
-                setTimeout(() => setScanMessage(''), 5000);
-            }, 1800);
-        };
-
-        return (
-            <div className="lms-attendance-page animate-enter" style={{ backgroundColor: 'var(--bg-app-background)', color: 'var(--text-primary)', padding: '1.5rem 0.5rem' }}>
-                {/* Header */}
-                <div className="lms-title-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <span>AI Footfall & Proxy-Risk Audit</span>
-                    <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500, color: 'var(--accent-primary)' }}>
-                        Institutional RFID entries & double-tap audit alerts
-                    </span>
-                </div>
-
-                {/* Macro metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
-                    <div style={auditCardStyle}>
-                        <h4 style={auditLabelStyle}>Total RFID Footfall</h4>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#60a5fa' }}>2,842 swipes</div>
-                        <span style={auditSubStyle}>Active entries today</span>
-                    </div>
-                    <div style={auditCardStyle}>
-                        <h4 style={auditLabelStyle}>System Security Score</h4>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>98.2% Safe</div>
-                        <span style={auditSubStyle}>0.4% warning threshold</span>
-                    </div>
-                    <div style={auditCardStyle}>
-                        <h4 style={auditLabelStyle}>Double-Tap Mismatches</h4>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444' }}>
-                            {auditAlerts.filter(a => a.status === 'unresolved').length} Alerts
-                        </div>
-                        <span style={auditSubStyle}>Requires admin dispatch</span>
-                    </div>
-                    <div style={auditCardStyle}>
-                        <h4 style={auditLabelStyle}>Active Edge Gateways</h4>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#f59e0b' }}>4/4 Online</div>
-                        <span style={auditSubStyle}>Telemetry links sync OK</span>
-                    </div>
-                </div>
-
-                {/* Controller Bar */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(31,41,55,0.3)', border: '2px solid var(--border-color)', borderRadius: '12px', padding: '1rem', marginBottom: '1.5rem' }}>
-                    <div>
-                        <h3 style={{ fontSize: '0.95rem', fontWeight: 800 }}>Proxy Risk Engine Controls</h3>
-                        <p style={{ fontSize: '0.72rem', color: '#888', marginTop: '2px' }}>
-                            Scans card tap signatures across different blocks with overlapping timestamps.
-                        </p>
-                    </div>
-                    <button 
-                        onClick={triggerProxyAuditSweep}
-                        disabled={isGateScanRunning}
-                        style={{
-                            background: 'rgba(99, 102, 241, 0.15)',
-                            border: '1px solid #6366f1',
-                            color: '#6366f1',
-                            padding: '8px 16px',
-                            borderRadius: '6px',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            fontSize: '0.78rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            textTransform: 'uppercase',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <RefreshCw size={14} className={isGateScanRunning ? 'animate-spin' : ''} />
-                        {isGateScanRunning ? 'Scanning gateways...' : 'Run Audit Sweep'}
-                    </button>
-                </div>
-
-                {/* Notification toast area */}
-                {scanMessage && (
-                    <div style={{
-                        padding: '12px',
-                        borderRadius: '6px',
-                        backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                        border: '1px solid #6366f1',
-                        color: '#a5b4fc',
-                        fontSize: '0.82rem',
-                        fontWeight: '500',
-                        marginBottom: '1.5rem'
-                    }}>
-                        {scanMessage}
-                    </div>
-                )}
-
-                {/* Matrix layout */}
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
-                    
-                    {/* Flags List Table */}
-                    <div style={auditPanelStyle}>
-                        <h3 style={auditPanelTitleStyle}>Double-Tap Mismatch Alert Matrix</h3>
-                        <p style={{ fontSize: '0.72rem', color: '#888', marginBottom: '1rem' }}>
-                            Identifies adjacent block reader card logs with time differences less than 15 seconds.
-                        </p>
-
-                        <div className="lms-table-container" style={{ margin: 0 }}>
-                            <table className="lms-table">
-                                <thead>
-                                    <tr>
-                                        <th>Student USN</th>
-                                        <th>Name</th>
-                                        <th>Gateway A</th>
-                                        <th>Gateway B</th>
-                                        <th>Gap</th>
-                                        <th>Action Panel</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {auditAlerts.length > 0 ? (
-                                        auditAlerts.map((alert) => (
-                                            <tr key={alert.id}>
-                                                <td style={{ fontFamily: 'monospace' }}>{alert.usn}</td>
-                                                <td style={{ fontWeight: '700' }}>{alert.name}</td>
-                                                <td>{alert.gateway}</td>
-                                                <td>{alert.conflictGate}</td>
-                                                <td style={{ color: '#ef4444', fontWeight: 'bold' }}>{alert.timeGap}s</td>
-                                                <td>
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        {alert.status === 'unresolved' ? (
-                                                            <>
-                                                                <button 
-                                                                    onClick={() => dispatchWarning(alert.id, alert.name)}
-                                                                    style={{
-                                                                        background: 'rgba(239, 68, 68, 0.15)',
-                                                                        border: '1px solid #ef4444',
-                                                                        color: '#ef4444',
-                                                                        padding: '4px 8px',
-                                                                        borderRadius: '4px',
-                                                                        fontSize: '0.7rem',
-                                                                        fontWeight: 'bold',
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                >
-                                                                    Warn Parent
-                                                                </button>
-                                                                <button 
-                                                                    onClick={() => clearAlert(alert.id)}
-                                                                    style={{
-                                                                        background: 'rgba(255,255,255,0.05)',
-                                                                        border: '1px solid #444',
-                                                                        color: '#9ca3af',
-                                                                        padding: '4px 8px',
-                                                                        borderRadius: '4px',
-                                                                        fontSize: '0.7rem',
-                                                                        fontWeight: 'bold',
-                                                                        cursor: 'pointer'
-                                                                    }}
-                                                                >
-                                                                    Clear
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            <span style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold' }}>
-                                                                ✓ Warning Sent
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={6} style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
-                                                No double-tap mismatch warnings currently recorded.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* Proximity Scanning Radar Animation */}
-                    <div style={auditPanelStyle}>
-                        <h3 style={auditPanelTitleStyle}>Live BLE Proximity Radar</h3>
-                        <p style={{ fontSize: '0.72rem', color: '#888', marginBottom: '1.25rem' }}>
-                            Simulated real-time BLE beacons checking in registered devices in CSE labs.
-                        </p>
-
-                        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '180px', background: '#070a13', border: '1px solid #1e293b', borderRadius: '8px', overflow: 'hidden' }}>
-                            <div className="radar-radar-circle" />
-                            <div className="radar-sweep-hand" />
-                            <ShieldAlert size={36} color="#6366f1" style={{ zIndex: 2 }} />
-                            <span style={{ fontSize: '0.68rem', color: '#6366f1', fontWeight: 'bold', marginTop: '10px', zIndex: 2, textTransform: 'uppercase' }}>
-                                BLE Scanner Engine Listening
-                            </span>
-
-                            <style>{`
-                                .radar-radar-circle {
-                                    position: absolute;
-                                    width: 140px;
-                                    height: 140px;
-                                    border: 1px solid rgba(99, 102, 241, 0.15);
-                                    border-radius: 50%;
-                                }
-                                .radar-radar-circle::before {
-                                    content: '';
-                                    position: absolute;
-                                    width: 90px;
-                                    height: 90px;
-                                    top: 25px;
-                                    left: 25px;
-                                    border: 1px solid rgba(99, 102, 241, 0.1);
-                                    border-radius: 50%;
-                                }
-                                .radar-sweep-hand {
-                                    position: absolute;
-                                    width: 70px;
-                                    height: 70px;
-                                    border-right: 2px solid rgba(99, 102, 241, 0.6);
-                                    border-radius: 0 100% 0 0;
-                                    transform-origin: bottom left;
-                                    top: 20px;
-                                    left: 50%;
-                                    animation: radarScanSweep 3s infinite linear;
-                                    background: linear-gradient(45deg, transparent, rgba(99, 102, 241, 0.05));
-                                }
-                                @keyframes radarScanSweep {
-                                    0% { transform: rotate(0deg); }
-                                    100% { transform: rotate(360deg); }
-                                }
-                            `}</style>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        );
-    }
 
 
 
@@ -2970,42 +1238,20 @@ const Attendance = () => {
                 </div>
             )}
 
-            {/* Title Banner */}
-            <div className="lms-title-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span>Attendance List</span>
+            {/* Dashboard Welcome Header */}
+            <div className="welcome-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                <div>
+                    <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', fontWeight: '700', background: 'linear-gradient(to right, var(--text-primary), var(--text-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>Attendance Registry</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '4px 0 0 0' }}>Manage course session logs and mark student participation.</p>
+                </div>
                 {user && (
-                    <span style={{ fontSize: '0.85rem', opacity: 0.8, fontWeight: 500 }}>
-                        Logged in as: {user.name} ({user.role})
-                    </span>
+                    <div className="date-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '6px 16px', borderRadius: '20px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                        Logged in as: <strong style={{ color: 'var(--accent-primary)' }}>{user.name}</strong>
+                    </div>
                 )}
             </div>
 
-            {/* Tab Navigation */}
-            <div className="lms-tabs-container" style={{ marginBottom: '20px' }}>
-                <button 
-                    onClick={() => setActiveTab('standard')} 
-                    className={`lms-tab-trigger ${activeTab === 'standard' ? 'active' : ''}`}
-                >
-                    Standard Attendance
-                </button>
-                <button 
-                    onClick={() => setActiveTab('validation')} 
-                    className={`lms-tab-trigger ${activeTab === 'validation' ? 'active' : ''}`}
-                >
-                    Validation Studio
-                </button>
-                <button 
-                    onClick={() => setActiveTab('geofence')} 
-                    className={`lms-tab-trigger ${activeTab === 'geofence' ? 'active' : ''}`}
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
-                    <Compass size={14} className={activeTab === 'geofence' ? 'rotating-slow' : ''} />
-                    AI Geofence Grace
-                </button>
-            </div>
-
-            {activeTab === 'standard' ? (
-                <>
+            <>
                     {/* A. TEACHER CLASS-WIDE ATTENDANCE MARKER */}
                     {(user?.role === 'teacher' || user?.role === 'admin') && (
                 <div className="lms-section-card teacher-control-panel">
@@ -3030,12 +1276,25 @@ const Attendance = () => {
                                 </div>
 
                                 <div className="lms-filter-col">
-                                    <label>Course: <span className="required-asterisk">*</span></label>
-                                    <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'rgba(30, 41, 59, 0.2)', cursor: 'default', minHeight: '42px', height: 'auto', padding: '8px 12px', border: '1px solid #1e293b', borderRadius: '6px', boxSizing: 'border-box' }}>
-                                        <span style={{ fontSize: '0.85rem', color: '#f8fafc', fontWeight: '500', lineHeight: '1.4', wordBreak: 'break-word' }}>
-                                            {classTeacherCourse}
-                                        </span>
-                                    </div>
+                                    <label>Time Slot & Course: <span className="required-asterisk">*</span></label>
+                                    <select 
+                                        value={selectedTimeSlotId} 
+                                        onChange={(e) => {
+                                            const slotId = e.target.value;
+                                            setSelectedTimeSlotId(slotId);
+                                            const slot = timetableSlots.find(s => s.id === slotId);
+                                            if (slot) {
+                                                setClassTeacherCourse(slot.subject);
+                                            }
+                                        }}
+                                        className="lms-input-select"
+                                    >
+                                        {timetableSlots.map(slot => (
+                                            <option key={slot.id} value={slot.id}>
+                                                {slot.subject} ({slot.time} - {slot.day})
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <div className="lms-filter-col">
@@ -3078,77 +1337,122 @@ const Attendance = () => {
                             </div>
 
                             {/* Student Roster marking list */}
-                            <div style={{
-                                marginTop: '10px',
-                                border: '1px solid #1e293b',
-                                borderRadius: '8px',
-                                padding: '15px',
-                                backgroundColor: 'rgba(15, 23, 42, 0.4)'
-                            }}>
-                                <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: '#cbd5e1', marginBottom: '12px' }}>
-                                    Student Roster List:
+                            <div className="roster-container">
+                                <h4 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                                    Student Roster List
                                 </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {filteredStudentProfiles.map(student => {
                                         const isPresent = classRosterStatus[student.id] !== false;
+                                        
+                                        // Retrieve statistics from classCourseLogs excluding today's date
+                                        const dateParts = classTeacherDate.split('-');
+                                        const formattedTodayStr = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+
+                                        const studentLogsExcludingToday = classCourseLogs.filter(log => log.student_id === student.id && log.date !== formattedTodayStr);
+                                        
+                                        let pastPresent = 0;
+                                        let pastTotal = 0;
+                                        
+                                        if (studentLogsExcludingToday.length > 0) {
+                                            studentLogsExcludingToday.forEach(log => {
+                                                pastPresent += log.present;
+                                                pastTotal += log.total;
+                                            });
+                                        } else {
+                                            // Fallback consistent mock seeds if no logs in database for other dates
+                                            if (student.id === 'mock-student-id') {
+                                                pastPresent = 37; pastTotal = 40;
+                                            } else if (student.id === '00000000-0000-0000-0000-000000000001') {
+                                                pastPresent = 41; pastTotal = 46;
+                                            } else if (student.id === '00000000-0000-0000-0000-000000000002') {
+                                                pastPresent = 22; pastTotal = 35;
+                                            } else if (student.id === '00000000-0000-0000-0000-000000000003') {
+                                                pastPresent = 24; pastTotal = 28;
+                                            } else if (student.id === '00000000-0000-0000-0000-000000000007') {
+                                                pastPresent = 27; pastTotal = 35;
+                                            } else if (student.id === '00000000-0000-0000-0000-000000000008') {
+                                                pastPresent = 32; pastTotal = 35;
+                                            } else if (student.id === '00000000-0000-0000-0000-000000000009') {
+                                                pastPresent = 27; pastTotal = 35;
+                                            } else {
+                                                const charCodeSum = student.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                                                pastTotal = 30 + (charCodeSum % 15); // 30 to 44
+                                                pastPresent = Math.floor(pastTotal * (0.65 + (charCodeSum % 30) / 100)); // 65% to 95% attendance
+                                            }
+                                        }
+                                        
+                                        const isPresentToday = classRosterStatus[student.id] !== false;
+                                        const presentCount = pastPresent + (isPresentToday ? 1 : 0);
+                                        const totalCount = pastTotal + 1;
+                                        
+                                        const percentageVal = totalCount > 0 ? (presentCount / totalCount) * 100 : 100;
+                                        let attendanceColor = '#4ade80'; // Green (default > 85%)
+                                        if (percentageVal < 75) {
+                                            attendanceColor = '#f87171'; // Red (< 75%)
+                                        } else if (percentageVal <= 85) {
+                                            attendanceColor = '#fbbf24'; // Yellow (75% to 85%)
+                                        }
+
                                         return (
-                                            <div key={student.id} style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                padding: '8px 12px',
-                                                backgroundColor: 'rgba(30, 41, 59, 0.2)',
-                                                border: '1px solid #1e293b',
-                                                borderRadius: '6px'
-                                            }}>
-                                                <div>
-                                                    <span style={{ fontSize: '0.88rem', fontWeight: '600', color: '#f8fafc' }}>
-                                                        {studentNameMap[student.id] || `Student (${student.id.substring(0, 8)})`}
-                                                    </span>
-                                                    <span style={{ fontSize: '0.75rem', color: '#64748b', marginLeft: '10px' }}>
-                                                        USN: {student.id.substring(0, 8).toUpperCase()}
-                                                    </span>
+                                            <div key={student.id} className="roster-student-row">
+                                                <div style={{ display: 'flex', flex: 1, justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+                                                    <div>
+                                                        <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.95rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                                                            {studentNameMap[student.id] || `Student (${student.id.substring(0, 8)})`}
+                                                        </span>
+                                                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                                            USN: {student.id.substring(0, 8).toUpperCase()}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+                                                        <div style={{ textAlign: 'right' }}>
+                                                            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Attendance</span>
+                                                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.95rem', fontWeight: '700', color: attendanceColor }}>
+                                                                {presentCount} / {totalCount}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{ textAlign: 'right', minWidth: '80px' }}>
+                                                            <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Percentage</span>
+                                                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.95rem', fontWeight: '800', color: attendanceColor }}>
+                                                                {percentageVal.toFixed(2)}%
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div style={{ display: 'flex', gap: '15px' }}>
-                                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                                                        <input 
-                                                            type="radio" 
-                                                            name={`status-${student.id}`} 
-                                                            checked={isPresent} 
-                                                            onChange={() => setClassRosterStatus(prev => ({ ...prev, [student.id]: true }))} 
-                                                        />
-                                                        <span className="text-success" style={{ fontSize: '0.85rem' }}>Present</span>
-                                                    </label>
-                                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                                                        <input 
-                                                            type="radio" 
-                                                            name={`status-${student.id}`} 
-                                                            checked={!isPresent} 
-                                                            onChange={() => setClassRosterStatus(prev => ({ ...prev, [student.id]: false }))} 
-                                                        />
-                                                        <span className="text-danger" style={{ fontSize: '0.85rem' }}>Absent</span>
-                                                    </label>
-                                                </div>
+                                                
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setClassRosterStatus(prev => ({ ...prev, [student.id]: !isPresent }))}
+                                                    style={{
+                                                        padding: '8px 20px',
+                                                        borderRadius: '20px',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: '700',
+                                                        cursor: 'pointer',
+                                                        border: 'none',
+                                                        transition: 'all 0.2s ease',
+                                                        backgroundColor: isPresent ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                                                        color: isPresent ? '#4ade80' : '#f87171',
+                                                        borderWidth: '1px',
+                                                        borderStyle: 'solid',
+                                                        borderColor: isPresent ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)',
+                                                        minWidth: '110px'
+                                                    }}
+                                                >
+                                                    {isPresent ? '✓ Present' : '✗ Absent'}
+                                                </button>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '5px' }}>
-                                <button 
-                                    type="button" 
-                                    onClick={handleStandardWebcamTrigger}
-                                    className="webcam-btn"
-                                    disabled={isWebcamRunning || isSavingClass}
-                                    style={{ margin: 0 }}
-                                >
-                                    {isWebcamRunning ? '📸 Camera Running (20s)...' : '⚡ Run Face Recognition Camera (20s)'}
-                                </button>
+ 
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '12px', marginTop: '15px' }}>
                                 <button 
                                     type="submit" 
-                                    className="establish-link-btn" 
-                                    style={{ margin: 0, padding: '10px 30px', width: 'auto' }}
+                                    className="attendance-save-btn" 
                                     disabled={isSavingClass}
                                 >
                                     {isSavingClass ? 'Saving...' : 'Save Class Attendance'}
@@ -3230,60 +1534,14 @@ const Attendance = () => {
                 </div>
             )}
 
-            {/* Course Summary Table */}
-            <div className="lms-section-card">
-                <div className="lms-card-header">
-                    {(user?.role === 'teacher' || user?.role === 'admin') 
-                        ? `Course Attendance Report: ${classTeacherCourse}` 
-                        : 'Course summary list'}
-                </div>
-                <div className="lms-card-body">
-                    {(user?.role === 'teacher' || user?.role === 'admin') ? (
-                        /* Teacher view showing ALL students for selected course */
-                        classAttendanceSummary.length > 0 ? (
-                            <table className="lms-table summary-table">
-                                <thead>
-                                    <tr>
-                                        <th style={{ textAlign: 'left', width: '50%' }}>Student Name</th>
-                                        <th style={{ textAlign: 'center', width: '25%' }}>Present / Total classes</th>
-                                        <th style={{ textAlign: 'center', width: '25%' }}>Attendance percentage(%)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {classAttendanceSummary.filter(item => {
-                                        const studentInfo = studentBranchSectionMap[item.student_id] || { branch: 'CSE', section: 'A' };
-                                        const branchMatch = selectedBranch === 'All' || studentInfo.branch === selectedBranch;
-                                        const sectionMatch = selectedSection === 'All' || studentInfo.section === selectedSection;
-                                        return branchMatch && sectionMatch;
-                                    }).map((item, index) => {
-                                        const isLowAttendance = item.percentage < 75;
-                                        return (
-                                            <tr key={index}>
-                                                <td className="course-name-cell">
-                                                    <div>
-                                                        <span style={{ fontWeight: '600' }}>{item.full_name}</span>
-                                                        <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '2px' }}>USN: {item.student_id.substring(0, 8).toUpperCase()}</div>
-                                                    </div>
-                                                </td>
-                                                <td style={{ textAlign: 'center' }} className={isLowAttendance ? 'text-danger' : 'text-success'}>
-                                                    {item.present} / {item.total}
-                                                </td>
-                                                <td style={{ textAlign: 'center' }} className={isLowAttendance ? 'text-danger percentage-bold' : 'text-success percentage-bold'}>
-                                                    {item.percentage.toFixed(2)}(%)
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        ) : (
-                            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>
-                                No students found for this course
-                            </div>
-                        )
-                    ) : (
-                        /* Original Student view showing their own summary for all courses */
-                        computedCourseSummary.length > 0 ? (
+            {/* Course Summary Table (For Students only) */}
+            {user?.role === 'student' && (
+                <div className="lms-section-card">
+                    <div className="lms-card-header">
+                        Course summary list
+                    </div>
+                    <div className="lms-card-body">
+                        {computedCourseSummary.length > 0 ? (
                             <table className="lms-table summary-table">
                                 <thead>
                                     <tr>
@@ -3294,14 +1552,19 @@ const Attendance = () => {
                                 </thead>
                                 <tbody>
                                     {computedCourseSummary.map((item, index) => {
-                                        const isLowAttendance = item.percentage < 75;
+                                        let attendanceClass = 'text-success'; // > 85%
+                                        if (item.percentage < 75) {
+                                            attendanceClass = 'text-danger'; // < 75%
+                                        } else if (item.percentage <= 85) {
+                                            attendanceClass = 'text-warning'; // 75% - 85%
+                                        }
                                         return (
                                             <tr key={index}>
                                                 <td className="course-name-cell">{item.course}</td>
-                                                <td style={{ textAlign: 'center' }} className={isLowAttendance ? 'text-danger' : 'text-success'}>
+                                                <td style={{ textAlign: 'center' }} className={attendanceClass}>
                                                     {item.present} / {item.total}
                                                 </td>
-                                                <td style={{ textAlign: 'center' }} className={isLowAttendance ? 'text-danger percentage-bold' : 'text-success percentage-bold'}>
+                                                <td style={{ textAlign: 'center' }} className={`${attendanceClass} percentage-bold`}>
                                                     {item.percentage.toFixed(2)}(%)
                                                 </td>
                                             </tr>
@@ -3313,10 +1576,10 @@ const Attendance = () => {
                             <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-secondary)' }}>
                                 No data available in table
                             </div>
-                        )
-                    )}
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
 
             {/* Controls */}
             {user?.role === 'student' && (
@@ -3565,11 +1828,6 @@ const Attendance = () => {
                 </div>
             )}
             </>
-            ) : activeTab === 'validation' ? (
-                renderValidationStudio()
-            ) : (
-                renderGeofenceGracePanel()
-            )}
 
             {/* Upload Modal */}
             {selectedUploadRow && (

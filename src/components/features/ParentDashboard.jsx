@@ -13,12 +13,23 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import './FeatureStyles.css';
 
 const childNameMap = {
+    'mock-student-id': 'Demo Student',
     '00000000-0000-0000-0000-000000000001': 'Bharath Kumar A (bk@vvce)',
     '00000000-0000-0000-0000-000000000002': 'Ananya Yk (ananya@vvce)',
     '00000000-0000-0000-0000-000000000003': 'Riddhi (riddhi@vvce)',
     '00000000-0000-0000-0000-000000000007': 'Rishith (rishith@vvce)',
     '00000000-0000-0000-0000-000000000008': 'Bharath P (bp@vvce)',
     '00000000-0000-0000-0000-000000000009': 'Anagha (anagha@vvce)'
+};
+
+const childUsnMap = {
+    'mock-student-id': '4VV25EC001',
+    '00000000-0000-0000-0000-000000000001': '4VV25EC001',
+    '00000000-0000-0000-0000-000000000002': '4VV25EC002',
+    '00000000-0000-0000-0000-000000000003': '4VV25EC099',
+    '00000000-0000-0000-0000-000000000007': '4VV25EC007',
+    '00000000-0000-0000-0000-000000000008': '4VV25EC008',
+    '00000000-0000-0000-0000-000000000009': '4VV25EC009'
 };
 
 const ParentDashboard = () => {
@@ -115,23 +126,40 @@ const ParentDashboard = () => {
                     .select('present, total')
                     .eq('student_id', childId);
 
+                let basePresent = 23;
+                let baseTotal = 25;
+                if (childId === 'mock-student-id') {
+                    basePresent = 37;
+                    baseTotal = 40;
+                } else if (childId === '00000000-0000-0000-0000-000000000002') {
+                    basePresent = 22;
+                    baseTotal = 35;
+                } else if (childId === '00000000-0000-0000-0000-000000000001') {
+                    basePresent = 41;
+                    baseTotal = 46;
+                } else if (childId === '00000000-0000-0000-0000-000000000007') {
+                    basePresent = 27;
+                    baseTotal = 35;
+                } else if (childId === '00000000-0000-0000-0000-000000000008') {
+                    basePresent = 32;
+                    baseTotal = 35;
+                } else if (childId === '00000000-0000-0000-0000-000000000009') {
+                    basePresent = 27;
+                    baseTotal = 35;
+                }
+
+                let totalPresent = basePresent;
+                let totalClasses = baseTotal;
+
                 if (attData && attData.length > 0) {
-                    let totalPresent = 0;
-                    let totalClasses = 0;
-                    
-                    // Sum from Supabase
                     attData.forEach(item => {
                         totalPresent += item.present;
                         totalClasses += item.total;
                     });
-
-                    // Add base mock classes for the child so it matches high percentage
-                    totalPresent += 23;
-                    totalClasses += 25;
-
-                    setAttendanceCount({ present: totalPresent, total: totalClasses });
-                    setAttendancePct(Math.round((totalPresent / totalClasses) * 100));
                 }
+
+                setAttendanceCount({ present: totalPresent, total: totalClasses });
+                setAttendancePct(Math.round((totalPresent / totalClasses) * 100));
 
                 // 3. Fetch child timetables
                 const { data: ttData } = await supabase
@@ -225,9 +253,12 @@ const ParentDashboard = () => {
         };
     }, [user, supabase]);
 
-    // CGPA growth trends (using static student indicators)
+    // CGPA growth trends (using static student indicators with internals)
     const cgpaTrends = [
         { sem: 'Sem 1', gpa: 8.2 },
+        { sem: 'IA 1', gpa: 7.8 },
+        { sem: 'IA 2', gpa: 8.4 },
+        { sem: 'IA 3', gpa: 8.1 },
         { sem: 'Sem 2', gpa: 8.6 },
     ];
 
@@ -240,7 +271,7 @@ const ParentDashboard = () => {
     }
 
     return (
-        <div className="parent-dashboard-container" style={{ position: 'relative' }}>
+        <div className="parent-dashboard-container animate-enter" style={{ position: 'relative', padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
             {activeCriticalRemark && (
                 <div className="lockout-overlay" style={{
                     position: 'fixed',
@@ -256,7 +287,7 @@ const ParentDashboard = () => {
                     justifyContent: 'center',
                     padding: '20px'
                 }}>
-                    <div className="lockout-box animate-enter" style={{
+                    <div className="lockout-box" style={{
                         background: 'var(--bg-card)',
                         border: '2px solid var(--error)',
                         borderRadius: '16px',
@@ -294,11 +325,12 @@ const ParentDashboard = () => {
                                 fontSize: '0.72rem',
                                 fontWeight: '800',
                                 textTransform: 'uppercase',
-                                letterSpacing: '1px'
+                                letterSpacing: '1px',
+                                fontFamily: "'Space Grotesk', sans-serif"
                             }}>
                                 High Priority Parent Acknowledgment Lockout
                             </span>
-                            <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--text-primary)', marginTop: '12px', letterSpacing: '-0.5px' }}>
+                            <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)', marginTop: '12px', letterSpacing: '-0.5px' }}>
                                 Administrative Warning Interceptor
                             </h2>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginTop: '6px', lineHeight: '1.5' }}>
@@ -317,20 +349,25 @@ const ParentDashboard = () => {
                             color: 'var(--text-primary)'
                         }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '6px' }}>
-                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase' }}>Issuer / Section</span>
-                                <span style={{ color: 'var(--accent-action)', fontWeight: '700' }}>{activeCriticalRemark.teacherName} ({activeCriticalRemark.sectionCode})</span>
+                                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: '700', textTransform: 'uppercase', fontFamily: "'Space Grotesk', sans-serif" }}>Issuer / Section</span>
+                                <span style={{ color: 'var(--accent-primary)', fontWeight: '700', fontFamily: "'Space Grotesk', sans-serif" }}>{activeCriticalRemark.teacherName} ({activeCriticalRemark.sectionCode})</span>
                             </div>
-                            <div style={{ color: 'var(--error)', fontWeight: '600', fontStyle: 'italic', marginBottom: '10px' }}>
+                            <div style={{ color: 'var(--error)', fontWeight: '600', fontStyle: 'italic', marginBottom: '12px', lineHeight: 1.4 }}>
                                 "{activeCriticalRemark.message}"
                             </div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>Logged USN: {activeChildId === '00000000-0000-0000-0000-000000000002' ? '4VV25EC002' : '4VV25EC001'}</span>
-                                <span>Date: {new Date(activeCriticalRemark.createdAt).toLocaleString('en-GB')}</span>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>Student: <strong style={{ color: 'var(--text-primary)' }}>{childNameMap[activeChildId]?.split(' (')[0] || 'Bharath P'}</strong></span>
+                                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>USN: {childUsnMap[activeChildId] || '4VV25EC008'}</span>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px', borderTop: '1px dashed var(--border-color)', paddingTop: '4px' }}>
+                                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>Date: {new Date(activeCriticalRemark.createdAt).toLocaleString('en-GB')}</span>
+                                </div>
                             </div>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
-                            <label style={{ fontSize: '0.82rem', color: 'var(--text-primary)', fontWeight: '700' }}>Parent Electronic Signature *</label>
+                            <label style={{ fontSize: '0.82rem', color: 'var(--text-primary)', fontWeight: '700', fontFamily: "'Space Grotesk', sans-serif" }}>Parent Electronic Signature *</label>
                             <input 
                                 type="text"
                                 placeholder="Type your name (e.g. Abhi) to sign off..."
@@ -341,15 +378,21 @@ const ParentDashboard = () => {
                                 }}
                                 style={{
                                     background: 'var(--bg-secondary)',
-                                    border: '1.5px solid var(--error)',
-                                    borderRadius: '8px',
+                                    border: errorMsg ? '2px solid var(--error)' : '2px solid var(--border-color)',
+                                    borderRadius: '10px',
                                     padding: '12px 14px',
                                     fontSize: '0.92rem',
                                     color: 'var(--text-primary)',
                                     outline: 'none',
                                     width: '100%',
                                     boxSizing: 'border-box',
-                                    transition: 'all 0.2s'
+                                    transition: 'all 0.2s ease'
+                                }}
+                                onFocus={(e) => {
+                                    if (!errorMsg) e.target.style.borderColor = 'var(--accent-primary)';
+                                }}
+                                onBlur={(e) => {
+                                    if (!errorMsg) e.target.style.borderColor = 'var(--border-color)';
                                 }}
                             />
                             {errorMsg && (
@@ -378,13 +421,14 @@ const ParentDashboard = () => {
                                 background: 'linear-gradient(135deg, #fbbf24, #d97706)',
                                 color: '#000',
                                 padding: '14px',
-                                borderRadius: '8px',
+                                borderRadius: '30px',
                                 fontSize: '0.92rem',
-                                fontWeight: '900',
+                                fontWeight: '700',
                                 cursor: 'pointer',
                                 transition: 'all 0.25s ease',
                                 textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
+                                letterSpacing: '0.5px',
+                                fontFamily: "'Space Grotesk', sans-serif"
                             }}
                         >
                             Acknowledge Remark
@@ -393,65 +437,81 @@ const ParentDashboard = () => {
                 </div>
             )}
 
-            <header className="parent-welcome">
-                <h1>Welcome Back, Parent! 👋</h1>
-                <p>Monitoring child node: <strong style={{ color: 'var(--accent-primary)' }}>{childName}</strong></p>
-            </header>
-
-            <div className="summary-cards">
-                <div className="summary-card attendance">
-                    <div className="card-icon"><Activity size={24} color="#00ffcc" /></div>
-                    <div className="card-info">
-                        <h3>{attendancePct}%</h3>
-                        <p>Total Attendance ({attendanceCount.present} / {attendanceCount.total} hrs)</p>
-                    </div>
+            {/* Dashboard Welcome Header */}
+            <div className="welcome-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-color)' }}>
+                <div>
+                    <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', fontWeight: '700', background: 'linear-gradient(to right, var(--text-primary), var(--text-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>Parent Control Center</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '4px 0 0 0' }}>Monitoring child node: <strong style={{ color: 'var(--accent-primary)' }}>{childName}</strong></p>
                 </div>
-                <div className="summary-card homework">
-                    <div className="card-icon"><CheckCircle2 size={24} color="#a78bfa" /></div>
-                    <div className="card-info">
-                        <h3>94%</h3>
-                        <p>Homework Compliance</p>
-                    </div>
-                </div>
-                <div className="summary-card behavior">
-                    <div className="card-icon"><TrendingUp size={24} color="#f472b6" /></div>
-                    <div className="card-info">
-                        <h3>Excellent</h3>
-                        <p>Weekly Behavior Status</p>
-                    </div>
-                </div>
-                <div className="summary-card safety">
-                    <div className="card-icon"><ShieldAlert size={24} color="#fbbf24" /></div>
-                    <div className="card-info">
-                        <h3>Safe</h3>
-                        <p>Online Presence</p>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="date-badge" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '6px 16px', borderRadius: '20px', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', fontSize: '0.85rem', fontFamily: "'JetBrains Mono', monospace" }}>
+                        USN: <strong style={{ color: 'var(--accent-primary)' }}>{childUsnMap[activeChildId] || '4VV25EC008'}</strong>
                     </div>
                 </div>
             </div>
 
-            <div className="parent-layout-grid">
-                {/* CGPA Trend Section */}
-                <div className="parent-section cgpa-trend full-width">
-                    <div className="section-header">
-                        <h3>CGPA Growth Trend</h3>
-                        <ChartIcon size={20} />
+            <div className="summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+                <div className="summary-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '20px', transition: 'all 0.2s ease' }}>
+                    <div className="card-icon" style={{ background: 'rgba(0, 255, 204, 0.08)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <Activity size={24} color="#00ffcc" />
                     </div>
-                    <div className="chart-container" style={{ height: '230px', width: '100%', marginTop: '1rem' }}>
+                    <div className="card-info">
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>{attendancePct}%</h3>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Attendance ({attendanceCount.present}/{attendanceCount.total} hrs)</p>
+                    </div>
+                </div>
+                <div className="summary-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '20px', transition: 'all 0.2s ease' }}>
+                    <div className="card-icon" style={{ background: 'rgba(167, 139, 250, 0.08)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <CheckCircle2 size={24} color="#a78bfa" />
+                    </div>
+                    <div className="card-info">
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>94%</h3>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Homework Compliance</p>
+                    </div>
+                </div>
+                <div className="summary-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '20px', transition: 'all 0.2s ease' }}>
+                    <div className="card-icon" style={{ background: 'rgba(244, 114, 182, 0.08)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <TrendingUp size={24} color="#f472b6" />
+                    </div>
+                    <div className="card-info">
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>Excellent</h3>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Behavior Status</p>
+                    </div>
+                </div>
+                <div className="summary-card" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '20px', transition: 'all 0.2s ease' }}>
+                    <div className="card-icon" style={{ background: 'rgba(251, 191, 36, 0.08)', borderRadius: '12px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <ShieldAlert size={24} color="#fbbf24" />
+                    </div>
+                    <div className="card-info">
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.5rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>Safe</h3>
+                        <p style={{ margin: '2px 0 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Online Presence</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="parent-layout-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                {/* CGPA Trend Section */}
+                <div className="parent-section cgpa-trend full-width" style={{ gridColumn: 'span 2', background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '24px' }}>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.15rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>CGPA Growth Trend</h3>
+                        <ChartIcon size={20} color="var(--accent-primary)" />
+                    </div>
+                    <div className="chart-container" style={{ height: '230px', width: '100%' }}>
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={cgpaTrends}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                                <XAxis dataKey="sem" stroke="#94a3b8" />
-                                <YAxis domain={[0, 10]} stroke="#94a3b8" />
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                                <XAxis dataKey="sem" stroke="#94a3b8" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.78rem' }} />
+                                <YAxis domain={[0, 10]} stroke="#94a3b8" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.78rem' }} />
                                 <Tooltip 
-                                    contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: '8px' }}
-                                    itemStyle={{ color: '#00ffcc' }}
+                                    contentStyle={{ background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '10px' }}
+                                    itemStyle={{ color: '#00ffcc', fontFamily: "'Space Grotesk', sans-serif" }}
                                 />
                                 <Line 
                                     type="monotone" 
                                     dataKey="gpa" 
-                                    stroke="#00ffcc" 
-                                    strokeWidth={3} 
-                                    dot={{ fill: '#00ffcc', r: 6 }} 
+                                    stroke="#818cf8" 
+                                    strokeWidth={3.5} 
+                                    dot={{ fill: '#818cf8', r: 6 }} 
                                     activeDot={{ r: 8, stroke: '#fff' }} 
                                 />
                             </LineChart>
@@ -460,18 +520,18 @@ const ParentDashboard = () => {
                 </div>
 
                 {/* Timetable Section */}
-                <div className="parent-section timetable">
-                    <div className="section-header">
-                        <h3>Child's Timetable</h3>
+                <div className="parent-section timetable" style={{ background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '24px' }}>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.15rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>Child's Timetable</h3>
                         <Clock size={20} color="var(--accent-primary)" />
                     </div>
-                    <div className="timetable-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '10px' }}>
+                    <div className="timetable-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {timetables.map(slot => (
-                            <div key={slot.id} className="exam-card" style={{ borderLeft: '3px solid #6366f1' }}>
-                                <div className="exam-subject">{slot.subject}</div>
-                                <div className="exam-details">
+                            <div key={slot.id} className="exam-card" style={{ borderLeft: '3px solid var(--accent-primary)', background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-color)', borderLeftWidth: '3px' }}>
+                                <div className="exam-subject" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: '700', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{slot.subject}</div>
+                                <div className="exam-details" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '6px', fontFamily: "'JetBrains Mono', monospace" }}>
                                     <span>{slot.day} | {slot.time}</span>
-                                    <span style={{ color: '#818cf8', fontWeight: 'bold' }}>Room {slot.room}</span>
+                                    <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>Room {slot.room}</span>
                                 </div>
                             </div>
                         ))}
@@ -479,23 +539,26 @@ const ParentDashboard = () => {
                 </div>
 
                 {/* Upcoming Exams Section */}
-                <div className="parent-section exams">
-                    <div className="section-header">
-                        <h3>Notice for Exams & Internals</h3>
-                        <Calendar size={20} />
+                <div className="parent-section exams" style={{ background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '24px' }}>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.15rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>Notice for Exams & Internals</h3>
+                        <Calendar size={20} color="var(--accent-primary)" />
                     </div>
-                    <div className="exam-list">
+                    <div className="exam-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {exams.map(exam => (
-                            <div key={exam.id} className="exam-card">
-                                <div className="exam-subject">{exam.subject}</div>
-                                <div className="exam-details">
-                                    <span><Calendar size={14} /> {exam.date}</span>
+                            <div key={exam.id} className="exam-card" style={{ background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <div className="exam-subject" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: '700', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{exam.subject}</div>
+                                <div className="exam-details" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '6px' }}>
+                                    <span style={{ fontFamily: "'JetBrains Mono', monospace" }}><Calendar size={12} style={{ marginRight: '4px', display: 'inline' }} /> {exam.date}</span>
                                     <span className="exam-tag" style={{ 
-                                        backgroundColor: exam.type.toLowerCase().includes('final') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                                        color: exam.type.toLowerCase().includes('final') ? '#ef4444' : '#f59e0b',
-                                        padding: '2px 8px',
-                                        borderRadius: '4px',
-                                        fontSize: '0.75rem'
+                                        backgroundColor: exam.type.toLowerCase().includes('final') ? 'rgba(239, 68, 68, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                                        color: exam.type.toLowerCase().includes('final') ? 'var(--error)' : '#f59e0b',
+                                        border: exam.type.toLowerCase().includes('final') ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
+                                        padding: '2px 10px',
+                                        borderRadius: '20px',
+                                        fontSize: '0.7rem',
+                                        fontWeight: '700',
+                                        fontFamily: "'Space Grotesk', sans-serif"
                                     }}>
                                         {exam.type}
                                     </span>
@@ -506,39 +569,39 @@ const ParentDashboard = () => {
                 </div>
 
                 {/* Quizzes and Class Tests Section */}
-                <div className="parent-section grades">
-                    <div className="section-header">
-                        <h3>Quizzes & Class Tests</h3>
-                        <Award size={20} />
+                <div className="parent-section grades" style={{ background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '24px' }}>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.15rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>Quizzes & Class Tests</h3>
+                        <Award size={20} color="var(--accent-primary)" />
                     </div>
-                    <div className="grade-list">
+                    <div className="grade-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {quizzes.map(quiz => (
-                            <div key={quiz.id} className="grade-row">
-                                <div className="subject-icon"><BookOpen size={16} /></div>
-                                <div className="subject-name">{quiz.subject}</div>
-                                <div className="grade-value" style={{ color: parseFloat(quiz.score)/parseFloat(quiz.total) >= 0.75 ? '#10b981' : '#ef4444' }}>
+                            <div key={quiz.id} className="grade-row" style={{ display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <div className="subject-icon" style={{ background: 'rgba(129, 140, 248, 0.08)', borderRadius: '6px', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '10px' }}><BookOpen size={16} color="var(--accent-primary)" /></div>
+                                <div className="subject-name" style={{ flex: 1, fontFamily: "'Space Grotesk', sans-serif", fontWeight: '600', fontSize: '0.88rem', color: 'var(--text-primary)' }}>{quiz.subject}</div>
+                                <div className="grade-value" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: '700', fontSize: '0.88rem', color: parseFloat(quiz.score)/parseFloat(quiz.total) >= 0.75 ? 'var(--success)' : 'var(--error)', marginRight: '12px' }}>
                                     {quiz.score}/{quiz.total}
                                 </div>
-                                <div className="grade-date">{quiz.date}</div>
+                                <div className="grade-date" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{quiz.date}</div>
                             </div>
                         ))}
                     </div>
                 </div>
 
                 {/* School Notices */}
-                <div className="parent-section notices">
-                    <div className="section-header">
-                        <h3>School Notice Board</h3>
-                        <Bell size={20} />
+                <div className="parent-section notices" style={{ background: 'var(--bg-card)', border: '2px solid var(--border-color)', borderRadius: '16px', padding: '24px' }}>
+                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid var(--border-color)', paddingBottom: '12px', marginBottom: '16px' }}>
+                        <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.15rem', fontWeight: '700', margin: 0, color: 'var(--text-primary)' }}>School Notice Board</h3>
+                        <Bell size={20} color="var(--accent-primary)" />
                     </div>
-                    <div className="notice-list">
+                    <div className="notice-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         {notices.map(notice => (
-                            <div key={notice.id} className="notice-item">
-                                <div className="notice-top">
-                                    <span className="notice-title">{notice.title}</span>
-                                    <span className="notice-date">{notice.date}</span>
+                            <div key={notice.id} className="notice-item" style={{ background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                                <div className="notice-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                    <span className="notice-title" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: '700', fontSize: '0.9rem', color: 'var(--text-primary)' }}>{notice.title}</span>
+                                    <span className="notice-date" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{notice.date}</span>
                                 </div>
-                                <p className="notice-msg">{notice.message}</p>
+                                <p className="notice-msg" style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{notice.message}</p>
                             </div>
                         ))}
                     </div>

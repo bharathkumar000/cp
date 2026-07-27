@@ -211,6 +211,11 @@
     font-weight: 600;
 }
 
+.text-warning {
+    color: #fbbf24 !important; /* Soft Yellow */
+    font-weight: 600;
+}
+
 .percentage-bold {
     font-weight: 700;
     letter-spacing: 0.2px;
@@ -1003,10 +1008,12 @@
 }
 
 .roster-panel, .breach-panel {
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid #1e293b;
-    border-radius: 12px;
-    padding: 1.25rem;
+    background: rgba(21, 24, 31, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    box-shadow: 0 10px 45px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(12px);
+    padding: 1.5rem;
 }
 
 .panel-title {
@@ -1045,10 +1052,11 @@
 .roster-item-wrapper {
     display: flex;
     flex-direction: column;
-    background: rgba(30, 41, 59, 0.2);
-    border: 1px solid #1e293b;
-    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
     overflow: hidden;
+    transition: all 0.2s ease;
 }
 
 .roster-item {
@@ -1061,20 +1069,22 @@
     border-left: 4px solid transparent;
 }
 
-.roster-item:hover {
-    background: rgba(30, 41, 59, 0.4);
+.roster-item-wrapper:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
 }
 
 .roster-item.present {
-    border-left-color: #10b981;
+    border-left-color: var(--accent-primary, #818cf8) !important;
 }
 
 .roster-item.absent {
-    border-left-color: #ef4444;
+    border-left-color: #ef4444 !important;
 }
 
 .roster-item.late {
-    border-left-color: #f59e0b;
+    border-left-color: #f59e0b !important;
 }
 
 .student-details {
@@ -1829,4 +1839,67 @@
     border-radius: 10px;
     padding: 12px;
     margin-top: 10px;
+}
+
+/* Redesigned Premium Theme Alignment */
+.roster-container {
+    margin-top: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    padding: 20px;
+    background-color: rgba(9, 9, 11, 0.4);
+}
+
+.roster-student-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    gap: 15px;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.roster-student-row:hover {
+    border-color: var(--accent-primary);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-1px);
+}
+
+.attendance-save-btn {
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    color: #ffffff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 30px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(129, 140, 248, 0.25);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.attendance-save-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(129, 140, 248, 0.4);
+    opacity: 0.95;
+}
+
+.attendance-save-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.attendance-save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }

@@ -4,7 +4,7 @@ export const mockBackend = {
         // 1 1, 2 2, 3 3 accounts
         { id: 'mock-student-id', name: 'Demo Student', email: '1', role: 'student', password: '1', usn: '4VV25EC001' },
         { id: 'mock-teacher-id', name: 'Demo Teacher', email: '2', role: 'teacher', password: '2', isClassTeacher: true, assignedSection: 'ECE-2A' },
-        { id: 'mock-parent-id', name: 'Demo Parent', email: '3', role: 'parent', password: '3' },
+        { id: 'mock-parent-id', name: 'Demo Parent', email: '3', role: 'parent', password: '3', childEmail: '1', childId: 'mock-student-id' },
 
         // Requested VVCE Accounts
         { id: '00000000-0000-0000-0000-000000000001', name: 'bharath kumar a', email: 'bk@vvce', role: 'student', password: 'bk', usn: '4VV25EC001' },

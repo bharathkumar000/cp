@@ -7,6 +7,20 @@ import { useAuth } from '../../context/AuthContext';
 
 const Notes = () => {
     const { user } = useAuth();
+    let teacherSubject = 'C Programming';
+    let teacherName = 'Demo Teacher';
+    if (user?.role === 'teacher') {
+        const nameLower = user?.name?.toLowerCase() || '';
+        const emailVal = user?.email || '';
+        if (nameLower.includes('bhavana') || emailVal === 'bhav@vvce') {
+            teacherSubject = 'Mathematics';
+            teacherName = 'Dr. Bhavana';
+        } else if (nameLower.includes('demo teacher') || emailVal === '2') {
+            teacherSubject = 'C Programming';
+            teacherName = 'Demo Teacher';
+        }
+    }
+
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [selectedModule, setSelectedModule] = useState(null);
     const [viewType, setViewType] = useState('folders'); // 'folders', 'modules', 'notes', or 'pyqs'
@@ -79,17 +93,29 @@ const Notes = () => {
         
         setTimeout(() => {
             const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-            setSummaryText(`LECTURE SUMMARY & REPORT - MATHEMATICS (${currentDate})
-Course: 1BCS201 - Introduction to Computer Science
-Branch & Section: ${targetBranch} - Section ${targetSection}
-Date: ${currentDate}
-
-TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
+            const subUpper = teacherSubject.toUpperCase();
+            const courseText = teacherSubject === 'C Programming' 
+                ? 'Course: 1BPLCO203 - Introduction to C Programming' 
+                : 'Course: 1BMATE201 - Applied Mathematics - II';
+            const topicText = teacherSubject === 'C Programming'
+                ? `TOPIC DISCUSSED: Dynamic Memory Allocation & Pointers
+- Discussed pointers, reference, and dereference operations.
+- Covered dynamic memory allocation functions: malloc, calloc, realloc, and free.
+- Analyzed memory leak scenarios and standard practices to avoid them.
+- Solved previous year question on dynamic arrays.`
+                : `TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
 - Discussed BST properties: left child less than root, right child greater.
 - Covered traversal algorithms: In-order, Pre-order, and Post-order tree walking.
 - Analyzed time complexity: O(log n) for balanced tree operations vs O(n) worst-case.
-- Solved previous year question on BST reconstruction from pre-order sequence.
-- Practical assignment: Implement a recursive insert function in C.`);
+- Solved previous year question on BST reconstruction from pre-order sequence.`;
+
+            setSummaryText(`LECTURE SUMMARY & REPORT - ${subUpper} (${currentDate})
+${courseText}
+Branch & Section: ${targetBranch} - Section ${targetSection}
+Date: ${currentDate}
+
+${topicText}
+- Practical assignment: Implement the exercise in lab.`);
             setRecordingState('generated');
         }, 2000);
     };
@@ -129,10 +155,10 @@ TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
             id: mockBackend.studyMaterials.length + 1,
             title: `${dateStr} - Lecture Notes (Class: ${targetBranch} - ${targetSection})`,
             type: 'PDF',
-            author: 'Dr. Bhavana',
+            author: teacherName,
             category: 'Teacher Note',
             verifiedBy: 'Self',
-            subject: 'Mathematics',
+            subject: teacherSubject,
             module: Number(publishModule),
             file: filename,
             path: path
@@ -141,7 +167,7 @@ TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
         const newPyq = {
             id: mockBackend.pyqs.length + 1,
             question: `${dateStr}: Solve the BST traversal and time complexity analysis problem from the CSE lecture report.`,
-            subject: 'Mathematics',
+            subject: teacherSubject,
             yearsAsked: [2026]
         };
 
@@ -155,8 +181,8 @@ TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
     };
 
     // Derived Data - include Mathematics in default subjects list
-    const defaultSubjects = [...new Set([...studyMaterials.map(m => m.subject), ...pyqs.map(q => q.subject), 'Mathematics'])];
-    const subjects = user?.role === 'teacher' ? ['Mathematics'] : defaultSubjects;
+    const defaultSubjects = [...new Set([...studyMaterials.map(m => m.subject), ...pyqs.map(q => q.subject), 'Mathematics', 'C Programming'])];
+    const subjects = user?.role === 'teacher' ? [teacherSubject] : defaultSubjects;
     const modules = [1, 2, 3, 4, 5];
 
     const filteredNotes = localNotes.filter(n => 
@@ -219,10 +245,10 @@ TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
             id: mockBackend.studyMaterials.length + 1,
             title: uploadTitle,
             type: selectedFile ? (selectedFile.name.split('.').pop()?.toUpperCase() || 'PDF') : 'PDF',
-            author: user?.name || 'Dr. Bhavana',
+            author: user?.name || teacherName,
             category: 'Teacher Note',
             verifiedBy: 'Self',
-            subject: selectedSubject || 'Mathematics',
+            subject: selectedSubject || teacherSubject,
             module: Number(uploadModule),
             file: filename,
             path: path
@@ -483,7 +509,7 @@ TOPIC DISCUSSED: Binary Search Trees & Complexity Analysis
                     <div className="hub-modal-backdrop" style={{ display: 'flex', position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }} onClick={() => setShowUploadModal(false)}>
                         <div className="hub-modal-dialog" style={{ background: '#09090b', border: '1px solid #27272a', borderRadius: 12, width: '100%', maxWidth: '440px', padding: '20px' }} onClick={e => e.stopPropagation()}>
                             <div className="hub-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #27272a', paddingBottom: '10px' }}>
-                                <span className="hub-modal-title" style={{ fontWeight: 800, color: '#fff', fontSize: '1.1rem' }}>Upload Mathematics Note</span>
+                                <span className="hub-modal-title" style={{ fontWeight: 800, color: '#fff', fontSize: '1.1rem' }}>Upload {teacherSubject} Note</span>
                                 <button className="hub-modal-close-btn" style={{ background: 'none', border: 'none', color: '#888', fontSize: '1.5rem', cursor: 'pointer' }} onClick={() => setShowUploadModal(false)}>×</button>
                             </div>
                             <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

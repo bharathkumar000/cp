@@ -20,17 +20,16 @@ const TeachersDiary = () => {
     };
 
     return (
-        <div className="feature-container teachers-diary">
-            <div className="feature-header">
-                <div className="header-text">
-                    <h1>Teacher's Diary 📝</h1>
-                    <p>Chronological feed of official remarks from subject teachers.</p>
+        <div className="feature-container teachers-diary" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+            {/* Dashboard Welcome Header */}
+            <div className="welcome-banner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-color)' }}>
+                <div>
+                    <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '1.8rem', fontWeight: '700', background: 'linear-gradient(to right, var(--text-primary), var(--text-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>Teacher's Diary</h2>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '4px 0 0 0' }}>Chronological feed of official remarks from subject teachers.</p>
                 </div>
-                <div className="header-actions">
-                    <div className="search-bar-wrap">
-                        <Search size={18} />
-                        <input type="text" placeholder="Search remarks..." />
-                    </div>
+                <div className="search-bar-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '6px 16px', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
+                    <Search size={16} color="var(--text-secondary)" />
+                    <input type="text" placeholder="Search remarks..." style={{ background: 'none', border: 'none', color: 'var(--text-primary)', outline: 'none', fontSize: '0.85rem' }} />
                 </div>
             </div>
 
@@ -45,15 +44,15 @@ const TeachersDiary = () => {
                                         <User size={16} />
                                     </div>
                                     <div>
-                                        <span className="teacher-name">{entry.teacher}</span>
-                                        <span className="subject-tag">{entry.subject}</span>
+                                        <span className="teacher-name" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: '700' }}>{entry.teacher}</span>
+                                        <span className="subject-tag" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.72rem' }}>{entry.subject}</span>
                                     </div>
                                 </div>
                                 <div className="entry-meta">
-                                    <span className="entry-date">
+                                    <span className="entry-date" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                                         <Calendar size={12} /> {entry.date}
                                     </span>
-                                    <span className="entry-type" style={{ color: getTypeColor(entry.type) }}>
+                                    <span className="entry-type" style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color: getTypeColor(entry.type) }}>
                                         {entry.type}
                                     </span>
                                 </div>
