@@ -1,6 +1,6 @@
 # 🏛️ Connect & Prep: System Architecture
 
-Connect & Prep is designed as a **Demo-First Hybrid Architecture**. Most frontend interactions run on local mock data stores for smooth offline demonstrations, while key security-critical actions route to live production APIs.
+Connect & Prep is designed as a **Demo-First Hybrid Architecture**. Most features run on simulated data for smooth presentations, while key security and AI actions route to live servers.
 
 ---
 
@@ -13,19 +13,19 @@ flowchart TD
         Mobile["Flutter Mobile App\n(Dart)"]
     end
 
-    subgraph MockData ["Local Simulation Layer (Demo)"]
-        MockDB["mockBackend.js\n(In-Memory State:\nTimetable, Doubts, Projects,\nWallets, Assignments)"]
+    subgraph MockData ["Simulation Layer (Demo)"]
+        MockDB["mockBackend.js\n(Simulated Data:\nTimetable, Doubts, Projects,\nWallets, Assignments)"]
     end
 
-    subgraph LiveAPI ["Production Server APIs (Vercel Edge)"]
-        FeedbackAPI["/api/feedback\n(Real Cryptographic Hash)"]
-        UploadAPI["/api/files/upload\n(Real EXIF/PDF Metadata Stripper)"]
-        AIAPI["/api/ai-chat\n(Real Google Gemini API Connection)"]
+    subgraph LiveAPI ["Live Production APIs"]
+        FeedbackAPI["Feedback API\n(Encrypts Student IDs)"]
+        UploadAPI["Upload API\n(Erases Image & PDF Metadata)"]
+        AIAPI["AI API\n(Fetches Gemini Responses)"]
     end
 
     subgraph Cloud ["Live Cloud Databases"]
-        SupaDB[("Supabase Postgres\n(Saves Feedback & Profiles)")]
-        SupaStorage[("Supabase Storage CDN\n(Private Buckets for PDF/Image)")]
+        SupaDB[("Supabase Postgres DB\n(Stores Feedback & Profiles)")]
+        SupaStorage[("Supabase Storage CDN\n(Stores Uploaded Files)")]
     end
 
     %% Routing Flow
@@ -42,18 +42,18 @@ flowchart TD
 
 ---
 
-## 🧩 E2E Layer Specifications
+## 🧩 How the Layers Work
 
-### 1. Interactive Demo Layer (Mock System)
-To ensure lag-free presentations and offline capability, the following modules are fully interactive on the client side using [mockBackend.js](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/services/mockBackend.js):
-*   **Classroom & Library Booking:** Simulates reservations, book checkouts, and room allocations.
-*   **Grade Terminal & CGPA Calculator:** Renders mock charts of GPA trends dynamically.
-*   **Social & Forums:** Interactive doubt solver UI and student discussion boards.
-*   **Student Projects & Wallets:** Simulates GitHub linkages and campus card balances.
+### 1. Simulated Demo Features (Mock System)
+To ensure the app is fast and works offline during demos, these features use a simulated backend file ([mockBackend.js](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/services/mockBackend.js)):
+*   **Classroom & Library Booking:** Simulates booking study rooms and checking out library books.
+*   **Grades & CGPA Calculator:** Displays visual charts of GPA trends using dummy data.
+*   **Discussion Forums:** Interactive doubt solving boards where users can post mock answers.
+*   **Student Projects & Wallets:** Simulates linking GitHub repositories and using fake digital money to purchase canteen food.
 
-### 2. Live Production Features (Real Backend)
-The following features route to live APIs and communicate with production servers:
-*   **Authentication Sync:** Validates session state against the real Supabase Auth server.
-*   **Anonymous Feedback Loop:** Runs server-side HMAC-SHA256 encryption on student IDs and logs anonymous responses directly to a live PostgreSQL table.
-*   **Metadata Stripping Upload Gate:** Uploaded images and documents are processed by server-side libraries (`sharp` and `pdf-lib`) to erase GPS coordinates, device footprints, and PDF authors before uploading to a live private Supabase Storage bucket.
-*   **AI Mentorship:** Sends live prompts to the Google Gemini API to return structured learning guides.
+### 2. Live Cloud Features (Real Backend)
+These critical features connect directly to real servers and cloud databases:
+*   **User Login Sync:** Synchronizes and verifies user accounts against the real Supabase Auth server.
+*   **Anonymous Feedback Loop:** Scrambles student IDs into code using a hash key (HMAC-SHA256) so students can post reviews anonymously without saving their names or IPs.
+*   **Metadata Stripping Upload Gate:** Erases hidden details (like GPS location tags from photos and author names from PDFs) using code libraries before saving them to cloud storage.
+*   **AI Mentorship:** Sends inputs to Google's Gemini AI to generate custom study plans and schedules.
