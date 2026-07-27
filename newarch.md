@@ -1,68 +1,59 @@
-# 🏛️ System Architecture
+# 🏛️ Connect & Prep: System Architecture
 
-**Connect & Prep** is a unified academic platform designed for high performance, real-time sync, and compliance with modern privacy standards.
+Connect & Prep is designed as a **Demo-First Hybrid Architecture**. Most frontend interactions run on local mock data stores for smooth offline demonstrations, while key security-critical actions route to live production APIs.
 
 ---
 
-## 🗺️ Architectural Topology
+## 🗺️ System Topology
 
 ```mermaid
 flowchart TD
-    subgraph Clients ["Client Layer"]
-        Web["Next.js Web Client\n(React 19 / Custom CSS)"]
-        Mobile["Flutter Mobile App\n(Dart / Provider State)"]
+    subgraph Clients ["Client Layer (UI)"]
+        Web["Next.js Web App\n(React 19)"]
+        Mobile["Flutter Mobile App\n(Dart)"]
     end
 
-    subgraph Gateway ["Auth & Gateway"]
-        SupabaseAuth["Supabase Auth\n(JWT Role Enforcement)"]
+    subgraph MockData ["Local Simulation Layer (Demo)"]
+        MockDB["mockBackend.js\n(In-Memory State:\nTimetable, Doubts, Projects,\nWallets, Assignments)"]
     end
 
-    subgraph AppServer ["Serverless API Backend"]
-        VercelAPI["Vercel Edge Routes\n(Node.js / Zod Validation)"]
+    subgraph LiveAPI ["Production Server APIs (Vercel Edge)"]
+        FeedbackAPI["/api/feedback\n(Real Cryptographic Hash)"]
+        UploadAPI["/api/files/upload\n(Real EXIF/PDF Metadata Stripper)"]
+        AIAPI["/api/ai-chat\n(Real Google Gemini API Connection)"]
     end
 
-    subgraph CloudServices ["Database & Storage"]
-        Postgres[("Supabase PostgreSQL DB\n(Postgres 15 / RLS)")]
-        CDN[("Supabase Storage CDN\n(Private Buckets)")]
+    subgraph Cloud ["Live Cloud Databases"]
+        SupaDB[("Supabase Postgres\n(Saves Feedback & Profiles)")]
+        SupaStorage[("Supabase Storage CDN\n(Private Buckets for PDF/Image)")]
     end
 
-    subgraph ExternalAPIs ["Third-Party Integrations"]
-        Gemini[("Google Gemini AI API\n(1.5 Flash Model)")]
-        Twilio["Twilio WhatsApp API"]
-        Payments["Payment Gateways\n(Razorpay / UPI)"]
-    end
+    %% Routing Flow
+    Clients -->|Reads/Writes UI State| MockDB
+    Clients -->|Anonymous Feedback POST| FeedbackAPI
+    Clients -->|File Upload POST| UploadAPI
+    Clients -->|AI Chat & Prep Advisor| AIAPI
 
-    %% Flow Connections
-    Clients --> Gateway
-    Gateway --> Postgres
-    Clients --> VercelAPI
-    VercelAPI --> Postgres
-    VercelAPI --> CDN
-    VercelAPI --> Gemini
-    VercelAPI --> Twilio
-    VercelAPI --> Payments
+    %% Cloud Storage Links
+    FeedbackAPI --> SupaDB
+    UploadAPI --> SupaStorage
+    UploadAPI --> SupaDB
 ```
 
 ---
 
 ## 🧩 E2E Layer Specifications
 
-### 1. Client Layer
-*   **Web Client:** Built with **Next.js** (App Router) and **React 19**, styled using custom Vanilla CSS. Serves administrative, teacher, student, and parent dashboard panels.
-*   **Mobile Client:** Built with **Flutter (Dart)** using the `provider` state manager to fetch and display calendars, checklists, and grades in a native wrapper.
+### 1. Interactive Demo Layer (Mock System)
+To ensure lag-free presentations and offline capability, the following modules are fully interactive on the client side using [mockBackend.js](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/services/mockBackend.js):
+*   **Classroom & Library Booking:** Simulates reservations, book checkouts, and room allocations.
+*   **Grade Terminal & CGPA Calculator:** Renders mock charts of GPA trends dynamically.
+*   **Social & Forums:** Interactive doubt solver UI and student discussion boards.
+*   **Student Projects & Wallets:** Simulates GitHub linkages and campus card balances.
 
-### 2. Identity & Security Gateway
-*   **Supabase Auth:** Validates user identity and passes role claims (`student`, `teacher`, `parent`, `admin`) inside JSON Web Tokens (JWT).
-*   **Input Filter:** Serverless routes run strict **Zod** schema validations and recursively sanitize inputs before database operations.
-
-### 3. Serverless Backend
-*   **Vercel Edge Routes:** Houses dynamic, lightweight API microservices (Node.js/TypeScript) for file operations, AI prompts, and payment verification.
-
-### 4. Database & Storage Layer
-*   **Supabase PostgreSQL:** Executes RLS (Row-Level Security) policies at the database engine level to keep student records, wallets, and feedback isolated.
-*   **Supabase Storage CDN:** Serves academic notes and assignment files via short-lived (15-min) secure signed URLs.
-
-### 5. Integration Ecosystem
-*   **Google Gemini 1.5 Flash:** Powers automated study plan generators, exam test papers (Bloom's Taxonomy), and doubt tags.
-*   **Twilio Business API:** Automatically messages parents when a student check-in is flagged as absent.
-*   **Razorpay / UPI:** Coordinates secure wallet replenishment transactions.
+### 2. Live Production Features (Real Backend)
+The following features route to live APIs and communicate with production servers:
+*   **Authentication Sync:** Validates session state against the real Supabase Auth server.
+*   **Anonymous Feedback Loop:** Runs server-side HMAC-SHA256 encryption on student IDs and logs anonymous responses directly to a live PostgreSQL table.
+*   **Metadata Stripping Upload Gate:** Uploaded images and documents are processed by server-side libraries (`sharp` and `pdf-lib`) to erase GPS coordinates, device footprints, and PDF authors before uploading to a live private Supabase Storage bucket.
+*   **AI Mentorship:** Sends live prompts to the Google Gemini API to return structured learning guides.
