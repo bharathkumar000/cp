@@ -13,17 +13,16 @@
 
 /* 1. Header Banner matching Screenshot rounded right corner shape */
 .lms-title-banner {
-    background: #1e293b; /* Dark Slate Blue */
+    background: linear-gradient(95deg, rgba(99, 102, 241, 0.08) 0%, rgba(99, 102, 241, 0.02) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    border-left: 4px solid #6366f1;
     color: #ffffff;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    padding: 12px 24px;
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-top-right-radius: 30px;
-    border-bottom-right-radius: 30px;
-    letter-spacing: 0.5px;
-    box-shadow: var(--shadow-sm);
+    padding: 14px 20px;
+    border-radius: 12px;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 20px -10px rgba(99, 102, 241, 0.15);
 }
 
 /* 2. Filters Grid Card */
@@ -60,29 +59,47 @@
 
 /* Inputs & Dropdowns */
 .lms-input-select {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
-    padding: 10px 12px;
-    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    border-radius: 10px;
     font-size: 0.9rem;
     outline: none;
     cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: all 0.2s ease;
+}
+
+.lms-input-select:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.04);
 }
 
 .lms-input-select:focus {
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Date picker Month style wrappers */
 .lms-date-input-wrapper {
     display: flex;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
     overflow: hidden;
-    background-color: var(--bg-secondary);
+    background-color: rgba(255, 255, 255, 0.02);
+    transition: all 0.2s ease;
+}
+
+.lms-date-input-wrapper:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.lms-date-input-wrapper:focus-within {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
 .lms-date-input,
@@ -91,7 +108,7 @@
     background-color: transparent;
     border: none;
     color: var(--text-primary);
-    padding: 10px 12px;
+    padding: 11px 14px;
     font-size: 0.9rem;
     outline: none;
     cursor: pointer;
@@ -103,36 +120,39 @@
 }
 
 .lms-calendar-btn {
-    background-color: var(--bg-primary);
+    background-color: transparent;
     border: none;
-    border-left: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    padding: 0 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    color: #64748b;
+    padding: 0 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: color 0.2s ease;
+}
+
+.lms-date-input-wrapper:focus-within .lms-calendar-btn {
+    color: #6366f1;
 }
 
 .lms-calendar-btn:hover {
-    background-color: var(--border-color);
-    color: var(--text-primary);
+    color: #ffffff;
 }
 
 /* 3. Card Sections */
 .lms-section-card {
     background-color: var(--bg-primary);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: 16px;
     overflow: hidden;
 }
 
 .lms-card-header {
-    background-color: var(--bg-secondary);
+    background-color: rgba(255, 255, 255, 0.01);
     color: var(--text-primary);
     font-weight: 700;
-    padding: 12px 18px;
+    padding: 16px 20px;
     font-size: 0.95rem;
     border-bottom: 1px solid var(--border-color);
 }
@@ -150,20 +170,21 @@
 }
 
 .lms-table th {
-    background-color: var(--bg-primary);
-    color: var(--text-secondary);
-    font-weight: 700;
-    padding: 12px 18px;
-    font-size: 0.8rem;
+    background-color: rgba(255, 255, 255, 0.01);
+    color: #64748b;
+    font-weight: 600;
+    padding: 14px 20px;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .lms-table td {
-    padding: 14px 18px;
+    padding: 16px 20px;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
+    color: #e2e8f0;
 }
 
 .lms-table tbody tr:last-child td {
@@ -171,7 +192,7 @@
 }
 
 .lms-table tbody tr:hover td {
-    background-color: var(--bg-secondary);
+    background-color: rgba(255, 255, 255, 0.02);
 }
 
 .course-name-cell {
@@ -1419,29 +1440,35 @@
 /* Tabs toggle buttons wrapper */
 .lms-tabs-container {
     display: flex;
-    gap: 8px;
-    background-color: #0f172a;
-    padding: 4px;
-    border-radius: 8px;
-    border: 1px solid #1e293b;
+    gap: 6px;
+    background-color: rgba(255, 255, 255, 0.02);
+    padding: 6px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
     width: fit-content;
 }
 
 .lms-tab-trigger {
     background: none;
     border: none;
-    color: #64748b;
+    color: #94a3b8;
     font-size: 0.85rem;
     font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lms-tab-trigger:hover {
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 .lms-tab-trigger.active {
-    background-color: #1e293b;
+    background-color: #6366f1;
     color: #ffffff;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
 }
 
 @keyframes pulse {

@@ -53,9 +53,6 @@ const LoginPage = () => {
                         </p>
                     </div>
 
-                    <div className="sidebar-illustration-wrap">
-                        <img src="/mockup.png" alt="3D Cap Illustration" className="sidebar-3d-asset" />
-                    </div>
                 </div>
 
                 {/* Right Panel - Login Card */}
@@ -69,12 +66,13 @@ const LoginPage = () => {
 
                         <form onSubmit={handleLogin} className="login-fields-form">
                             <div className="input-group">
-                                <label className="field-label">Institutional Email</label>
+                                <label className="field-label">Institutional Email or ID</label>
                                 <div className="field-input-box">
                                     <Mail size={18} className="input-icon-left" />
                                     <input
                                         type="text"
-                                        placeholder="you@institution.edu"
+                                        name="email"
+                                        placeholder="you@institution.edu or ID"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
@@ -88,6 +86,8 @@ const LoginPage = () => {
                                     <Lock size={18} className="input-icon-left" />
                                     <input
                                         type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        autoComplete="current-password"
                                         placeholder="••••••••"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}

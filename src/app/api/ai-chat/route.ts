@@ -11,14 +11,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Message content is required.' }, { status: 400 });
         }
 
-        // System prompt to enforce academic study-only focus
-        const systemPrompt = `You are an expert AI academic tutor for the Connect & Prep college platform.
+        // System prompt to enforce academic study & career focus
+        const systemPrompt = `You are an expert AI academic tutor and career counselor for the Connect & Prep college platform.
 Strict Policy:
-- You must ONLY answer questions related to academics, studies, exams, educational course concepts, theorems, laws, engineering, physics, chemistry, mathematics, and scientists.
-- Under NO circumstances are you allowed to answer off-topic, casual, personal, social, or general questions (e.g. movies, entertainment, sports, jokes, creative writing, general programming questions unrelated to study, chat-bot identities, personal details, or general chit-chat).
-- If a query is not strictly academic, study-related, or educational, you MUST decline to answer. You must reply exactly: "I can only help with academic and study-related topics." and nothing else. Do not explain your policy or add conversational fluff; keep the rejection short, professional, and direct.`;
+- You must ONLY answer questions related to academics, studies, exams, educational course concepts, theorems, laws, engineering, physics, chemistry, mathematics, doubt solving, careers, placements, jobs, internships, interview preparation, resume building, and placement preparation.
+- Under NO circumstances are you allowed to answer off-topic, casual, personal, social, or general questions (e.g. movies, entertainment, sports, jokes, creative writing, chat-bot identities, personal details, or general chit-chat).
+- If a query is not strictly academic, career-related, study-related, doubt-solving, or educational, you MUST decline to answer. You must reply exactly: "I can only help with academic, study, and career-related topics." and nothing else. Do not explain your policy or add conversational fluff; keep the rejection short, professional, and direct.`;
 
-        // Pre-validate message to restrict API to only academic keywords (Theorems, laws, scientists, course work, etc.)
+        // Pre-validate message to restrict API to only academic & career keywords
         const academicKeywords = [
             'voltage', 'diode', 'circuit', 'pcb', 'transistor', 'capacitor', 'resistor', 'network',
             'osi model', 'tcp', 'ip', 'ethernet', 'communication', 'optical', 'frequency', 'signal',
@@ -31,14 +31,17 @@ Strict Policy:
             'einstein', 'tesla', 'galileo', 'curie', 'darwin', 'copernicus', 'faraday', 'bohr', 'schrodinger',
             'heisenberg', 'planck', 'kepler', 'hawking', 'pasteur', 'mendel', 'maxwell', 'ampere', 'coulomb',
             'ohm', 'joule', 'watt', 'pascal', 'bernoulli', 'euler', 'pythagoras', 'gauss', 'newtonian', 'relativity',
-            'quantum', 'thermodynamics', 'optics', 'mechanics', 'calculus', 'algebra', 'geometry', 'statistics'
+            'quantum', 'thermodynamics', 'optics', 'mechanics', 'calculus', 'algebra', 'geometry', 'statistics',
+            'career', 'placement', 'job', 'internship', 'interview', 'resume', 'cv', 'hiring', 'recruitment',
+            'recruit', 'aptitude', 'software engineer', 'developer', 'hired', 'company', 'microsoft', 'google',
+            'placement prep', 'interview prep', 'doubt', 'solving', 'question', 'answer'
         ];
 
         const cleanText = message.toLowerCase();
         const isAcademic = academicKeywords.some(keyword => cleanText.includes(keyword)) || message.length > 50;
 
         if (!isAcademic) {
-            return NextResponse.json({ text: "I can only help with academic and study-related topics." }, { status: 200 });
+            return NextResponse.json({ text: "I can only help with academic, study, and career-related topics." }, { status: 200 });
         }
 
         // Format history for Ollama chat API
@@ -171,7 +174,7 @@ Strict Policy:
         if (isAcademic) {
             fallbackMessage = `⚠️ **[Prepcare Tutor - Offline Study Mode]**
             
-Your query relates to core engineering studies. To enable dynamic responses, please configure your \`GEMINI_API_KEY\` in your \`.env\` file.
+Your query relates to core engineering studies or career counseling. To enable dynamic responses, please configure your \`GEMINI_API_KEY\` in your \`.env\` file.
 
 Here is a study outline:
 - **Concept**: Ohm's Law ($V = I \\times R$) and circuit layout guidelines.
@@ -179,7 +182,7 @@ Here is a study outline:
 
 *Provide a valid Gemini API key in your configuration for complete answers.*`;
         } else {
-            fallbackMessage = `I can only help with academic and study-related topics.`;
+            fallbackMessage = `I can only help with academic, study, and career-related topics.`;
         }
         
         return NextResponse.json({ text: fallbackMessage, offline: true }, { status: 200 });

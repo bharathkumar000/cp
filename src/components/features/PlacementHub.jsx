@@ -36,38 +36,14 @@ const PlacementHub = () => {
     if (loading) return <div>Exploring opportunities...</div>;
 
     return (
-        <div className="hub-container animate-enter" style={{ padding: '2rem' }}>
+        <div className="hub-container animate-enter">
             {/* Tab Launcher Bar */}
-            <div className="tt-tab-bar" style={{
-                display: 'flex',
-                background: '#1a1a1a',
-                border: '1px solid #444',
-                marginBottom: '2rem',
-                borderRadius: '4px',
-                overflow: 'hidden'
-            }}>
+            <div className="placement-tab-bar">
                 {tabs.map(tab => (
                     <button
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key)}
-                        style={{
-                            flex: 1,
-                            padding: '12px 0',
-                            border: 'none',
-                            background: activeTab === tab.key ? 'var(--accent-action)' : 'transparent',
-                            color: activeTab === tab.key ? '#000' : '#888',
-                            fontWeight: '800',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            letterSpacing: '1px',
-                            transition: 'all 0.2s',
-                            borderRight: tab.key === 'openings' ? '1px solid #444' : 'none',
-                            textTransform: 'uppercase',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px'
-                        }}
+                        className={`placement-tab-btn ${activeTab === tab.key ? 'active' : ''}`}
                     >
                         {tab.icon}
                         {tab.label}
@@ -77,34 +53,17 @@ const PlacementHub = () => {
 
             {activeTab === 'openings' && (
                 <div className="placement-container animate-enter">
-                    <div className="search-wrapper" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        background: 'var(--bg-card)',
-                        padding: '12px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border-color)',
-                        marginBottom: '2rem',
-                        gap: '10px'
-                    }}>
-                        <Search size={18} color="var(--text-secondary)" />
+                    <div className="placement-search-bar">
+                        <Search size={18} className="search-icon" />
                         <input
                             type="text"
                             placeholder="Search companies or roles..."
-                            style={{
-                                background: 'transparent',
-                                border: 'none',
-                                outline: 'none',
-                                color: 'var(--text-primary)',
-                                fontSize: '1rem',
-                                flex: 1
-                            }}
                         />
                     </div>
                     <div className="placement-grid">
                         {placements.map(job => (
                             <div key={job.id} className="job-card">
-                                <div className="job-badge">{job.type}</div>
+                                <div className={`job-badge ${job.type.toLowerCase().replace(' ', '-')}`}>{job.type}</div>
                                 <div className="job-header">
                                     <div className="company-logo">
                                         <Building2 size={32} />
