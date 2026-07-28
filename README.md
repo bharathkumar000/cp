@@ -2,10 +2,6 @@
 ### *The Ultimate AI-Powered Academic Command Center & Campus Portal*
 
 <p align="center">
-  <img src="assets/banner.png" alt="Connect & Prep Banner" width="100%" style="border-radius: 8px;" />
-</p>
-
-<p align="center">
   <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16.2%20(React%2019)-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" /></a>
   <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x%20(Dart)-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" /></a>
   <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" /></a>
@@ -16,33 +12,35 @@
 
 ## 💎 The Vision
 
-**Connect & Prep** is a premium, high-performance academic hub and campus command center. It bridges the gap between fragmented study resources, team coordination, and student safety while maintaining strict privacy standards. Built with a sleek dark-mode aesthetic, it consolidates student portals, parents' views, teachers' diaries, and AI mentoring engines into a single responsive node.
+**Connect & Prep** is a premium, high-performance academic command center. It bridges the gap between fragmented study resources and peer-to-peer collaboration. Built with a sleek modern layout, it provides role-based portal views for Students, Teachers, and Parents to synchronize schedules, resolve academic doubts, and track performance.
 
 ---
 
 ## 🏆 Awards & Recognition
 
 > [!TIP]
-> **2nd Place Winner** at the State Level Hackathon *Parivarthan* (Vidyavardhaka College of Engineering). Recognized for outstanding UI/UX design, structural database integrity, and architectural stability.
+> **2nd Place Winner** at the State Level Hackathon *Parivarthan* (Vidyavardhaka College of Engineering). Recognized for outstanding UI/UX design, modular architecture, and stability.
 
 ---
 
-## ⚡ Key Core Pillars
+## ⚡ Active Features
 
-### 🧠 1. AI Intelligence Node (Google Gemini 1.5 Flash)
-*   **Prepcare Study Advisor:** Analyzes student CGPA and strengths to generate interactive, custom roadmap checklists.
-*   **Bloom's Taxonomy Exam Builder:** Allows faculty to generate tailored exam question sheets on-the-fly with adjustable cognitive sliders.
-*   **Smart Doubt Tagging:** Automatically categorizes forum queries, runs semantic search over study notes, and drafts tutor replies.
+### 🧠 1. AI Intelligence Core (Google Gemini 1.5 Flash)
+*   **Prepcare Study Planner:** Analyzes student target scores and CGPA to generate actionable study roadmaps ([AcademicHub.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/AcademicHub.jsx)).
+*   **Smart Question Paper Generator:** Allows faculty to instantly generate structured exam papers using cognitive weights sliders ([QuestionPaperGenerator.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/QuestionPaperGenerator.jsx)).
+*   **AI Quiz Builder:** Dynamically creates quizzes on standard topics for instant preparation testing ([QuizGenerator.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/QuizGenerator.jsx)).
+*   **Doubt Tagging & Solutions:** Automatically tags student questions, connects relevant reference documents, and pre-drafts replies ([DoubtSolving.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/DoubtSolving.jsx)).
 
 ### 🛡️ 2. Cybersecurity & Privacy Hardening
-*   **DPDP Act-Compliant Feedback:** Uses daily rotating cryptographic HMAC-SHA256 tokens to decouple student IDs from reviews, allowing rate-limited feedback without identity tracking.
-*   **Metadata Stripper Gate:** Wipes GPS location markers from uploaded images (using `sharp`) and scrubs author names from PDFs (using `pdf-lib`) before uploading to a secure CDN.
-*   **Zero-Trust Session Gating:** Authentication is locked behind secure `HttpOnly` cookie stores and server-side `getUser()` checks to prevent script-hijacking.
+*   **HMAC Anonymous Feedback:** Uses rotating daily keys (HMAC-SHA256) to allow student complaints without saving names or IP addresses ([feedback/route.ts](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/app/api/feedback/route.ts)).
+*   **Upload Metadata Stripping:** Erases hidden GPS tags from images (via `sharp`) and publisher data from PDFs (via `pdf-lib`) before cloud uploads ([upload/route.ts](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/app/api/files/upload/route.ts)).
+*   **Zero-Trust Session Verification:** Verifies access directly on the server database using secure cookies and token controls ([server.ts](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/utils/supabase/server.ts)).
 
-### 📊 3. Consolidated Campus Dashboards
-*   **Students:** Check-in calendars, assignment vaults, CGPA calculators, library directories, and study marathons.
-*   **Teachers:** Classroom booking logs, syllabus timelines, manual attendance registration, and counseling logs.
-*   **Parents:** Direct insight into child attendance percentages, CGPA trends, and real-time gate entry/exit alerts.
+### 📚 3. Academic & Classroom Portals
+*   **Manual Attendance Tracker:** Allows teachers to log class logs and track attendance records directly ([Attendance.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/Attendance.jsx)).
+*   **Classroom Booking:** Real-time scheduler for teachers to reserve lecture halls and classrooms ([ClassroomBooking.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/ClassroomBooking.jsx)).
+*   **Interactive Forums & Chat:** Group study marathons, notice boards, and channel discussions ([ChatForum.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/ChatForum.jsx)).
+*   **Parent Dashboard:** Simple view for parents to monitor attendance, grade cards, and teacher remarks ([ParentDashboard.jsx](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/src/components/features/ParentDashboard.jsx)).
 
 ---
 
@@ -50,45 +48,11 @@
 
 For a complete breakdown of what is simulated locally vs. what runs on live production cloud servers, view our detailed architecture log: [newarch.md](file:///Users/bharathkumara/Desktop/PROJECTS/one-campus/newarch.md)
 
-```mermaid
-flowchart TD
-    subgraph Clients ["Client Layer (UI)"]
-        Web["Next.js Web App\n(React 19)"]
-        Mobile["Flutter Mobile App\n(Dart)"]
-    end
-
-    subgraph MockData ["Simulation Layer (Demo)"]
-        MockDB["mockBackend.js\n(Simulated Data:\nTimetable, Doubts, Projects,\nWallets, Assignments)"]
-    end
-
-    subgraph LiveAPI ["Live Production APIs"]
-        FeedbackAPI["Feedback API\n(Encrypts Student IDs)"]
-        UploadAPI["Upload API\n(Erases Image & PDF Metadata)"]
-        AIAPI["AI API\n(Fetches Gemini Responses)"]
-    end
-
-    subgraph Cloud ["Live Cloud Databases"]
-        SupaDB[("Supabase Postgres DB\n(Stores Feedback & Profiles)")]
-        SupaStorage[("Supabase Storage CDN\n(Stores Uploaded Files)")]
-    end
-
-    %% Routing Flow
-    Clients -->|Reads/Writes UI State| MockDB
-    Clients -->|Anonymous Feedback POST| FeedbackAPI
-    Clients -->|File Upload POST| UploadAPI
-    Clients -->|AI Chat & Prep Advisor| AIAPI
-
-    %% Cloud Storage Links
-    FeedbackAPI --> SupaDB
-    UploadAPI --> SupaStorage
-    UploadAPI --> SupaDB
-```
-
 ---
 
 ## 🔑 Demo Access Credentials
 
-To test specific user portals and layouts in offline simulation mode, use these credentials on the login screen:
+To log into specific dashboards in offline simulation mode, use these credentials:
 
 | Role | Email | Password | Details |
 | :--- | :--- | :--- | :--- |
@@ -96,11 +60,6 @@ To test specific user portals and layouts in offline simulation mode, use these 
 | **Teacher** | `2` | `2` | Teacher console & classroom manager |
 | **Parent** | `3` | `3` | Parent dashboard with child statistics |
 | **Admin** | `admin` | `admin` | Full system administrator panel |
-
-For targeted VVCE database profiles:
-*   **Bharath Kumar A (Student):** `bk@vvce` (Password: `bk`)
-*   **Bhavana (Teacher):** `bhav@vvce` (Password: `bhav`)
-*   **Abhi (Parent of Ananya):** `abhi@vvce` (Password: `abhi`)
 
 ---
 
@@ -132,7 +91,7 @@ GEMINI_API_KEY=your_gemini_key
 ```
 
 > [!NOTE]
-> Setting `NEXT_PUBLIC_USE_MOCK_SUPABASE=true` allows you to run all front-end features in offline demo mode. Change it to `false` to redirect queries to your live cloud databases.
+> Setting `NEXT_PUBLIC_USE_MOCK_SUPABASE=true` runs the UI in offline simulation mode. Change it to `false` to connect to your live Supabase databases.
 
 ### 4. Database Setup
 To set up your Supabase project schema:
