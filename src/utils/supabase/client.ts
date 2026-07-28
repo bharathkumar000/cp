@@ -101,6 +101,16 @@ const createMockClient = () => {
                 console.log("%c[Supabase Mock Client] signInWithPassword called", "color: #818cf8; font-weight: bold;", { email });
                 return { data: { user: { ...mockUser, email } }, error: null };
             },
+            signInWithOAuth: async ({ provider, options }: any) => {
+                console.log("%c[Supabase Mock Client] signInWithOAuth called, redirecting to real Supabase auth", "color: #818cf8; font-weight: bold;");
+                const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+                const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+                if (url && key) {
+                    const realClient = createBrowserClient(url, key);
+                    return realClient.auth.signInWithOAuth({ provider, options });
+                }
+                return { data: null, error: new Error('Supabase URL or Anon Key not configured') };
+            },
             signUp: async ({ email, password, options }: any) => {
                 console.log("%c[Supabase Mock Client] signUp called", "color: #818cf8; font-weight: bold;", { email, options });
                 return { data: { user: { ...mockUser, email, user_metadata: options?.data || {} } }, error: null };

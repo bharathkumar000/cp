@@ -36,6 +36,25 @@ export const AuthProvider = ({ children }) => {
                     }
                 }
 
+                // Check if a real Supabase session exists (e.g. from Google login)
+                try {
+                    const { data: { user: supabaseUser } } = await supabase.auth.getUser();
+                    if (supabaseUser) {
+                        const userData = {
+                            id: supabaseUser.id,
+                            _id: supabaseUser.id,
+                            name: supabaseUser.user_metadata?.full_name || supabaseUser.email,
+                            email: supabaseUser.email,
+                            role: supabaseUser.user_metadata?.role || 'student'
+                        };
+                        setUser(userData);
+                        setLoading(false);
+                        return;
+                    }
+                } catch (sbErr) {
+                    console.log("No active Supabase session.");
+                }
+
                 const data = await authAPI.refresh();
                 if (data && data.accessToken) {
                     setAccessToken(data.accessToken);
