@@ -246,6 +246,43 @@ class _LoginScreenState extends State<LoginScreen>
                                 )
                               : Text(_isSignUp ? 'Create Account' : 'Sign In'),
                         ),
+                        const SizedBox(height: 12),
+
+                        // ── Google Sign In ──
+                        OutlinedButton(
+                          onPressed: auth.isLoading
+                              ? null
+                              : () async {
+                                  setState(() => _errorMessage = null);
+                                  final error = await auth.signInWithGoogle();
+                                  if (error != null && mounted) {
+                                    setState(() => _errorMessage = error);
+                                  }
+                                },
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0F172A),
+                            side: const BorderSide(color: Color(0xFF1E293B)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.login, color: Colors.white, size: 18),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Sign in with Google',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 16),
 
                         // ── Toggle ──

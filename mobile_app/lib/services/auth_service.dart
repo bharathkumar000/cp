@@ -189,6 +189,31 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  /// Sign in with Google OAuth.
+  Future<String?> signInWithGoogle() async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      await _client.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: kIsWeb ? null : 'connectnprep://login-callback',
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    } on AuthException catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      return e.message;
+    } catch (e) {
+      _isLoading = false;
+      notifyListeners();
+      return 'An unexpected error occurred.';
+    }
+  }
+
   /// Sign out and clear all tokens.
   Future<void> signOut() async {
     await _client.auth.signOut();
