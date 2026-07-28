@@ -547,7 +547,8 @@ const DashboardHome = () => {
                             </div>
                         </div>
                     </div>
-                         <style>{`
+                )}
+                <style>{`
                     .admin-theme {
                         padding: 0;
                         background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15), transparent 60%), #030014;
