@@ -128,6 +128,22 @@ export const AuthProvider = ({ children }) => {
         const cleanPassword = typeof password === 'string' ? password.trim() : password;
 
         // NEW VVCE Accounts Bypasses
+        if (cleanEmail === 'vvce25ec0135@vvce.ac.in') {
+            const mockUser = {
+                _id: '00000000-0000-0000-0000-000000000010',
+                id: '00000000-0000-0000-0000-000000000010',
+                name: 'VVCE Student 135',
+                email: 'vvce25ec0135@vvce.ac.in',
+                role: 'student',
+                usn: '4VV25EC135'
+            };
+            setMockCookie(mockUser);
+            setAccessToken('mock-token-vvce135');
+            setUser(mockUser);
+            handleSupabaseBackgroundAuth(cleanEmail, cleanPassword || 'password', 'student').catch(() => {});
+            return { success: true, user: mockUser };
+        }
+
         if (cleanEmail === 'bk@vvce' && cleanPassword === 'bk') {
             const mockUser = {
                 _id: '00000000-0000-0000-0000-000000000001',
@@ -396,8 +412,24 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginWithGoogle = async () => {
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/dashboard`
+                }
+            });
+            if (error) throw error;
+            return { success: true, data };
+        } catch (err) {
+            console.error("Google login failed:", err.message);
+            return { success: false, error: err.message };
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, loginWithGoogle, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

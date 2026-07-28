@@ -304,8 +304,8 @@ BEGIN
     user_email := NEW.email;
     domain_part := split_part(user_email, '@', 2);
     
-    IF user_email IS NOT NULL AND NOT (domain_part = 'college.edu' OR domain_part = 'vvce') THEN
-        RAISE EXCEPTION 'Access denied. Account email must end with @college.edu or @vvce.';
+    IF user_email IS NOT NULL AND NOT (domain_part = 'college.edu' OR domain_part = 'vvce' OR domain_part = 'vvce.ac.in') THEN
+        RAISE EXCEPTION 'Access denied. Account email must end with @college.edu, @vvce, or @vvce.ac.in.';
     END IF;
     
     RETURN NEW;
