@@ -547,11 +547,10 @@ const DashboardHome = () => {
                             </div>
                         </div>
                     </div>
-                )}
-                <style>{`
+                         <style>{`
                     .admin-theme {
                         padding: 0;
-                        background-color: #030712;
+                        background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15), transparent 60%), #030014;
                         width: 100%;
                         max-width: 100%;
                     }
@@ -559,12 +558,13 @@ const DashboardHome = () => {
                         position: fixed;
                         top: 24px;
                         right: 24px;
-                        background: #0f172a;
+                        background: rgba(15, 23, 42, 0.85);
+                        backdrop-filter: blur(12px);
                         color: #c7d2fe;
-                        border: 1px solid #4f46e5;
-                        box-shadow: 0 10px 40px rgba(79, 70, 229, 0.3);
+                        border: 1px solid rgba(79, 70, 229, 0.5);
+                        box-shadow: 0 10px 40px rgba(79, 70, 229, 0.2);
                         padding: 14px 28px;
-                        border-radius: 10px;
+                        border-radius: 12px;
                         z-index: 9999;
                         display: flex;
                         align-items: center;
@@ -578,11 +578,11 @@ const DashboardHome = () => {
                         to { transform: translateX(0); opacity: 1; }
                     }
                     .admin-quick-toggle-btn {
-                        background: rgba(255, 255, 255, 0.04);
-                        border: 1px solid rgba(255, 255, 255, 0.1);
-                        color: #9ca3af;
+                        background: rgba(255, 255, 255, 0.03);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        color: #94a3b8;
                         padding: 6px 12px;
-                        border-radius: 6px;
+                        border-radius: 8px;
                         font-size: 0.72rem;
                         font-weight: 800;
                         cursor: pointer;
@@ -592,10 +592,11 @@ const DashboardHome = () => {
                         transition: all 0.2s ease;
                     }
                     .admin-quick-toggle-btn:hover {
-                        background: #ff8c00;
-                        color: #000;
-                        border-color: #ff8c00;
-                        box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+                        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                        color: #ffffff;
+                        border-color: transparent;
+                        box-shadow: 0 0 15px rgba(249, 115, 22, 0.4);
+                        transform: translateY(-1px);
                     }
                     .admin-dashboard-two-col-grid {
                         display: grid;
@@ -610,25 +611,25 @@ const DashboardHome = () => {
                         margin-top: 1.5rem;
                     }
                     .admin-section-card {
-                        background: rgba(17, 24, 39, 0.45);
-                        backdrop-filter: blur(12px);
-                        border: 1.5px solid rgba(255, 255, 255, 0.08);
+                        background: rgba(15, 23, 42, 0.4);
+                        backdrop-filter: blur(20px);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
                         border-radius: 16px;
-                        padding: 1.25rem;
-                        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+                        padding: 1.5rem;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
                         display: flex;
                         flex-direction: column;
-                        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     }
                     .admin-section-card:hover {
-                        border-color: rgba(255, 255, 255, 0.15);
-                        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+                        border-color: rgba(129, 140, 248, 0.3);
+                        box-shadow: 0 15px 40px rgba(99, 102, 241, 0.15);
                     }
                     .admin-section-header {
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
                         padding-bottom: 14px;
                         margin-bottom: 20px;
                         flex-wrap: wrap;
@@ -642,19 +643,19 @@ const DashboardHome = () => {
                     .header-title-wrapper h3 {
                         font-size: 1.15rem;
                         font-weight: 800;
-                        color: var(--text-primary);
+                        color: #ffffff;
                         letter-spacing: 0.25px;
                     }
                     .defaulter-active-count {
-                        background: rgba(239, 68, 68, 0.15);
-                        color: #ef4444;
+                        background: rgba(239, 68, 68, 0.1);
+                        color: #f87171;
                         font-size: 0.72rem;
                         font-weight: 800;
                         padding: 4px 12px;
                         border-radius: 20px;
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
-                        border: 1px solid rgba(239, 68, 68, 0.2);
+                        border: 1px solid rgba(239, 68, 68, 0.25);
                     }
                     .admin-defaulter-filters {
                         display: grid;
@@ -664,17 +665,17 @@ const DashboardHome = () => {
                     }
                     .admin-defaulter-filters select, .admin-defaulter-filters input {
                         background: rgba(10, 15, 30, 0.6);
-                        border: 1px solid rgba(255, 255, 255, 0.08);
-                        color: var(--text-primary);
-                        border-radius: 8px;
-                        padding: 8px 12px;
-                        font-size: 0.82rem;
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        color: #f1f5f9;
+                        border-radius: 10px;
+                        padding: 10px 14px;
+                        font-size: 0.85rem;
                         outline: none;
                         transition: all 0.2s;
                     }
                     .admin-defaulter-filters select:focus, .admin-defaulter-filters input:focus {
                         border-color: #6366f1;
-                        box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
+                        box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
                     }
                     .admin-table-container {
                         overflow-x: auto;
@@ -687,64 +688,64 @@ const DashboardHome = () => {
                     }
                     .admin-table th {
                         padding: 14px 16px;
-                        font-size: 0.78rem;
+                        font-size: 0.8rem;
                         font-weight: 700;
-                        color: #9ca3af;
+                        color: #94a3b8;
                         text-transform: uppercase;
-                        letter-spacing: 0.8px;
-                        border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
+                        letter-spacing: 1px;
+                        border-bottom: 2px solid rgba(255, 255, 255, 0.08);
                     }
                     .admin-table td {
-                        padding: 14px 16px;
-                        font-size: 0.85rem;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                        color: #cbd5e1;
+                        padding: 16px;
+                        font-size: 0.88rem;
+                        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+                        color: #e2e8f0;
                     }
                     .admin-table tbody tr {
                         transition: background-color 0.15s ease;
                     }
                     .admin-table tbody tr:hover {
-                        background-color: rgba(255, 255, 255, 0.02);
+                        background-color: rgba(99, 102, 241, 0.04);
                     }
                     .bold-usn {
                         font-weight: 700;
-                        color: var(--text-primary);
+                        color: #ffffff;
                         font-family: monospace;
                     }
                     .admin-action-table-btn {
-                        background: rgba(255, 140, 0, 0.15);
-                        border: 1px solid #ff8c00;
-                        color: #ff8c00;
-                        font-weight: 800;
+                        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+                        border: none;
+                        color: #ffffff;
+                        font-weight: 700;
                         font-size: 0.75rem;
-                        padding: 6px 14px;
-                        border-radius: 6px;
+                        padding: 8px 16px;
+                        border-radius: 8px;
                         cursor: pointer;
                         transition: all 0.2s ease;
                         white-space: nowrap;
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
+                        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2);
                     }
                     .admin-action-table-btn:hover:not(:disabled) {
-                        background: #ff8c00;
-                        color: #000;
-                        box-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+                        transform: translateY(-1px);
+                        box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
                     }
                     .disabled-btn {
-                        background: rgba(255,255,255,0.03) !important;
-                        border-color: rgba(255, 255, 255, 0.05) !important;
-                        color: #4b5563 !important;
-                        cursor: default !important;
+                        background: rgba(255, 255, 255, 0.03) !important;
+                        border: 1px solid rgba(255, 255, 255, 0.05) !important;
+                        color: #64748b !important;
+                        cursor: not-allowed !important;
+                        box-shadow: none !important;
+                        transform: none !important;
                     }
                     .accent-purple {
-                        background: rgba(129, 140, 248, 0.15);
-                        border-color: #818cf8;
-                        color: #818cf8;
+                        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
                     }
                     .accent-purple:hover {
-                        background: #818cf8 !important;
-                        color: #000 !important;
-                        box-shadow: 0 0 10px rgba(129, 140, 248, 0.2);
+                        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%) !important;
+                        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
                     }
                     .admin-progress-bar-bg {
                         width: 90px;
@@ -765,13 +766,14 @@ const DashboardHome = () => {
                         justify-content: center;
                     }
                     .admin-diagnostic-alert-card {
-                        border-radius: 10px;
+                        border-radius: 12px;
                         padding: 16px;
-                        border: 1px solid rgba(255, 255, 255, 0.08);
-                        transition: transform 0.2s ease;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
+                        transition: all 0.2s ease;
                     }
                     .admin-diagnostic-alert-card:hover {
                         transform: translateX(4px);
+                        border-color: rgba(255, 255, 255, 0.12);
                     }
                     .admin-diagnostic-alert-card.danger {
                         background: rgba(239, 68, 68, 0.04);
@@ -793,7 +795,7 @@ const DashboardHome = () => {
                     }
                     .danger .alert-badge {
                         background: rgba(239, 68, 68, 0.15);
-                        color: #ef4444;
+                        color: #f87171;
                         border: 1px solid rgba(239, 68, 68, 0.2);
                     }
                     .warning .alert-badge {
@@ -802,14 +804,14 @@ const DashboardHome = () => {
                         border: 1px solid rgba(251, 191, 36, 0.2);
                     }
                     .admin-diagnostic-alert-card h4 {
-                        font-size: 0.9rem;
+                        font-size: 0.95rem;
                         font-weight: 700;
-                        color: var(--text-primary);
+                        color: #ffffff;
                         margin-bottom: 6px;
                     }
                     .admin-diagnostic-alert-card p {
-                        font-size: 0.78rem;
-                        color: var(--text-secondary);
+                        font-size: 0.8rem;
+                        color: #94a3b8;
                         margin-bottom: 12px;
                         line-height: 1.45;
                     }
@@ -828,7 +830,7 @@ const DashboardHome = () => {
                     }
                     .admin-diagnostic-solve-btn:hover {
                         background: #ef4444;
-                        color: #000;
+                        color: #ffffff;
                     }
                     .warning-btn {
                         border-color: #fbbf24;
@@ -836,35 +838,49 @@ const DashboardHome = () => {
                     }
                     .warning-btn:hover {
                         background: #fbbf24;
-                        color: #000;
+                        color: #000000;
                     }
                     .admin-simulator-btn {
-                        background: rgba(16, 185, 129, 0.15);
+                        background: rgba(16, 185, 129, 0.12);
                         border: 1px solid #10b981;
                         color: #10b981;
                         font-weight: 800;
                         font-size: 0.75rem;
-                        padding: 6px 14px;
-                        border-radius: 6px;
+                        padding: 8px 16px;
+                        border-radius: 8px;
                         cursor: pointer;
                         transition: all 0.2s;
                         text-transform: uppercase;
                         letter-spacing: 0.5px;
+                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
                     }
                     .admin-simulator-btn:hover {
                         background: #10b981;
-                        color: #000;
-                        box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+                        color: #030712;
+                        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+                        transform: translateY(-1px);
                     }
                     .admin-simulator-console {
-                        background: #040612;
-                        border: 1px solid rgba(255, 255, 255, 0.08);
-                        border-radius: 10px;
-                        font-family: monospace;
-                        padding: 1.25rem;
-                        flex: 1;
+                        background: #020208;
+                        border: 1px solid rgba(16, 185, 129, 0.25);
+                        border-radius: 12px;
+                        font-family: 'Courier New', Courier, monospace;
+                        padding: 1.5rem;
+                        box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+                        position: relative;
+                        overflow: hidden;
                         display: flex;
                         flex-direction: column;
+                    }
+                    .admin-simulator-console::before {
+                        content: " ";
+                        display: block;
+                        position: absolute;
+                        top: 0; left: 0; bottom: 0; right: 0;
+                        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+                        background-size: 100% 4px;
+                        z-index: 2;
+                        pointer-events: none;
                     }
                     .console-header {
                         display: flex;
@@ -872,10 +888,11 @@ const DashboardHome = () => {
                         gap: 10px;
                         font-size: 0.75rem;
                         font-weight: bold;
-                        color: #475569;
-                        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                        color: #10b981;
+                        border-bottom: 1px solid rgba(16, 185, 129, 0.2);
                         padding-bottom: 8px;
                         margin-bottom: 12px;
+                        text-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
                     }
                     .console-dot {
                         width: 8px;
@@ -884,6 +901,7 @@ const DashboardHome = () => {
                     }
                     .console-dot.green {
                         background-color: #10b981;
+                        box-shadow: 0 0 8px #10b981;
                     }
                     .pulse-anim {
                         animation: pulseGlow 1.5s infinite;
@@ -896,19 +914,20 @@ const DashboardHome = () => {
                     .console-body {
                         font-size: 0.78rem;
                         line-height: 1.6;
-                        color: #4ade80;
+                        color: #34d399;
                         overflow-y: auto;
                         max-height: 180px;
                         flex: 1;
+                        text-shadow: 0 0 2px rgba(52, 211, 153, 0.3);
                     }
                     .console-line {
                         margin-bottom: 6px;
                     }
-                    .c-time { color: #475569; }
-                    .c-text { color: #cbd5e1; }
-                    .c-status { color: #10b981; font-weight: bold; }
+                    .c-time { color: #059669; }
+                    .c-text { color: #a7f3d0; }
+                    .c-status { color: #34d399; font-weight: bold; }
                     .console-offline-text {
-                        color: #ef4444;
+                        color: #f87171;
                         text-align: center;
                         padding: 2.5rem 0;
                         font-weight: bold;
@@ -920,15 +939,16 @@ const DashboardHome = () => {
                         margin-top: 12px;
                     }
                     .admin-risk-student-card {
-                        background: rgba(255, 255, 255, 0.01);
-                        border: 1px solid rgba(255, 255, 255, 0.04);
+                        background: rgba(255, 255, 255, 0.02);
+                        border: 1px solid rgba(255, 255, 255, 0.05);
                         padding: 14px;
-                        border-radius: 8px;
+                        border-radius: 12px;
                         transition: all 0.2s;
                     }
                     .admin-risk-student-card:hover {
-                        background: rgba(255, 255, 255, 0.02);
-                        border-color: rgba(255, 255, 255, 0.08);
+                        background: rgba(255, 255, 255, 0.04);
+                        border-color: rgba(99, 102, 241, 0.2);
+                        transform: translateY(-1px);
                     }
                     .risk-header {
                         display: flex;
@@ -939,7 +959,7 @@ const DashboardHome = () => {
                     .risk-name {
                         font-size: 0.85rem;
                         font-weight: 700;
-                        color: var(--text-primary);
+                        color: #ffffff;
                     }
                     .risk-percentage {
                         font-size: 0.68rem;
@@ -949,19 +969,19 @@ const DashboardHome = () => {
                         letter-spacing: 0.5px;
                     }
                     .risk-reason {
-                        font-size: 0.72rem;
-                        color: var(--text-secondary);
+                        font-size: 0.75rem;
+                        color: #94a3b8;
                         margin-bottom: 10px;
                     }
                     .admin-risk-action-btn {
                         width: 100%;
-                        background: rgba(129, 140, 248, 0.12);
+                        background: rgba(129, 140, 248, 0.1);
                         border: 1px solid #818cf8;
                         color: #818cf8;
                         font-weight: 800;
                         font-size: 0.72rem;
-                        padding: 6px;
-                        border-radius: 6px;
+                        padding: 8px;
+                        border-radius: 8px;
                         cursor: pointer;
                         transition: all 0.2s;
                         text-transform: uppercase;
@@ -969,26 +989,30 @@ const DashboardHome = () => {
                     }
                     .admin-risk-action-btn:hover:not(:disabled) {
                         background: #818cf8;
-                        color: #000;
+                        color: #030712;
+                        box-shadow: 0 4px 12px rgba(129, 140, 248, 0.35);
                     }
                     .admin-risk-action-btn.resolved {
                         background: rgba(16, 185, 129, 0.1) !important;
                         border-color: #10b981 !important;
                         color: #10b981 !important;
                         cursor: default !important;
+                        box-shadow: none !important;
                     }
                     .admin-teacher-rep-row {
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
-                        background: rgba(255, 255, 255, 0.01);
+                        background: rgba(255, 255, 255, 0.02);
                         padding: 14px;
-                        border-radius: 8px;
-                        border: 1px solid rgba(255, 255, 255, 0.04);
+                        border-radius: 12px;
+                        border: 1px solid rgba(255, 255, 255, 0.05);
                         transition: all 0.2s;
                     }
                     .admin-teacher-rep-row:hover {
-                        background: rgba(255, 255, 255, 0.02);
+                        background: rgba(255, 255, 255, 0.04);
+                        border-color: rgba(99, 102, 241, 0.15);
+                        transform: translateY(-1px);
                     }
                     .rep-left {
                         display: flex;
@@ -996,14 +1020,14 @@ const DashboardHome = () => {
                         gap: 12px;
                     }
                     .rep-rank {
-                        font-size: 0.8rem;
+                        font-size: 0.85rem;
                         font-weight: bold;
-                        color: #ff8c00;
+                        color: #f97316;
                     }
                     .rep-name {
                         font-size: 0.85rem;
                         font-weight: 700;
-                        color: var(--text-primary);
+                        color: #ffffff;
                     }
                     .rep-right {
                         display: flex;
@@ -1016,7 +1040,7 @@ const DashboardHome = () => {
                         color: #fbbf24;
                     }
                     .admin-rep-award-btn {
-                        background: rgba(251, 191, 36, 0.15);
+                        background: rgba(251, 191, 36, 0.12);
                         border: 1px solid #fbbf24;
                         color: #fbbf24;
                         padding: 4px 10px;
@@ -1029,13 +1053,14 @@ const DashboardHome = () => {
                     }
                     .admin-rep-award-btn:hover {
                         background: #fbbf24;
-                        color: #000;
+                        color: #030712;
+                        box-shadow: 0 4px 10px rgba(251, 191, 36, 0.35);
                     }
                     .admin-conflict-card {
                         background: rgba(239, 68, 68, 0.02);
                         border: 1.5px dashed rgba(239, 68, 68, 0.25);
                         padding: 14px;
-                        border-radius: 8px;
+                        border-radius: 12px;
                     }
                     .conflict-badge {
                         background: rgba(239, 68, 68, 0.12);
@@ -1053,12 +1078,12 @@ const DashboardHome = () => {
                     .admin-conflict-card h4 {
                         font-size: 0.85rem;
                         font-weight: 700;
-                        color: var(--text-primary);
+                        color: #ffffff;
                         margin-bottom: 6px;
                     }
                     .admin-conflict-card p {
                         font-size: 0.75rem;
-                        color: var(--text-secondary);
+                        color: #94a3b8;
                         margin-bottom: 6px;
                     }
                     .admin-conflict-resolve-btn {
@@ -1068,8 +1093,8 @@ const DashboardHome = () => {
                         color: #10b981;
                         font-weight: 800;
                         font-size: 0.72rem;
-                        padding: 6px;
-                        border-radius: 6px;
+                        padding: 8px;
+                        border-radius: 8px;
                         cursor: pointer;
                         margin-top: 8px;
                         text-transform: uppercase;
@@ -1077,29 +1102,30 @@ const DashboardHome = () => {
                     }
                     .admin-conflict-resolve-btn:hover {
                         background: #10b981;
-                        color: #000;
+                        color: #030712;
+                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
                     }
                     .admin-all-clear-card {
                         text-align: center;
-                        padding: 2rem;
+                        padding: 2.5rem;
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                         justify-content: center;
-                        background: rgba(255, 255, 255, 0.01);
-                        border-radius: 10px;
-                        border: 1px solid rgba(255, 255, 255, 0.05);
+                        background: rgba(255, 255, 255, 0.02);
+                        border-radius: 12px;
+                        border: 1px solid rgba(255, 255, 255, 0.06);
                     }
                     .admin-all-clear-card h4 {
                         margin-top: 12px;
                         font-size: 0.9rem;
                         font-weight: bold;
-                        color: var(--text-primary);
+                        color: #ffffff;
                     }
                     .admin-all-clear-card p {
                         margin-top: 6px;
                         font-size: 0.75rem;
-                        color: var(--text-secondary);
+                        color: #94a3b8;
                         line-height: 1.45;
                     }
                     .admin-modal-backdrop {
@@ -1108,31 +1134,32 @@ const DashboardHome = () => {
                         left: 0;
                         right: 0;
                         bottom: 0;
-                        background: rgba(0,0,0,0.85);
+                        background: rgba(3, 0, 20, 0.85);
                         z-index: 10000;
                         display: flex;
                         align-items: center;
                         justify-content: center;
-                        backdrop-filter: blur(8px);
+                        backdrop-filter: blur(12px);
                     }
                     .admin-modal-dialog {
-                        background: #090d16;
-                        border: 1.5px solid rgba(255, 255, 255, 0.1);
+                        background: rgba(15, 23, 42, 0.8);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        backdrop-filter: blur(24px);
                         width: 100%;
                         max-width: 500px;
-                        border-radius: 16px;
-                        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+                        border-radius: 20px;
+                        box-shadow: 0 25px 60px rgba(0,0,0,0.8);
                         overflow: hidden;
                     }
                     .admin-modal-header {
-                        background: #0f172a;
-                        padding: 14px 20px;
+                        background: rgba(15, 23, 42, 0.9);
+                        padding: 16px 20px;
                         display: flex;
                         justify-content: space-between;
                         align-items: center;
                         font-weight: 700;
                         font-size: 0.95rem;
-                        color: var(--text-primary);
+                        color: #ffffff;
                         border-bottom: 1.5px solid rgba(255, 255, 255, 0.08);
                     }
                     .modal-close {
@@ -1143,16 +1170,16 @@ const DashboardHome = () => {
                         cursor: pointer;
                         transition: color 0.15s ease;
                     }
-                    .modal-close:hover { color: #fff; }
+                    .modal-close:hover { color: #ffffff; }
                     .admin-modal-body {
                         padding: 20px;
                     }
                     .admin-modal-textarea {
                         width: 100%;
-                        background: #02040a;
+                        background: rgba(3, 7, 18, 0.6);
                         border: 1px solid rgba(255, 255, 255, 0.1);
-                        color: var(--text-primary);
-                        border-radius: 8px;
+                        color: #ffffff;
+                        border-radius: 10px;
                         padding: 12px;
                         font-family: inherit;
                         font-size: 0.85rem;
@@ -1161,7 +1188,7 @@ const DashboardHome = () => {
                         box-sizing: border-box;
                     }
                     .admin-modal-btn {
-                        padding: 8px 20px;
+                        padding: 10px 24px;
                         border-radius: 8px;
                         font-weight: 800;
                         font-size: 0.82rem;
@@ -1170,55 +1197,57 @@ const DashboardHome = () => {
                         transition: all 0.2s ease;
                     }
                     .admin-modal-btn.cancel {
-                        background: #1e293b;
+                        background: rgba(255, 255, 255, 0.05);
                         color: #94a3b8;
-                        border: 1px solid rgba(255,255,255,0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
                     }
                     .admin-modal-btn.cancel:hover {
-                        background: #334155;
-                        color: #fff;
+                        background: rgba(255, 255, 255, 0.1);
+                        color: #ffffff;
                     }
                     .admin-modal-btn.confirm {
-                        background: #6366f1;
-                        color: #fff;
+                        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+                        color: #ffffff;
+                        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
                     }
                     .admin-modal-btn.confirm:hover {
-                        background: #4f46e5;
-                        box-shadow: 0 0 10px rgba(99, 102, 241, 0.35);
+                        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+                        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+                        transform: translateY(-1px);
                     }
                     /* ==================== LIGHT THEME OVERRIDES ==================== */
                     html[data-theme="light"] .admin-theme,
                     :root[data-theme="light"] .admin-theme {
-                        background-color: #f9fafb !important;
+                        background: #f8fafc !important;
                     }
                     html[data-theme="light"] .admin-section-card,
                     :root[data-theme="light"] .admin-section-card {
                         background: #ffffff !important;
-                        border-color: #e5e7eb !important;
+                        border-color: #e2e8f0 !important;
                         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
                     }
                     html[data-theme="light"] .admin-section-card:hover,
                     :root[data-theme="light"] .admin-section-card:hover {
-                        border-color: #d1d5db !important;
+                        border-color: #cbd5e1 !important;
                         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
                     }
                     html[data-theme="light"] .admin-table th,
                     :root[data-theme="light"] .admin-table th {
-                        color: #4b5563 !important;
-                        border-bottom-color: #e5e7eb !important;
+                        color: #475569 !important;
+                        border-bottom-color: #e2e8f0 !important;
                     }
                     html[data-theme="light"] .admin-table td,
                     :root[data-theme="light"] .admin-table td {
-                        color: #111827 !important;
-                        border-bottom-color: #f3f4f6 !important;
+                        color: #0f172a !important;
+                        border-bottom-color: #f1f5f9 !important;
                     }
                     html[data-theme="light"] .admin-table tbody tr:hover,
                     :root[data-theme="light"] .admin-table tbody tr:hover {
-                        background-color: #f9fafb !important;
+                        background-color: #f1f5f9 !important;
                     }
                     html[data-theme="light"] .admin-section-header,
                     :root[data-theme="light"] .admin-section-header {
-                        border-bottom-color: #e5e7eb !important;
+                        border-bottom-color: #e2e8f0 !important;
                     }
                     html[data-theme="light"] .admin-defaulter-filters select,
                     html[data-theme="light"] .admin-defaulter-filters input,
@@ -1226,15 +1255,15 @@ const DashboardHome = () => {
                     :root[data-theme="light"] .admin-defaulter-filters input {
                         background: #ffffff !important;
                         border-color: #cbd5e1 !important;
-                        color: #111827 !important;
+                        color: #0f172a !important;
                     }
                     html[data-theme="light"] .admin-progress-bar-bg,
                     :root[data-theme="light"] .admin-progress-bar-bg {
-                        background: #e5e7eb !important;
+                        background: #e2e8f0 !important;
                     }
                     html[data-theme="light"] .admin-diagnostic-alert-card,
                     :root[data-theme="light"] .admin-diagnostic-alert-card {
-                        border-color: #e5e7eb !important;
+                        border-color: #e2e8f0 !important;
                     }
                     html[data-theme="light"] .admin-diagnostic-alert-card.danger,
                     :root[data-theme="light"] .admin-diagnostic-alert-card.danger {
@@ -1246,13 +1275,13 @@ const DashboardHome = () => {
                     }
                     html[data-theme="light"] .admin-simulator-console,
                     :root[data-theme="light"] .admin-simulator-console {
-                        background: #f3f4f6 !important;
+                        background: #f8fafc !important;
                         border-color: #cbd5e1 !important;
                     }
                     html[data-theme="light"] .console-header,
                     :root[data-theme="light"] .console-header {
                         border-bottom-color: #cbd5e1 !important;
-                        color: #4b5563 !important;
+                        color: #475569 !important;
                     }
                     html[data-theme="light"] .console-body,
                     :root[data-theme="light"] .console-body {
@@ -1260,26 +1289,26 @@ const DashboardHome = () => {
                     }
                     html[data-theme="light"] .c-text,
                     :root[data-theme="light"] .c-text {
-                        color: #1f2937 !important;
+                        color: #1e293b !important;
                     }
                     html[data-theme="light"] .admin-risk-student-card,
                     :root[data-theme="light"] .admin-risk-student-card {
-                        background: #f9fafb !important;
-                        border-color: #e5e7eb !important;
+                        background: #f8fafc !important;
+                        border-color: #e2e8f0 !important;
                     }
                     html[data-theme="light"] .admin-risk-student-card:hover,
                     :root[data-theme="light"] .admin-risk-student-card:hover {
-                        background: #f3f4f6 !important;
+                        background: #f1f5f9 !important;
                         border-color: #cbd5e1 !important;
                     }
                     html[data-theme="light"] .admin-teacher-rep-row,
                     :root[data-theme="light"] .admin-teacher-rep-row {
-                        background: #f9fafb !important;
-                        border-color: #e5e7eb !important;
+                        background: #f8fafc !important;
+                        border-color: #e2e8f0 !important;
                     }
                     html[data-theme="light"] .admin-teacher-rep-row:hover,
                     :root[data-theme="light"] .admin-teacher-rep-row:hover {
-                        background: #f3f4f6 !important;
+                        background: #f1f5f9 !important;
                     }
                     html[data-theme="light"] .admin-conflict-card,
                     :root[data-theme="light"] .admin-conflict-card {
@@ -1288,48 +1317,48 @@ const DashboardHome = () => {
                     }
                     html[data-theme="light"] .admin-all-clear-card,
                     :root[data-theme="light"] .admin-all-clear-card {
-                        background: #f9fafb !important;
-                        border-color: #e5e7eb !important;
+                        background: #f8fafc !important;
+                        border-color: #e2e8f0 !important;
                     }
                     html[data-theme="light"] .admin-modal-dialog,
                     :root[data-theme="light"] .admin-modal-dialog {
                         background: #ffffff !important;
-                        border-color: #e5e7eb !important;
+                        border-color: #e2e8f0 !important;
                         box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1) !important;
                     }
                     html[data-theme="light"] .admin-modal-header,
                     :root[data-theme="light"] .admin-modal-header {
-                        background: #f3f4f6 !important;
-                        border-bottom-color: #e5e7eb !important;
-                        color: #111827 !important;
+                        background: #f1f5f9 !important;
+                        border-bottom-color: #e2e8f0 !important;
+                        color: #0f172a !important;
                     }
                     html[data-theme="light"] .admin-modal-textarea,
                     :root[data-theme="light"] .admin-modal-textarea {
                         background: #ffffff !important;
                         border-color: #cbd5e1 !important;
-                        color: #111827 !important;
+                        color: #0f172a !important;
                     }
                     html[data-theme="light"] .admin-modal-btn.cancel,
                     :root[data-theme="light"] .admin-modal-btn.cancel {
-                        background: #e5e7eb !important;
-                        color: #4b5563 !important;
+                        background: #e2e8f0 !important;
+                        color: #475569 !important;
                         border-color: #cbd5e1 !important;
                     }
                     html[data-theme="light"] .admin-modal-btn.cancel:hover,
                     :root[data-theme="light"] .admin-modal-btn.cancel:hover {
-                        background: #d1d5db !important;
-                        color: #111827 !important;
+                        background: #cbd5e1 !important;
+                        color: #0f172a !important;
                     }
                     html[data-theme="light"] .admin-quick-toggle-btn,
                     :root[data-theme="light"] .admin-quick-toggle-btn {
-                        background: #f3f4f6 !important;
+                        background: #f1f5f9 !important;
                         border-color: #cbd5e1 !important;
-                        color: #4b5563 !important;
+                        color: #475569 !important;
                     }
                     html[data-theme="light"] .admin-quick-toggle-btn:hover,
                     :root[data-theme="light"] .admin-quick-toggle-btn:hover {
-                        background: #e5e7eb !important;
-                        color: #111827 !important;
+                        background: #e2e8f0 !important;
+                        color: #0f172a !important;
                     }
                 `}</style>
             </div>
