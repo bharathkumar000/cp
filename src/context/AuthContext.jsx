@@ -127,6 +127,23 @@ export const AuthProvider = ({ children }) => {
         const cleanEmail = typeof email === 'string' ? email.trim() : email;
         const cleanPassword = typeof password === 'string' ? password.trim() : password;
 
+        const allowedDemoEmails = [
+            'bk@vvce', 'bp@vvce', 'ananya@vvce', 'anagha@vvce', 'riddhi@vvce',
+            'bhav@vvce', 'abhi@vvce', 'preksha@vvce', 'admin@vvce',
+            '1', '2', '3', '4', 'admin', 'vvce25ec0135@vvce.ac.in'
+        ];
+
+        // Block any email that is not a demo account or from the @vvce.ac.in domain
+        if (!allowedDemoEmails.includes(cleanEmail)) {
+            const domain = cleanEmail.split('@')[1];
+            if (!domain || domain.toLowerCase() !== 'vvce.ac.in') {
+                return { 
+                    success: false, 
+                    error: "Access denied. Please log in with a valid institutional email (@vvce.ac.in)." 
+                };
+            }
+        }
+
         // NEW VVCE Accounts Bypasses
         if (cleanEmail === 'vvce25ec0135@vvce.ac.in') {
             const mockUser = {
