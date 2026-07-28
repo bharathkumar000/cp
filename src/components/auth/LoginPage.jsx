@@ -136,12 +136,6 @@ const LoginPage = () => {
                                 )}
                             </button>
 
-                            <div className="google-signin-separator">
-                                <div className="separator-line"></div>
-                                <span className="separator-text">or</span>
-                                <div className="separator-line"></div>
-                            </div>
-
                             <button 
                                 type="button" 
                                 onClick={handleGoogleLogin} 
