@@ -16,12 +16,7 @@
 
 ---
 
-## 🏆 Awards & Recognition
 
-> [!TIP]
-> **2nd Place Winner** at the State Level Hackathon *Parivarthan* (Vidyavardhaka College of Engineering). Recognized for outstanding UI/UX design, modular architecture, and stability.
-
----
 
 ## ⚡ Active Features
 
