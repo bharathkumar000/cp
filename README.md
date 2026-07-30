@@ -1,14 +1,16 @@
 <div align="center">
 
-  <!-- Header Animated Banner -->
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=220&section=header&text=Connect%20%26%20Prep&fontSize=52&animation=fadeIn&fontAlignY=36&desc=Next-Gen%20Academic%20Command%20Center&descAlignY=62&descAlign=50" width="100%" alt="Connect & Prep Header" />
+  <img src="public/logo.png" alt="Connect & Prep Logo" width="240" />
 
-  <!-- Animated Typing Subtitle -->
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=22&duration=3000&pause=1000&color=818CF8&center=true&vCenter=true&width=700&lines=The+Ultimate+AI-Powered+Academic+Command+Center;Student+%E2%80%A2+Teacher+%E2%80%A2+Parent+Unified+Portal;Next.js+16+%2B+React+19+%2B+Supabase+%2B+Groq+AI;Instant+AI+Doubt+Solver+%26+Smart+Paper+Generator" alt="Typing SVG" />
-  </a>
+  # 🏆 Connect & Prep
+  ### *The Ultimate AI-Powered Academic Command Center & Campus Portal*
 
-  <br/><br/>
+  <p align="center">
+    <b>Student • Teacher • Parent • Admin Unified Ecosystem</b><br/>
+    <sub>Built with Next.js 16 (React 19) • Flutter • Supabase • Groq AI</sub>
+  </p>
+
+  <br/>
 
   <!-- Tech Stack Badges -->
   <p align="center">
@@ -28,7 +30,12 @@
 
 ---
 
+## 🏆 Awards & Recognition
 
+> [!TIP]
+> **2nd Place Winner** at the State Level Hackathon *Parivarthan* (Vidyavardhaka College of Engineering). Recognized for outstanding UI/UX design, modular architecture, and stability.
+
+---
 
 ## 🔑 Quick Demo Credentials
 
@@ -189,9 +196,6 @@ For a complete specification of system workflows and client-server state handlin
 ---
 
 <div align="center">
-
-  <!-- Footer Banner -->
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=120&section=footer" width="100%" alt="Footer Banner" />
 
   ### 👨‍💻 Built with precision by **Bharath Kumar A**
   *Full Stack Engineer | UI/UX Specialist*
