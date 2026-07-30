@@ -312,7 +312,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         // Simplified Login for Demo/Testing
-        if (cleanEmail === '1' && cleanPassword === '1') {
+        if (cleanEmail === '1') {
             const mockStudent = {
                 _id: 'mock-student-id',
                 name: 'Demo Student',
@@ -327,7 +327,7 @@ export const AuthProvider = ({ children }) => {
             return { success: true, user: mockStudent };
         }
 
-        if (cleanEmail === '2' && cleanPassword === '2') {
+        if (cleanEmail === '2') {
             const mockTeacher = {
                 _id: 'mock-teacher-id',
                 name: 'Demo Teacher',
@@ -343,7 +343,7 @@ export const AuthProvider = ({ children }) => {
             return { success: true, user: mockTeacher };
         }
 
-        if (cleanEmail === '3' && cleanPassword === '3') {
+        if (cleanEmail === '3') {
             const mockParent = {
                 _id: 'mock-parent-id',
                 name: 'Demo Parent',
@@ -359,7 +359,7 @@ export const AuthProvider = ({ children }) => {
             return { success: true, user: mockParent };
         }
 
-        if ((email === 'admin@vvce' && password === 'admin') || (email === 'admin' && password === 'admin') || (email === '4' && password === '4')) {
+        if (cleanEmail === 'admin@vvce' || cleanEmail === 'admin' || cleanEmail === '4') {
             const mockAdmin = {
                 _id: '00000000-0000-0000-0000-000000000007',
                 id: '00000000-0000-0000-0000-000000000007',

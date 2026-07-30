@@ -151,6 +151,44 @@ const LoginPage = () => {
                                 Sign in with Google
                             </button>
 
+                            <div className="demo-credentials-container">
+                                <div className="demo-credentials-title">Demo Credentials</div>
+                                <div className="demo-credentials-pills">
+                                    <button 
+                                        type="button" 
+                                        className="demo-pill" 
+                                        onClick={() => { setEmail('1'); setPassword('1'); }}
+                                        title="Click to auto-fill Student credentials"
+                                    >
+                                        <span className="demo-code">1</span> Student
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="demo-pill" 
+                                        onClick={() => { setEmail('2'); setPassword('2'); }}
+                                        title="Click to auto-fill Teacher credentials"
+                                    >
+                                        <span className="demo-code">2</span> Teacher
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="demo-pill" 
+                                        onClick={() => { setEmail('3'); setPassword('3'); }}
+                                        title="Click to auto-fill Parent credentials"
+                                    >
+                                        <span className="demo-code">3</span> Parent
+                                    </button>
+                                    <button 
+                                        type="button" 
+                                        className="demo-pill" 
+                                        onClick={() => { setEmail('admin'); setPassword('admin'); }}
+                                        title="Click to auto-fill Admin credentials"
+                                    >
+                                        <span className="demo-code">admin</span> Admin
+                                    </button>
+                                </div>
+                            </div>
+
                             <div className="right-card-footer">
                                 <div className="need-access-divider">
                                     <div className="divider-line"></div>

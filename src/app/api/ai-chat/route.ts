@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { message, image, history = [] } = body;
+        const { message, image, history = [], apiKey: customApiKey } = body;
 
         if (!message) {
             return NextResponse.json({ error: 'Message content is required.' }, { status: 400 });
@@ -143,7 +143,7 @@ Strict Policy:
         }
 
         // 3. Fallback: Gemini API (Tertiary)
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = customApiKey || process.env.GEMINI_API_KEY;
         if (apiKey) {
             try {
                 console.log('[AI Chat] Utilizing Gemini API for request...');

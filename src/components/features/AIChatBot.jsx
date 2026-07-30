@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Trash2, Copy, Sparkles, Download, Check, Image as ImageIcon, X, History, Plus } from 'lucide-react';
+import { Send, Bot, User, Trash2, Copy, Sparkles, Download, Check, Image as ImageIcon, X, History, Plus, Key, ShieldAlert } from 'lucide-react';
 
 const renderMathToHtml = (latex) => {
     let html = latex;
@@ -225,8 +225,17 @@ const AIChatBot = () => {
     const [isTyping, setIsTyping] = useState(false);
     const [copiedId, setCopiedId] = useState(null);
 
+    const [isApiModalOpen, setIsApiModalOpen] = useState(false);
+    const [apiKey, setApiKey] = useState('');
+    const [apiSavedMessage, setApiSavedMessage] = useState('');
+
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        const savedKey = localStorage.getItem('user_gemini_api_key');
+        if (savedKey) setApiKey(savedKey);
+    }, []);
 
     // Load sessions on mount
     useEffect(() => {
@@ -423,7 +432,8 @@ const AIChatBot = () => {
                 body: JSON.stringify({
                     message: userMsgText,
                     image: currentImage,
-                    history: chatHistory
+                    history: chatHistory,
+                    apiKey: localStorage.getItem('user_gemini_api_key') || ''
                 })
             });
 
@@ -548,6 +558,13 @@ const AIChatBot = () => {
                     </div>
                     <div className="header-controls">
                         <button 
+                            className="control-btn" 
+                            onClick={() => setIsApiModalOpen(true)} 
+                            title="Configure AI API Key"
+                        >
+                            <Key size={16} />
+                        </button>
+                        <button 
                             className={`control-btn ${isHistoryOpen ? 'active' : ''}`} 
                             onClick={() => setIsHistoryOpen(!isHistoryOpen)} 
                             title="Toggle Chat History"
@@ -562,6 +579,64 @@ const AIChatBot = () => {
                         </button>
                     </div>
                 </div>
+
+                {/* API Key Modal with Warning */}
+                {isApiModalOpen && (
+                    <div className="api-modal-overlay" onClick={() => setIsApiModalOpen(false)}>
+                        <div className="api-modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="api-modal-header">
+                                <div className="api-modal-title">
+                                    <Key size={18} style={{ color: '#818cf8' }} />
+                                    <span>Configure AI Bot API Key</span>
+                                </div>
+                                <button className="api-modal-close" onClick={() => setIsApiModalOpen(false)}>
+                                    <X size={16} />
+                                </button>
+                            </div>
+
+                            {/* PROMINENT WARNING TEXT */}
+                            <div className="api-warning-banner">
+                                <ShieldAlert size={20} className="warning-banner-icon" />
+                                <div className="warning-banner-text">
+                                    <strong>⚠️ Security Warning:</strong>
+                                    Never share or expose your API key in public repositories or client code. Make sure to set quota limits and restriction policies in your AI provider console.
+                                </div>
+                            </div>
+
+                            <div className="api-modal-body">
+                                <label className="api-input-label">AI Bot API Key (Gemini / Custom)</label>
+                                <input
+                                    type="password"
+                                    className="api-key-input"
+                                    placeholder="Enter your AI Bot API Key (e.g. AIzaSy...)"
+                                    value={apiKey}
+                                    onChange={(e) => setApiKey(e.target.value)}
+                                />
+                                <div className="api-input-subtext">
+                                    Your API Key is stored securely in your browser local storage for AI responses.
+                                </div>
+                            </div>
+
+                            <div className="api-modal-footer">
+                                {apiSavedMessage && <span className="api-saved-msg">{apiSavedMessage}</span>}
+                                <button 
+                                    type="button"
+                                    className="api-save-btn" 
+                                    onClick={() => {
+                                        localStorage.setItem('user_gemini_api_key', apiKey.trim());
+                                        setApiSavedMessage('API Key saved successfully!');
+                                        setTimeout(() => {
+                                            setApiSavedMessage('');
+                                            setIsApiModalOpen(false);
+                                        }, 1200);
+                                    }}
+                                >
+                                    Save API Key
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
             {/* Message History View */}
             <div className="chat-viewport">
@@ -1252,6 +1327,165 @@ const AIChatBot = () => {
                     background: rgba(255, 255, 255, 0.03);
                     color: rgba(255, 255, 255, 0.2);
                     cursor: not-allowed;
+                }
+
+                /* API Modal & Security Warning Banner Styles */
+                .api-modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.75);
+                    backdrop-filter: blur(8px);
+                    z-index: 999;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: 1rem;
+                }
+
+                .api-modal-content {
+                    background: #0f1017;
+                    border: 1px solid rgba(99, 102, 241, 0.3);
+                    border-radius: 16px;
+                    width: 100%;
+                    max-width: 480px;
+                    padding: 20px 24px;
+                    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.15);
+                    animation: modalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+
+                @keyframes modalPopIn {
+                    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+
+                .api-modal-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 16px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                    padding-bottom: 12px;
+                }
+
+                .api-modal-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 1.05rem;
+                    font-weight: 700;
+                    color: #ffffff;
+                }
+
+                .api-modal-close {
+                    background: transparent;
+                    border: none;
+                    color: rgba(255, 255, 255, 0.5);
+                    cursor: pointer;
+                    padding: 4px;
+                    border-radius: 6px;
+                    transition: color 0.2s;
+                }
+
+                .api-modal-close:hover {
+                    color: #ffffff;
+                    background: rgba(255, 255, 255, 0.1);
+                }
+
+                .api-warning-banner {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    background: rgba(245, 158, 11, 0.1);
+                    border: 1px solid rgba(245, 158, 11, 0.3);
+                    border-radius: 10px;
+                    padding: 12px 14px;
+                    margin-bottom: 18px;
+                }
+
+                .warning-banner-icon {
+                    color: #f59e0b;
+                    flex-shrink: 0;
+                    margin-top: 2px;
+                }
+
+                .warning-banner-text {
+                    font-size: 0.82rem;
+                    color: #fde68a;
+                    line-height: 1.45;
+                }
+
+                .warning-banner-text strong {
+                    display: block;
+                    color: #fbbf24;
+                    margin-bottom: 2px;
+                }
+
+                .api-modal-body {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    margin-bottom: 20px;
+                }
+
+                .api-input-label {
+                    font-size: 0.82rem;
+                    font-weight: 600;
+                    color: #cbd5e1;
+                }
+
+                .api-key-input {
+                    background: rgba(255, 255, 255, 0.04);
+                    border: 1px solid rgba(99, 102, 241, 0.2);
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    color: #ffffff;
+                    font-size: 0.9rem;
+                    outline: none;
+                    transition: all 0.2s;
+                }
+
+                .api-key-input:focus {
+                    border-color: #6366f1;
+                    box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+                    background: rgba(0, 0, 0, 0.3);
+                }
+
+                .api-input-subtext {
+                    font-size: 0.76rem;
+                    color: rgba(255, 255, 255, 0.4);
+                }
+
+                .api-modal-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 12px;
+                }
+
+                .api-saved-msg {
+                    font-size: 0.8rem;
+                    color: #34d399;
+                    font-weight: 600;
+                }
+
+                .api-save-btn {
+                    background: linear-gradient(90deg, #6366f1, #4f46e5);
+                    color: #ffffff;
+                    border: none;
+                    border-radius: 8px;
+                    padding: 8px 18px;
+                    font-size: 0.88rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .api-save-btn:hover {
+                    background: linear-gradient(90deg, #4f46e5, #4338ca);
+                    transform: translateY(-1px);
                 }
             `}</style>
         </div>
