@@ -5,7 +5,7 @@
 
   <!-- Animated Typing Subtitle -->
   <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=22&duration=3000&pause=1000&color=818CF8&center=true&vCenter=true&width=700&lines=The+Ultimate+AI-Powered+Academic+Command+Center;Student+%E2%80%A2+Teacher+%E2%80%A2+Parent+Unified+Portal;Next.js+16+%2B+React+19+%2B+Supabase+%2B+Gemini;Instant+AI+Doubt+Solver+%26+Smart+Paper+Generator" alt="Typing SVG" />
+    <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=22&duration=3000&pause=1000&color=818CF8&center=true&vCenter=true&width=700&lines=The+Ultimate+AI-Powered+Academic+Command+Center;Student+%E2%80%A2+Teacher+%E2%80%A2+Parent+Unified+Portal;Next.js+16+%2B+React+19+%2B+Supabase+%2B+Groq+AI;Instant+AI+Doubt+Solver+%26+Smart+Paper+Generator" alt="Typing SVG" />
   </a>
 
   <br/><br/>
@@ -15,7 +15,7 @@
     <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16.2%20(React%2019)-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" /></a>
     <a href="https://flutter.dev"><img src="https://img.shields.io/badge/Flutter-3.x%20(Dart)-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" /></a>
     <a href="https://supabase.com"><img src="https://img.shields.io/badge/Supabase-Database%20%26%20Auth-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" /></a>
-    <a href="https://ai.google.dev"><img src="https://img.shields.io/badge/Google%20Gemini-AI%20API-4285F4?style=for-the-badge&logo=google-gemini&logoColor=white" alt="Google Gemini" /></a>
+    <a href="https://groq.com"><img src="https://img.shields.io/badge/Groq%20AI-Llama%203.1-f55036?style=for-the-badge&logo=groq&logoColor=white" alt="Groq AI" /></a>
   </p>
 
 </div>
@@ -24,7 +24,7 @@
 
 ## ⚡ Overview
 
-**Connect & Prep** is a state-of-the-art, high-performance academic portal designed to unite Students, Teachers, and Parents within a single seamless ecosystem. Featuring dynamic dark glassmorphism UI, real-time AI doubt solving, automated exam generation, security hardening, and role-based access control.
+**Connect & Prep** is a state-of-the-art, high-performance academic portal designed to unite Students, Teachers, and Parents within a single seamless ecosystem. Featuring dynamic dark glassmorphism UI, real-time Groq AI doubt solving, automated exam generation, security hardening, and role-based access control.
 
 ---
 
@@ -36,7 +36,7 @@ Try out the application instantly using these quick-fill demo credentials:
 
 | Role | Email / ID | Password | Access Rights |
 | :--- | :--- | :--- | :--- |
-| 🧑‍🎓 **Student** | `1` | `1` | Full Student Portal & AI Assistant |
+| 🧑‍🎓 **Student** | `1` | `1` | Full Student Portal & Groq AI Assistant |
 | 👨‍🏫 **Teacher** | `2` | `2` | Teacher Console, Attendance & Booking |
 | 👨‍👩‍👧 **Parent** | `3` | `3` | Parent Monitoring & Child Performance |
 | 🛡️ **Admin** | `admin` | `admin` | Institutional Management & Settings |
@@ -46,10 +46,10 @@ Try out the application instantly using these quick-fill demo credentials:
 ## ✨ Core Features
 
 <details open>
-<summary><b>🧠 1. AI Intelligence Core (Gemini 2.5 & Ollama)</b></summary>
+<summary><b>🧠 1. Groq AI Intelligence Core (Llama 3.1 & Ollama)</b></summary>
 <br/>
 
-*   **Prepcare AI Assistant:** Multi-modal doubt solver with image scanning, LaTeX rendering, and API Key configuration ([AIChatBot.jsx](file:///Users/bharathkumara/Desktop/one-campus/src/components/features/AIChatBot.jsx)).
+*   **Prepcare AI Assistant:** High-speed multi-modal doubt solver powered by Groq Llama 3.1 & Ollama with image scanning, LaTeX math rendering, and API Key configuration ([AIChatBot.jsx](file:///Users/bharathkumara/Desktop/one-campus/src/components/features/AIChatBot.jsx)).
 *   **Smart Question Paper Generator:** Create structured exam papers with cognitive difficulty sliders ([QuestionPaperGenerator.jsx](file:///Users/bharathkumara/Desktop/one-campus/src/components/features/QuestionPaperGenerator.jsx)).
 *   **AI Quiz Builder:** Dynamically build customized practice quizzes ([QuizGenerator.jsx](file:///Users/bharathkumara/Desktop/one-campus/src/components/features/QuizGenerator.jsx)).
 *   **Prepcare Study Planner:** Personalized study roadmaps based on CGPA targets ([AcademicHub.jsx](file:///Users/bharathkumara/Desktop/one-campus/src/components/features/AcademicHub.jsx)).
@@ -76,9 +76,9 @@ Try out the application instantly using these quick-fill demo credentials:
 
 ---
 
-## 🛠️ Step-by-Step Setup Guide
+## 🛠️ Web App Setup Guide
 
-Follow these clear instructions to run Connect & Prep locally:
+Follow these clear instructions to run the Connect & Prep Web Application locally:
 
 ### Prerequisites
 Make sure you have installed:
@@ -114,8 +114,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 # Local Mock Toggle (Set true for offline demo mode)
 NEXT_PUBLIC_USE_MOCK_SUPABASE=true
 
-# Google Gemini AI API Key
-GEMINI_API_KEY=your_gemini_api_key
+# Groq AI API Key
+GROQ_API_KEY=your_groq_api_key
 ```
 
 > [!NOTE]
@@ -129,6 +129,56 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) (or `http://localhost:3001`) in your browser to launch the app!
+
+---
+
+## 📱 Mobile App (Android APK) Installation Guide
+
+Connect & Prep includes a native **Flutter Mobile App** for Android devices (`mobile_app/`).
+
+---
+
+### Option A: Install Release APK Directly (Recommended)
+
+1. **Locate the Generated Release APK**:
+   The production-ready release APK is located at:
+   ```path
+   mobile_app/build/app/outputs/flutter-apk/app-release.apk
+   ```
+
+2. **Transfer to Your Android Phone**:
+   - Send `app-release.apk` to your phone via USB cable, Google Drive, WhatsApp, or local download.
+
+3. **Enable Installation & Install**:
+   - On your Android device, go to **Settings** ➔ **Security** (or **Apps**).
+   - Enable **Install from Unknown Sources** for your File Manager or Browser.
+   - Tap `app-release.apk` to install and open **Connect & Prep** on your phone!
+
+---
+
+### Option B: Build & Run from Flutter Source
+
+1. **Navigate to the Mobile App Directory**:
+   ```bash
+   cd mobile_app
+   ```
+
+2. **Fetch Dependencies**:
+   ```bash
+   flutter pub get
+   ```
+
+3. **Build Release APK**:
+   ```bash
+   flutter build apk --release
+   ```
+   *The generated APK will be output to `build/app/outputs/flutter-apk/app-release.apk`.*
+
+4. **Install Directly via USB Debugging**:
+   Connect your Android device with USB Debugging enabled, then run:
+   ```bash
+   flutter run --release
+   ```
 
 ---
 
