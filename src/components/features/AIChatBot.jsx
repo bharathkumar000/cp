@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Trash2, Copy, Sparkles, Download, Check, Image as ImageIcon, X, History, Plus } from 'lucide-react';
+import { Send, Bot, User, Trash2, Copy, Sparkles, Download, Check, Image as ImageIcon, X, History, Plus, Key, ShieldAlert } from 'lucide-react';
 
 const renderMathToHtml = (latex) => {
     let html = latex;
