@@ -96,7 +96,7 @@ Strict Policy:
         }
 
         // 2. Fallback: Groq API (Secondary)
-        const groqApiKey = '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';
+        const groqApiKey = 'your groq key';
         if (groqApiKey) {
             try {
                 console.log('[AI Chat] Utilizing Groq API for request...');
