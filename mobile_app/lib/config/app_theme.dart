@@ -4,10 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 /// App-wide dark theme inspired by the web app's SaaS aesthetic.
 class AppTheme {
   // ── Color palette ──
-  static const Color bgPrimary = Color(0xFF0D0F12);
-  static const Color bgCard = Color(0xFF16191E);
-  static const Color bgCardHover = Color(0xFF1C2028);
-  static const Color accentBlue = Color(0xFF38BDF8);
+  static const Color bgPrimary = Color(0xFF000000);
+  static const Color bgCard = Color(0xFF0D0F12);
+  static const Color bgCardHover = Color(0xFF15181F);
+  static const Color accentBlue = Color(0xFF818CF8);
   static const Color accentIndigo = Color(0xFF6366F1);
   static const Color accentGreen = Color(0xFF4ADE80);
   static const Color accentOrange = Color(0xFFFB923C);
