@@ -96,32 +96,14 @@ class _LoginScreenState extends State<LoginScreen>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // ── Logo ──
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.accentBlue.withValues(alpha: 0.2),
-                          AppTheme.accentIndigo.withValues(alpha: 0.15),
-                        ],
-                      ),
-                    ),
-                    child: const Icon(Icons.school_rounded,
-                        size: 36, color: AppTheme.accentBlue),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    'Connect & Prep',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
+                  Center(
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 120,
+                      fit: BoxFit.contain,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 24),
                   Text(
                     _isSignUp
                         ? 'Create your student account'
