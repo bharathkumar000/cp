@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -221,8 +222,8 @@ const DashboardLayout = ({ children }) => {
             <aside className={`sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
                 <div className="sidebar-header">
                     <div className="logo-area">
-                        <GraduationCap size={32} />
-                        <span className="sidebar-text">Connect & Prep</span>
+                        <img src="/logo.png" alt="Connect & Prep Logo" />
+                        <span className="sidebar-text" style={{ fontWeight: '700', fontSize: '1.1rem', letterSpacing: '-0.5px' }}>Connect & Prep</span>
                     </div>
                 </div>
 
@@ -241,14 +242,15 @@ const DashboardLayout = ({ children }) => {
                         return item.type === 'divider' ? (
                             <div key={`divider-${idx}`} className="nav-divider" />
                         ) : (
-                            <div
+                            <Link
                                 key={`${item.path}-${idx}`}
+                                href={item.path}
                                 className={`nav-item ${isCurrentActive ? 'active' : ''}`}
-                                onClick={() => { router.push(item.path); setSidebarOpen(false); }}
+                                onClick={() => setSidebarOpen(false)}
                             >
                                 <div className="icon-container">{item.icon}</div>
                                 <span className="sidebar-text">{item.label}</span>
-                            </div>
+                            </Link>
                         );
                     })}
                 </nav>
@@ -287,10 +289,10 @@ const DashboardLayout = ({ children }) => {
                         </button>
 
                         <div className="notif-wrapper">
-                            <button className="notification-btn-header" onClick={() => router.push('/dashboard/notifications')}>
+                            <Link className="notification-btn-header" href="/dashboard/notifications">
                                 <Bell size={20} />
                                 {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
-                            </button>
+                            </Link>
                         </div>
 
                         <div className="profile-dropdown-container">
@@ -328,7 +330,7 @@ const ProfileMenu = ({ user, logout }) => {
                         <p className="d-name">Name: {user?.name}</p>
                         <p className="d-usn">USN: 4VV25EC032</p>
                     </div>
-                    <div className="dropdown-item" onClick={() => { router.push('/dashboard/profile'); setIsOpen(false); }}>Profile</div>
+                    <Link href="/dashboard/profile" className="dropdown-item" onClick={() => setIsOpen(false)}>Profile</Link>
                     <div className="dropdown-item logout" onClick={logout}>
                         <LogOut size={16} /> Logout
                     </div>
