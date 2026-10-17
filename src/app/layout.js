@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata = {
   title: 'Connect & Prep',
   description: 'AI-Powered Professional Education Platform',
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export default function RootLayout({ children }) {
