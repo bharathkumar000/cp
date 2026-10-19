@@ -1,9 +1,8 @@
 'use client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
-import { ShieldCheck, Cpu, Zap, Lock, Globe, ArrowRight, GraduationCap, BarChart2 } from 'lucide-react';
+import { Lock, ArrowRight, GraduationCap, Users, Building2, Mail, Eye, EyeOff } from 'lucide-react';
 import './LoginPage.css';
 
 const LoginPage = () => {
@@ -11,31 +10,10 @@ const LoginPage = () => {
     const [password, setPassword] = useState('bp');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [loginRole, setLoginRole] = useState('STUDENT'); // Roles: STUDENT, FACULTY, ADVISOR
+    const [showPassword, setShowPassword] = useState(false);
 
     const { login } = useAuth();
     const router = useRouter();
-
-    const handleRoleSelect = (selectedRole) => {
-        setLoginRole(selectedRole);
-        setError('');
-        if (selectedRole === 'STUDENT') {
-            setEmail('bp@vvce');
-            setPassword('bp');
-        } else if (selectedRole === 'PARENT') {
-            setEmail('abhi@vvce');
-            setPassword('abhi');
-        } else if (selectedRole === 'FACULTY') {
-            setEmail('bhav@vvce');
-            setPassword('bhav');
-        } else if (selectedRole === 'ADVISOR') {
-            setEmail('bhav@vvce');
-            setPassword('bhav');
-        } else if (selectedRole === 'ADMIN') {
-            setEmail('admin@vvce');
-            setPassword('admin');
-        }
-    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -59,86 +37,74 @@ const LoginPage = () => {
     return (
         <div className="login-wrapper">
             <div className="login-dual-panel">
-                {/* Left Sidebar - System Info */}
+                {/* Left Sidebar - Branding & Info */}
                 <div className="login-sidebar">
-                    <div className="sidebar-logo">
-                        <GraduationCap size={40} color="var(--accent-primary)" />
-                        <span className="logo-text">CONNECT & PREP</span>
+                    <div className="brand-logo-container">
+                        <img src="/logo.png" alt="Connect & Prep" className="brand-logo-img" />
+                        <div className="brand-subtext">Student • Teacher Connection</div>
                     </div>
 
                     <div className="sidebar-content">
-                        <h2 className="system-title">Engineering Portal</h2>
-                        <p className="system-sub">Access verified resources, collaborate with peers, and track your progress.</p>
+                        <h1 className="engineering-portal-title">Engineering Portal</h1>
+                        <div className="title-underline"></div>
+                        <p className="portal-sub">
+                            Learn. Collaborate. Grow.<br />
+                            All in one place.
+                        </p>
+                        
+                        <div className="metrics-row">
+                            <div className="metric-item">
+                                <div className="metric-icon-wrap">
+                                    <Users size={22} strokeWidth={1.5} />
+                                </div>
+                                <div className="metric-value">10K+</div>
+                                <div className="metric-label">Students</div>
+                            </div>
+                            
+                            <div className="metric-divider"></div>
+                            
+                            <div className="metric-item">
+                                <div className="metric-icon-wrap">
+                                    <GraduationCap size={22} strokeWidth={1.5} />
+                                </div>
+                                <div className="metric-value">500+</div>
+                                <div className="metric-label">Faculty</div>
+                            </div>
+                            
+                            <div className="metric-divider"></div>
+                            
+                            <div className="metric-item">
+                                <div className="metric-icon-wrap">
+                                    <Building2 size={22} strokeWidth={1.5} />
+                                </div>
+                                <div className="metric-value">50+</div>
+                                <div className="metric-label">Institutions</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="sidebar-footer">
-                        <div className="version-info">
-                            <span> </span>
-                        </div>
+                    <div className="sidebar-illustration-wrap">
+                        <img src="/mockup.png" alt="3D Cap Illustration" className="sidebar-3d-asset" />
                     </div>
                 </div>
 
-                {/* Right Panel - Form Area */}
+                {/* Right Panel - Login Card */}
                 <div className="login-main">
-                    <div className="form-container">
-                        <div className="sync-header">
-                            <span className="platform-label">Institutional Log In</span>
-                            <h1> Sign In</h1>
-                            <p> </p>
+                    <div className="right-card-container">
+                        <div className="welcome-heading-group">
+                            <h2>Welcome Back</h2>
+                            <p>Sign in to continue</p>
+                            <div className="welcome-underline"></div>
                         </div>
 
-                        {/* Premium Interactive Portal Selector */}
-                        <div className="role-selector" style={{ gridTemplateColumns: 'repeat(5, 1fr)', marginBottom: '2.5rem' }}>
-                            <button 
-                                type="button"
-                                className={`role-pill ${loginRole === 'STUDENT' ? 'active' : ''}`}
-                                onClick={() => handleRoleSelect('STUDENT')}
-                                style={{ fontSize: '0.62rem', letterSpacing: '0px', whiteSpace: 'nowrap', padding: '8px 2px' }}
-                            >
-                                Student
-                            </button>
-                            <button 
-                                type="button"
-                                className={`role-pill ${loginRole === 'PARENT' ? 'active' : ''}`}
-                                onClick={() => handleRoleSelect('PARENT')}
-                                style={{ fontSize: '0.62rem', letterSpacing: '0px', whiteSpace: 'nowrap', padding: '8px 2px' }}
-                            >
-                                Parent
-                            </button>
-                            <button 
-                                type="button"
-                                className={`role-pill ${loginRole === 'FACULTY' ? 'active' : ''}`}
-                                onClick={() => handleRoleSelect('FACULTY')}
-                                style={{ fontSize: '0.62rem', letterSpacing: '0px', whiteSpace: 'nowrap', padding: '8px 2px' }}
-                            >
-                                Faculty
-                            </button>
-                            <button 
-                                type="button"
-                                className={`role-pill ${loginRole === 'ADVISOR' ? 'active' : ''}`}
-                                onClick={() => handleRoleSelect('ADVISOR')}
-                                style={{ fontSize: '0.62rem', letterSpacing: '0px', whiteSpace: 'nowrap', padding: '8px 2px' }}
-                            >
-                                Advisor
-                            </button>
-                            <button 
-                                type="button"
-                                className={`role-pill ${loginRole === 'ADMIN' ? 'active' : ''}`}
-                                onClick={() => handleRoleSelect('ADMIN')}
-                                style={{ fontSize: '0.62rem', letterSpacing: '0px', whiteSpace: 'nowrap', padding: '8px 2px' }}
-                            >
-                                Admin
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleLogin} className="sync-form">
+                        <form onSubmit={handleLogin} className="login-fields-form">
                             <div className="input-group">
-                                <label>Institutional Email</label>
-                                <div className="input-field-wrap">
-                                    <Globe size={18} className="field-icon" />
+                                <label className="field-label">Institutional Email</label>
+                                <div className="field-input-box">
+                                    <Mail size={18} className="input-icon-left" />
                                     <input
                                         type="text"
-                                        placeholder="authorized@institution.edu"
+                                        placeholder="you@institution.edu"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
@@ -147,22 +113,37 @@ const LoginPage = () => {
                             </div>
 
                             <div className="input-group">
-                                <label>Security Key</label>
-                                <div className="input-field-wrap">
-                                    <Lock size={18} className="field-icon" />
+                                <label className="field-label">Password</label>
+                                <div className="field-input-box">
+                                    <Lock size={18} className="input-icon-left" />
                                     <input
-                                        type="password"
-                                        placeholder="Your password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder="••••••••"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
                                     />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="password-toggle-btn"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
                                 </div>
                             </div>
 
-                            {error && <div className="sync-error-msg">{error}</div>}
+                            <div className="form-options-row">
+                                <label className="remember-me-checkbox">
+                                    <input type="checkbox" />
+                                    Remember Me
+                                </label>
+                                <span className="forgot-password-link">Forgot Password?</span>
+                            </div>
 
-                            <button type="submit" className="establish-link-btn" disabled={loading}>
+                            {error && <div className="error-feedback-alert">{error}</div>}
+
+                            <button type="submit" className="signin-action-btn" disabled={loading}>
                                 {loading ? 'Logging in...' : (
                                     <>
                                         Sign In <ArrowRight size={20} />
@@ -170,9 +151,16 @@ const LoginPage = () => {
                                 )}
                             </button>
 
-                            <div className="form-alt-footer">
-                                <span>Don't have an account?</span>
-                                <Link href="/register" className="register-link">Register Now</Link>
+                            <div className="right-card-footer">
+                                <div className="need-access-divider">
+                                    <div className="divider-line"></div>
+                                    <div className="divider-label">Need access?</div>
+                                    <div className="divider-line"></div>
+                                </div>
+
+                                <div className="admin-contact-text">
+                                    Contact your institution <span className="admin-highlight">administrator</span>.
+                                </div>
                             </div>
                         </form>
                     </div>
