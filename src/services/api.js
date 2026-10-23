@@ -18,15 +18,19 @@ const getAuthHeaders = () => {
 
 // Generic fetch wrapper
 const apiRequest = async (endpoint, options = {}) => {
-    // Immediate mock bypass when offline or requested via configuration to prevent Chrome console network exceptions
+    // If NEXT_PUBLIC_API_URL is not configured, throw a connection error immediately
+    // to prevent fetch from waiting on connection timeout which slows down button clicks.
     const isMock = typeof window !== 'undefined' && (
         process.env.NEXT_PUBLIC_USE_MOCK_SUPABASE === 'true' || 
         !process.env.NEXT_PUBLIC_API_URL
     );
 
-    if (isMock && (endpoint === '/auth/logout' || endpoint === '/auth/refresh')) {
-        console.log(`[API Mock Bypass] Bypassing real network request for ${endpoint}`);
-        return { success: true };
+    if (isMock) {
+        if (endpoint === '/auth/logout' || endpoint === '/auth/refresh') {
+            return { success: true };
+        }
+        // Fail instantly for other endpoints so frontend falls back immediately
+        throw new Error('API server not configured, running in offline/mock mode.');
     }
 
     const headers = {
